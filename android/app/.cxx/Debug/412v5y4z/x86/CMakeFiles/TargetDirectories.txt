@@ -1,0 +1,3 @@
+/Users/kunaldutta/Documents/Zepali/android/app/.cxx/Debug/412v5y4z/x86/CMakeFiles/appmodules.dir
+/Users/kunaldutta/Documents/Zepali/android/app/.cxx/Debug/412v5y4z/x86/CMakeFiles/edit_cache.dir
+/Users/kunaldutta/Documents/Zepali/android/app/.cxx/Debug/412v5y4z/x86/CMakeFiles/rebuild_cache.dir

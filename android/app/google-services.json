@@ -1,0 +1,38 @@
+{
+  "project_info": {
+    "project_number": "448806663384",
+    "project_id": "zepali-4790c",
+    "storage_bucket": "zepali-4790c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:448806663384:android:e7d32cf777583cd833d3ad",
+        "android_client_info": {
+          "package_name": "com.zepali.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "448806663384-anlt8rt9na3cmje0u46hj8ho1blhdcra.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.zepali.app",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZiutj_9y3EuEybgVldbn9n2mGH4iUJ0E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

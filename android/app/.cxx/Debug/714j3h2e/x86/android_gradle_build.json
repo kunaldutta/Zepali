@@ -1,0 +1,42 @@
+{
+  "buildFiles": [
+    "/Users/kunaldutta/Documents/Himora/node_modules/react-native/ReactAndroid/cmake-utils/default-app-setup/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/kunaldutta/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/kunaldutta/Documents/Himora/android/app/.cxx/Debug/714j3h2e/x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/kunaldutta/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/kunaldutta/Documents/Himora/android/app/.cxx/Debug/714j3h2e/x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "appmodules::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "appmodules",
+      "output": "/Users/kunaldutta/Documents/Himora/android/app/build/intermediates/cxx/Debug/714j3h2e/obj/x86/libappmodules.so",
+      "runtimeFiles": [
+        "/Users/kunaldutta/.gradle/caches/9.0.0/transforms/a78b50b6471134c1c1f9afd331929f14/transformed/fbjni-0.7.0/prefab/modules/fbjni/libs/android.x86/libfbjni.so",
+        "/Users/kunaldutta/.gradle/caches/9.0.0/transforms/a6bcc9b81e1a4ac6ba34dc7a0342480c/transformed/react-android-0.84.1-debug/prefab/modules/jsi/libs/android.x86/libjsi.so",
+        "/Users/kunaldutta/.gradle/caches/9.0.0/transforms/a6bcc9b81e1a4ac6ba34dc7a0342480c/transformed/react-android-0.84.1-debug/prefab/modules/reactnative/libs/android.x86/libreactnative.so"
+      ]
+    }
+  },
+  "toolchains": {
+    "toolchain": {
+      "cCompilerExecutable": "/Users/kunaldutta/Library/Android/sdk/ndk/27.1.12297006/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang.lld",
+      "cppCompilerExecutable": "/Users/kunaldutta/Library/Android/sdk/ndk/27.1.12297006/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++.lld"
+    }
+  },
+  "cFileExtensions": [],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}
