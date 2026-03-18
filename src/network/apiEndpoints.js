@@ -4,6 +4,8 @@ const API = {
   REGISTER: '/user_register.php',
   PRODUCTS: '/products.php',
   ADD_TO_CART: '/add_to_cart.php',
+  GET_CART: '/get_cart.php',
+  UPDATE_CART: '/update_cart.php',
   ADD_PRODUCT: '/add-product.php',
   CATEGORIES: '/categories.php',
 };

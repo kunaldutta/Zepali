@@ -1,21 +1,26 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {
 View,
 Text,
 FlatList,
 Image,
 StyleSheet,
-ActivityIndicator
+ActivityIndicator,
+TouchableOpacity
 } from 'react-native';
 
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchCart } from '../../redux/store/slices/cartSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getCartAPI } from '../../services/productService';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import i18n from '../../localization/i18n';
 
-export default function CartScreen() {
+export default function CartScreen({navigation}) {
 
-const [cart,setCart] = useState([]);
-const [loading,setLoading] = useState(true);
-const [total,setTotal] = useState(0);
+const dispatch = useDispatch();
+
+const { items, total, loading } = useSelector(state => state.cart);
 
 useEffect(() => {
   loadCart();
@@ -23,36 +28,21 @@ useEffect(() => {
 
 const loadCart = async () => {
 
-  try {
+  const userData = await AsyncStorage.getItem("USER_DATA");
+  const parsedUser = userData ? JSON.parse(userData) : null;
 
-    const userData = await AsyncStorage.getItem("USER_DATA");
-    const parsedUser = userData ? JSON.parse(userData) : null;
+  if (!parsedUser?.id) return;
 
-    if (!parsedUser?.id) return;
-
-    const res = await getCartAPI(parsedUser.id);
-
-    if(res?.status === "success"){
-      setCart(res.cart || []);
-      setTotal(res.total_amount || 0);
-    }
-
-  } catch (e) {
-    console.log("Cart error:", e);
-  } finally {
-    setLoading(false);
-  }
+  dispatch(fetchCart(parsedUser.id));
 };
 
 const renderItem = ({item}) => {
 
   return (
+    
     <View style={styles.card}>
 
-      <Image
-        source={{uri: item.image}}
-        style={styles.image}
-      />
+      <Image source={{uri: item.image}} style={styles.image} />
 
       <View style={{flex:1}}>
 
@@ -78,16 +68,30 @@ if(loading){
 }
 
 return(
-
+<SafeAreaView style={styles.safeArea}>
+          {/* HEADER */}
+          <View style={styles.header}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={styles.backBtn}
+            >
+              <Ionicons name="arrow-back" size={24} color="#000" />
+            </TouchableOpacity>
+    
+            <Text style={styles.headerTitle}>
+              {i18n.t('CART') || 'CART'}
+            </Text>
+    
+            <View style={{ width: 30 }} />
+          </View>
 <View style={{flex:1, padding:15}}>
 
   <FlatList
-    data={cart}
+    data={items}
     keyExtractor={(item)=>item.id.toString()}
     renderItem={renderItem}
   />
 
-  {/* TOTAL */}
   <View style={styles.totalBar}>
     <Text style={styles.totalText}>
       Total: ₹ {total}
@@ -95,12 +99,25 @@ return(
   </View>
 
 </View>
-
+</SafeAreaView>
 );
 }
 
 const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: '#fff' },
 
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 15,
+    borderBottomWidth: 1,
+    borderColor: '#eee',
+  },
+
+  backBtn: { padding: 5 },
+
+  headerTitle: { fontSize: 18, fontWeight: 'bold' },
 card:{
 flexDirection:"row",
 marginBottom:15,
@@ -109,34 +126,21 @@ borderColor:"#eee",
 padding:10,
 borderRadius:10
 },
-
 image:{
 width:80,
 height:80,
 marginRight:10,
 borderRadius:8
 },
-
-name:{
-fontSize:16,
-fontWeight:"bold"
-},
-
-price:{
-marginTop:5,
-fontWeight:"bold",
-color:"#27ae60"
-},
-
+name:{ fontSize:16, fontWeight:"bold" },
+price:{ marginTop:5, fontWeight:"bold", color:"#27ae60" },
 totalBar:{
 padding:15,
 borderTopWidth:1,
 borderColor:"#eee"
 },
-
 totalText:{
 fontSize:18,
 fontWeight:"bold"
 }
-
 });

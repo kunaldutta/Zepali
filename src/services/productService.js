@@ -13,6 +13,29 @@ export const fetchProducts = async () => {
   }
 };
 
+export const fetchCartAPI = async (customerId) => {
+
+  console.log("fetchCartAPI called with:", customerId);
+
+  try {
+
+    const data = await get(`${API.GET_CART}?customer_id=${customerId}`);
+
+    console.log("fetchCartAPI response:", data);
+
+    return data;
+
+  } catch (error) {
+
+    console.log("fetchCart ERROR:", error);
+    throw error;
+
+  }
+
+};
+
+
+
 /* ADD TO CART */
 
 export const addToCartAPI = async (data) => {
@@ -31,6 +54,27 @@ export const addToCartAPI = async (data) => {
 
     console.log("addToCartAPI ERROR:", error);
 
+    throw error;
+
+  }
+
+};
+
+export const updateCartAPI = async (data) => {
+
+  console.log("updateCartAPI payload:", data);
+
+  try {
+
+    const response = await post(API.UPDATE_CART, data);
+
+    console.log("updateCartAPI response:", response);
+
+    return response;
+
+  } catch (error) {
+
+    console.log("updateCartAPI ERROR:", error);
     throw error;
 
   }

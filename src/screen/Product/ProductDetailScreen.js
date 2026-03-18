@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,8 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchCart, updateCart } from '../../redux/store/slices/cartSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { addToCartAPI } from '../../services/productService';
 
@@ -18,12 +19,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import i18n from '../../localization/i18n';
 import ImageCarousel from '../../components/ImageCarousel';
+import ProductDetailUI from './ProductDetailUI';
 
 const { width } = Dimensions.get('window');
 
+
 export default function ProductDetailScreen({ route, navigation }) {
+  const dispatch = useDispatch();
+
+const cartItems = useSelector(state => state.cart.items);
   const { product } = route.params;
   const scrollRef = useRef();
+  const { updating } = useSelector(state => state.cart);
+  const [cartLoaded, setCartLoaded] = useState(false);
 
   /* REMOVE DUPLICATE COLORS */
   const colors = [
@@ -58,6 +66,58 @@ export default function ProductDetailScreen({ route, navigation }) {
     setActiveIndex(index);
   };
 
+  /* ✅ LOAD CART */
+
+/* ✅ CHECK EXISTING CART ITEM */
+  const existingCartItem = cartItems.find(item => {
+
+  return (
+    String(item.prod_id) === String(product.id) &&
+    String(item.color_code).toLowerCase() === String(selectedColor?.color_code).toLowerCase() &&
+    String(item.size_or_weight).trim() === String(selectedVariant?.measurement_value).trim()
+  );
+
+});
+
+/* ✅ SYNC QUANTITY */
+useEffect(() => {
+
+  const loadCart = async () => {
+
+    const userData = await AsyncStorage.getItem('USER_DATA');
+    const parsedUser = userData ? JSON.parse(userData) : null;
+
+    if (parsedUser?.id) {
+      await dispatch(fetchCart(parsedUser.id)).unwrap(); // ✅ WAIT
+    }
+
+    setCartLoaded(true); // ✅ AFTER API
+  };
+
+  loadCart();
+
+}, []);
+
+useEffect(() => {
+
+  if (existingCartItem) {
+
+    // ONLY update if different
+    if (existingCartItem && !updating) {
+      setQuantity(existingCartItem.quantity);
+    }
+
+  } else {
+
+    if (quantity !== 1) {
+      setQuantity(1);
+    }
+
+  }
+
+}, [existingCartItem]);
+  
+
   const selectImage = index => {
     scrollRef.current?.scrollTo({
       x: width * index,
@@ -80,17 +140,76 @@ export default function ProductDetailScreen({ route, navigation }) {
   };
 
   /* QUANTITY */
-  const increaseQty = () => {
-    if (selectedVariant && quantity < selectedVariant.stock) {
-      setQuantity(prev => prev + 1);
-    }
-  };
+  const increaseQty = async () => {
 
-  const decreaseQty = () => {
-    if (quantity > 1) {
-      setQuantity(prev => prev - 1);
+  try {
+
+    if (updating) return; // ✅ IMPORTANT FIX
+    console.log("Selected Variant Stock:", selectedVariant?.stock,);
+    if (!selectedVariant) return;
+    if (Number(quantity) >= Number(selectedVariant.stock)) return;
+
+    const newQty = Number(quantity) + 1;
+    console.log("Selected Variant Stock:new", newQty,);
+    setQuantity(String(newQty));
+
+    if (existingCartItem) {
+
+      const userData = await AsyncStorage.getItem('USER_DATA');
+      const parsedUser = userData ? JSON.parse(userData) : null;
+
+      if (!parsedUser?.id) return;
+
+      const payload = {
+        customer_id: parsedUser.id,
+        prod_id: product.id,
+        color_code: selectedColor.color_code,
+        size_or_weight: selectedVariant.measurement_value,
+        quantity: newQty,
+      };
+
+      await dispatch(updateCart(payload)).unwrap();
     }
-  };
+
+  } catch (error) {
+    console.log("❌ increaseQty ERROR:", error);
+  }
+};
+
+
+  const decreaseQty = async () => {
+
+  try {
+
+    if (updating) return; // ✅ IMPORTANT
+
+    if (quantity <= 1) return;
+
+    const newQty = quantity - 1;
+    setQuantity(newQty);
+
+    if (existingCartItem) {
+
+      const userData = await AsyncStorage.getItem('USER_DATA');
+      const parsedUser = userData ? JSON.parse(userData) : null;
+
+      if (!parsedUser?.id) return;
+
+      const payload = {
+        customer_id: parsedUser.id,
+        prod_id: product.id,
+        color_code: selectedColor.color_code,
+        size_or_weight: selectedVariant.measurement_value,
+        quantity: newQty,
+      };
+
+      await dispatch(updateCart(payload)).unwrap();
+    }
+
+  } catch (error) {
+    console.log("❌ decreaseQty ERROR:", error);
+  }
+};
 
   /* ✅ ADD TO CART */
   const handleAddToCart = async () => {
@@ -140,259 +259,44 @@ export default function ProductDetailScreen({ route, navigation }) {
     }
   };
 
+  /* ✅ GO TO CART */
+
+  const goToCart = () => {
+    navigation.navigate('CartScreen');
+  };
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      {/* HEADER */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backBtn}
-        >
-          <Ionicons name="arrow-back" size={24} color="#000" />
-        </TouchableOpacity>
-
-        <Text style={styles.headerTitle}>
-          {i18n.t('PRODUCTS_DETAIL') || 'Product Detail'}
-        </Text>
-
-        <View style={{ width: 30 }} />
-      </View>
-
-      <ScrollView style={styles.container}>
-        {/* IMAGE CAROUSEL */}
-        {/* <ScrollView
-ref={scrollRef}
-horizontal
-pagingEnabled
-showsHorizontalScrollIndicator={false}
-onMomentumScrollEnd={onScrollEnd}
-key={selectedColor?.color_code}
->
-
-{images.map((img,index)=>(
-
-<View key={`${img}_${index}`} style={styles.imageWrapper}>
-
-{imageLoading && (
-<ActivityIndicator
-size="large"
-color="#27ae60"
-style={styles.imageLoader}
-/>
-)}
-
-<Image
-source={{uri:img}}
-style={styles.image}
-resizeMode="contain"
-onLoadEnd={()=>setImageLoading(false)}
-/>
-
-</View>
-
-))}
-
-</ScrollView> */}
-        <ImageCarousel
-          images={images}
-          scrollRef={scrollRef}
-          onScrollEnd={onScrollEnd}
-          imageLoading={imageLoading}
-          setImageLoading={setImageLoading}
-        />
-        {/* PAGINATION */}
-        <View style={styles.pagination}>
-          {images.map((_, index) => {
-            const active = activeIndex === index;
-            return (
-              <View
-                key={`dot_${index}`}
-                style={[styles.dot, active && styles.activeDot]}
-              />
-            );
-          })}
-        </View>
-
-        {/* THUMBNAILS */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.thumbnailContainer}
-          key={`thumb_${selectedColor?.color_code}`}
-        >
-          {images.map((img, index) => {
-            const isSelected = activeIndex === index;
-
-            return (
-              <TouchableOpacity
-                key={`thumb_${img}_${index}`}
-                onPress={() => selectImage(index)}
-              >
-                <View style={styles.thumbWrapper}>
-                  {thumbLoading && (
-                    <ActivityIndicator
-                      size="small"
-                      color="#27ae60"
-                      style={styles.thumbLoader}
-                    />
-                  )}
-
-                  <Image
-                    source={{ uri: img }}
-                    style={[
-                      styles.thumbnail,
-                      isSelected && styles.selectedThumbnail,
-                    ]}
-                    onLoadEnd={() => setThumbLoading(false)}
-                  />
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-
-        {/* PRODUCT INFO */}
-
-        <View style={styles.infoContainer}>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <Text style={styles.name}>{product.product_name}</Text>
-
-            <View style={styles.qtyContainer}>
-              <TouchableOpacity style={styles.qtyBtn} onPress={decreaseQty}>
-                <Text style={styles.qtySymbol}>-</Text>
-              </TouchableOpacity>
-
-              <Text style={styles.qtyText}>{quantity}</Text>
-
-              <TouchableOpacity
-                style={[
-                  styles.qtyBtn,
-                  quantity === selectedVariant?.stock && { opacity: 0.4 },
-                ]}
-                onPress={increaseQty}
-                disabled={quantity === selectedVariant?.stock}
-              >
-                <Text style={styles.qtySymbol}>+</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {selectedVariant && (
-            <Text style={styles.price}>₹ {selectedVariant.price}</Text>
-          )}
-
-          {/* COLOR */}
-          {colors.length > 0 && (
-            <View style={{ marginTop: 20 }}>
-              <Text style={styles.measurementTitle}>
-                {i18n.t('SELECT_COLOR') || 'Select Color'}
-              </Text>
-
-              <ScrollView horizontal>
-                {colors.map(c => {
-                  const selected =
-                    selectedColor && selectedColor.color_code === c.color_code;
-
-                  return (
-                    <TouchableOpacity
-                      key={c.color_code}
-                      style={[
-                        styles.colorCircle,
-                        { backgroundColor: c.color_code },
-                        selected && styles.selectedColorCircle,
-                      ]}
-                      onPress={() => changeColor(c)}
-                    />
-                  );
-                })}
-              </ScrollView>
-            </View>
-          )}
-
-          {/* SIZE */}
-          {variants.length > 0 && (
-            <View style={styles.measurementContainer}>
-              <Text style={styles.measurementTitle}>
-                {i18n.t('SELECT_SIZE') || 'Select Size'}
-              </Text>
-
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {variants.map((m, index) => {
-                  const isSelected =
-                    selectedVariant &&
-                    selectedVariant.measurement_value === m.measurement_value;
-
-                  return (
-                    <TouchableOpacity
-                      key={`${m.measurement_value}_${index}`}
-                      style={[
-                        styles.measureBtn,
-                        isSelected && styles.selectedMeasure,
-                      ]}
-                      onPress={() => {
-                        setSelectedVariant(m);
-                        setQuantity(1);
-                      }}
-                    >
-                      <Text
-                        style={[
-                          styles.measureValue,
-                          isSelected && styles.selectedText,
-                        ]}
-                      >
-                        {m.measurement_value}
-                      </Text>
-
-                      <Text
-                        style={[
-                          styles.measureStock,
-                          isSelected && styles.selectedText,
-                        ]}
-                      >
-                        Stock: {m.stock}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-            </View>
-          )}
-
-          {/* DESCRIPTION */}
-          {product.description !== '' && (
-            <>
-              <Text style={styles.descTitle}>
-                {i18n.t('PRODUCTS_DECRIPTION') || 'Product Description'}
-              </Text>
-
-              <Text style={styles.description}>{product.description}</Text>
-            </>
-          )}
-        </View>
-      </ScrollView>
-
-      {/* BOTTOM BAR */}
-      <View style={styles.bottomBar}>
-        <TouchableOpacity
-          style={styles.cartBtn}
-          onPress={handleAddToCart}
-          disabled={cartLoading}
-        >
-          {cartLoading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.cartText}>Add to Cart</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
-  );
+    <ProductDetailUI
+    navigation={navigation}
+    styles={styles}
+    images={images}
+    scrollRef={scrollRef}
+    onScrollEnd={onScrollEnd}
+    imageLoading={imageLoading}
+    setImageLoading={setImageLoading}
+    activeIndex={activeIndex}
+    selectedColor={selectedColor}
+    thumbLoading={thumbLoading}
+    setThumbLoading={setThumbLoading}
+    selectImage={selectImage}
+    product={product}
+    quantity={quantity}
+    increaseQty={increaseQty}
+    decreaseQty={decreaseQty}
+    updating={updating}
+    cartLoaded={cartLoaded}
+    selectedVariant={selectedVariant}
+    colors={colors}
+    changeColor={changeColor}
+    variants={variants}
+    setSelectedVariant={setSelectedVariant}
+    setQuantity={setQuantity}
+    existingCartItem={existingCartItem}
+    goToCart={goToCart}
+    handleAddToCart={handleAddToCart}
+    cartLoading={cartLoading}
+  />
+);
 }
 
 const styles = StyleSheet.create({

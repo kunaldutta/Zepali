@@ -16,6 +16,7 @@ export default {
   LANGUAGE: "LANGUAGE",
   ORDER_HISTORY: "ORDER HISTORY",
   PRODUCTS_DETAIL: "Product Details",
+  CART: "Cart",
   LOGOUT: "LOGOUT",
   nepali: "नेपाली",
   SELECT_COLOR: "Select Color",

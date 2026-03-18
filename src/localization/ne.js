@@ -16,6 +16,7 @@ export default {
   hindi: "हिन्दी",
   nepali: "नेपाली",
   PRODUCTS_DETAIL: "उत्पाद विवरण",
+  CART: "कार्ट",
   SELECT_COLOR: "रंग छान्नुहोस्",
   SELECT_SIZE: "आकार छान्नुहोस्",
   PRODUCTS_DECRIPTION: "उत्पाद विवरण",
