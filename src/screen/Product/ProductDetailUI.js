@@ -31,7 +31,7 @@ export default function ProductDetailUI(props) {
     quantity,
     increaseQty,
     decreaseQty,
-    updating,
+    updating = false,
     cartLoaded,
     selectedVariant,
     colors,
@@ -137,7 +137,7 @@ export default function ProductDetailUI(props) {
                 <Text style={styles.qtySymbol}>-</Text>
               </TouchableOpacity>
 
-              {!cartLoaded ? (
+              {!cartLoaded || updating ? (
                 <ActivityIndicator size="small" color="#27ae60" />
               ) : (
                 <Text style={styles.qtyText}>{quantity}</Text>

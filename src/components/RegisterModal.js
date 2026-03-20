@@ -47,6 +47,7 @@ export default function RegisterModal({
             <TextInput
               style={styles.input}
               placeholder="Enter Name"
+               placeholderTextColor="#888"
               value={name}
               onChangeText={setName}
             />
@@ -54,6 +55,7 @@ export default function RegisterModal({
             <TextInput
               style={styles.input}
               placeholder="Email (Optional)"
+              placeholderTextColor="#888"
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"

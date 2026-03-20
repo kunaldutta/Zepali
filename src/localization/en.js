@@ -21,6 +21,7 @@ export default {
   nepali: "नेपाली",
   SELECT_COLOR: "Select Color",
   SELECT_SIZE: "Select Size",
+  SIZE: "Size",
   PRODUCTS_DECRIPTION: "Product Description",
   errorMobilePassword: "Please enter mobile number and password",
   errorMobile: "Please enter valid 10 digit mobile number",

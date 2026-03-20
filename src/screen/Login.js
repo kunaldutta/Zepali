@@ -220,6 +220,7 @@ export default function Login() {
                 <TextInput
                   style={styles.input}
                   placeholder="Enter mobile number"
+                  placeholderTextColor="#888"
                   value={mobile}
                   onChangeText={setMobile}
                   keyboardType="phone-pad"
@@ -229,6 +230,7 @@ export default function Login() {
               <TextInput
                 style={styles.input}
                 placeholder="Enter OTP"
+                placeholderTextColor="#888"
                 value={otp}
                 onChangeText={setOtp}
                 keyboardType="number-pad"

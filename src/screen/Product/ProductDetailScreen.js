@@ -11,15 +11,10 @@ import {
   Alert,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchCart, updateCart } from '../../redux/store/slices/cartSlice';
+import { fetchCart, updateCart, addToCart } from '../../redux/store/slices/cartSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { addToCartAPI } from '../../services/productService';
-
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import i18n from '../../localization/i18n';
-import ImageCarousel from '../../components/ImageCarousel';
 import ProductDetailUI from './ProductDetailUI';
+import i18n from '../../localization/i18n';
 
 const { width } = Dimensions.get('window');
 
@@ -32,7 +27,7 @@ const cartItems = useSelector(state => state.cart.items);
   const scrollRef = useRef();
   const { updating } = useSelector(state => state.cart);
   const [cartLoaded, setCartLoaded] = useState(false);
-
+  console.log("ProductDetailScreen Rendered with product:", updating);
   /* REMOVE DUPLICATE COLORS */
   const colors = [
     ...new Map((product.colors || []).map(c => [c.color_code, c])).values(),
@@ -88,7 +83,7 @@ useEffect(() => {
     const parsedUser = userData ? JSON.parse(userData) : null;
 
     if (parsedUser?.id) {
-      await dispatch(fetchCart(parsedUser.id)).unwrap(); // ✅ WAIT
+      await dispatch(fetchCart(parsedUser.id, i18n.locale)).unwrap(); // ✅ WAIT
     }
 
     setCartLoaded(true); // ✅ AFTER API
@@ -183,10 +178,10 @@ useEffect(() => {
 
     if (updating) return; // ✅ IMPORTANT
 
-    if (quantity <= 1) return;
+    if (Number(quantity) <= 1) return;
 
-    const newQty = quantity - 1;
-    setQuantity(newQty);
+    const newQty = Number(quantity) - 1;
+    setQuantity(String(newQty));
 
     if (existingCartItem) {
 
@@ -213,51 +208,50 @@ useEffect(() => {
 
   /* ✅ ADD TO CART */
   const handleAddToCart = async () => {
-    if (!selectedVariant || !selectedColor) {
-      Alert.alert('Error', 'Please select variant');
+  if (!selectedVariant || !selectedColor) {
+    Alert.alert('Error', 'Please select variant');
+    return;
+  }
+
+  try {
+    setCartLoading(true);
+
+    const userData = await AsyncStorage.getItem('USER_DATA');
+    const parsedUser = userData ? JSON.parse(userData) : null;
+
+    if (!parsedUser?.id) {
+      Alert.alert('Login Required', 'Please login first');
       return;
     }
 
-    try {
-      setCartLoading(true);
+    const payload = {
+      customer_id: parsedUser.id,
+      vendor_id: product.vendor_id,
+      prod_id: product.id,
+      color_code: selectedColor.color_code,
+      size_or_weight: selectedVariant.measurement_value,
+      quantity: quantity,
+      price: selectedVariant.price,
+    };
 
-      /* USER */
-      const userData = await AsyncStorage.getItem('USER_DATA');
-      const parsedUser = userData ? JSON.parse(userData) : null;
+    console.log('AddToCart Payload:', payload);
 
-      if (!parsedUser?.id) {
-        Alert.alert('Login Required', 'Please login first');
-        return;
-      }
+    /* ✅ USE REDUX */
+    const response = await dispatch(addToCart(payload)).unwrap();
 
-      /* PAYLOAD */
-      const payload = {
-        customer_id: parsedUser.id,
-        vendor_id: product.vendor_id,
-        prod_id: product.id,
-        color_code: selectedColor.color_code,
-        size_or_weight: selectedVariant.measurement_value,
-        quantity: quantity,
-        price: selectedVariant.price,
-      };
-
-      console.log('AddToCart Payload:', payload);
-
-      /* API CALL */
-      const response = await addToCartAPI(payload);
-
-      if (response?.status === 'success') {
-        Alert.alert('Success', response.message || 'Added to cart');
-      } else {
-        Alert.alert('Error', response.message || 'Something went wrong');
-      }
-    } catch (error) {
-      console.log('ADD TO CART ERROR:', error);
-      Alert.alert('Error', 'Server error');
-    } finally {
-      setCartLoading(false);
+    if (response?.status === 'success') {
+      Alert.alert('Success', response.message || 'Added to cart');
+    } else {
+      Alert.alert('Error', response.message || 'Something went wrong');
     }
-  };
+
+  } catch (error) {
+    console.log('ADD TO CART ERROR:', error);
+    Alert.alert('Error', 'Server error');
+  } finally {
+    setCartLoading(false);
+  }
+};
 
   /* ✅ GO TO CART */
 

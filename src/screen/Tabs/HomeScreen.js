@@ -403,8 +403,8 @@ margin:5
 },
 
 categoryImageContainer:{
-width:80,
-height:40,
+width:60,
+height:50,
 backgroundColor:"#ddd",
 borderRadius:10,
 justifyContent:"center",
@@ -412,8 +412,8 @@ alignItems:"center"
 },
 
 categoryImg:{
-width:30,
-height:30
+width:50,
+height:45,
 },
 
 categoryText:{

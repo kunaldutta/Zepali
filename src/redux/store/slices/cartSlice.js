@@ -1,6 +1,30 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchCartAPI, updateCartAPI } from '../../../services/productService';
+import { fetchCartAPI, updateCartAPI, addToCartAPI } from '../../../services/productService';
+import i18n from '../../../localization/i18n';
 
+
+/* 🔥 ADD TO CART */
+export const addToCart = createAsyncThunk(
+  'cart/addToCart',
+  async (payload, { dispatch, rejectWithValue }) => {
+    try {
+      console.log("🔥 ADD TO CART THUNK:", payload);
+
+      const res = await addToCartAPI(payload);
+
+      /* ✅ REFRESH CART AFTER ADD */
+      if (payload.customer_id) {
+        dispatch(fetchCart(payload.customer_id));
+      }
+
+      return res;
+
+    } catch (error) {
+      console.log("❌ addToCart ERROR:", error);
+      return rejectWithValue(error);
+    }
+  }
+);
 /* 🔥 FETCH CART */
 export const fetchCart = createAsyncThunk(
   'cart/fetchCart',
@@ -106,7 +130,23 @@ const cartSlice = createSlice({
     .addCase(updateCart.rejected, (state, action) => {
       state.updating = false;
       state.error = action.payload || "Failed to update cart";
-    });
+    })
+
+    /* ================= ADD TO CART ================= */
+
+    .addCase(addToCart.pending, (state) => {
+      state.updating = true;
+      state.error = null;
+    })
+
+    .addCase(addToCart.fulfilled, (state) => {
+      state.updating = false;
+    })
+
+    .addCase(addToCart.rejected, (state, action) => {
+      state.updating = false;
+      state.error = action.payload || "Failed to add to cart";
+    })
 
   }
 });

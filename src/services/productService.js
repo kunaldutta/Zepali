@@ -1,5 +1,6 @@
 import { get, post } from '../network/apiService';
 import API from '../network/apiEndpoints';
+import i18n from '../localization/i18n';
 
 /* FETCH PRODUCTS */
 
@@ -15,11 +16,9 @@ export const fetchProducts = async () => {
 
 export const fetchCartAPI = async (customerId) => {
 
-  console.log("fetchCartAPI called with:", customerId);
-
   try {
 
-    const data = await get(`${API.GET_CART}?customer_id=${customerId}`);
+    const data = await get(`${API.GET_CART}?customer_id=${customerId}&lang=${i18n.locale}`); // ✅ PASS LOCALE
 
     console.log("fetchCartAPI response:", data);
 
