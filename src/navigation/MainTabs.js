@@ -7,6 +7,7 @@ import Transactions from '../screen/Tabs/Transactions';
 import Profile from '../screen/Tabs/Profile';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {colors} from '../styles/globalStyles';
+import {TouchableOpacity} from 'react-native';
 
 const Tab = createBottomTabNavigator();
 
@@ -34,6 +35,12 @@ export default function MainTabs() {
         },
 
         tabBarHideOnKeyboard: true,
+        tabBarButton: (props) => (
+          <TouchableOpacity
+            {...props}
+            activeOpacity={1} // 👈 removes flash
+          />
+        ),
 
         tabBarIcon: ({focused, color, size}) => {
           let iconName;
