@@ -12,6 +12,7 @@ import {
   Alert,
   ScrollView
 } from 'react-native';
+import {globalStyles,colors} from '../../src/styles/globalStyles';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import i18n from '../localization/i18n';
@@ -161,13 +162,15 @@ export default function Login() {
   return (
 
     <KeyboardAvoidingView
-      style={{flex: 1, backgroundColor:'#fff'}}
+      style={{flex: 1, backgroundColor:colors.background}}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : -50}
     >
 
       <ScrollView
-        contentContainerStyle={styles.container}
+        contentContainerStyle={globalStyles.container2}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       >
 
         <Image
@@ -184,19 +187,19 @@ export default function Login() {
             {!showOtpInput && (
               <View style={styles.tabs}>
                 <TouchableOpacity
-                  style={[styles.tab, region==='IN' && styles.activeTab]}
+                  style={[globalStyles.tab, region==='IN' && globalStyles.activeTab]}
                   onPress={()=>setRegion('IN')}
                 >
-                  <Text style={[styles.tabText, region==='IN' && styles.activeTabText]}>
+                  <Text style={[globalStyles.tabText, region==='IN' && globalStyles.activeTabText]}>
                     🇮🇳 India
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.tab, region==='NP' && styles.activeTab]}
+                  style={[globalStyles.tab, region==='NP' && globalStyles.activeTab]}
                   onPress={()=>setRegion('NP')}
                 >
-                  <Text style={[styles.tabText, region==='NP' && styles.activeTabText]}>
+                  <Text style={[globalStyles.tabText, region==='NP' && globalStyles.activeTabText]}>
                     🇳🇵 Nepal
                   </Text>
                 </TouchableOpacity>
@@ -220,7 +223,7 @@ export default function Login() {
                 <TextInput
                   style={styles.input}
                   placeholder="Enter mobile number"
-                  placeholderTextColor="#888"
+                  placeholderTextColor={colors.placeholderTextColor}
                   value={mobile}
                   onChangeText={setMobile}
                   keyboardType="phone-pad"
@@ -230,7 +233,7 @@ export default function Login() {
               <TextInput
                 style={styles.input}
                 placeholder="Enter OTP"
-                placeholderTextColor="#888"
+                placeholderTextColor={colors.placeholderTextColor}
                 value={otp}
                 onChangeText={setOtp}
                 keyboardType="number-pad"
@@ -240,12 +243,12 @@ export default function Login() {
             {error ? <Text style={styles.error}>{error}</Text> : null}
 
             <TouchableOpacity
-              style={styles.button}
+              style={[globalStyles.button, {top:10}]}
               onPress={showOtpInput ? verifyOtp : sendOtp}
               disabled={loading}
             >
               {loading ? <ActivityIndicator color="#fff"/> :
-                <Text style={styles.buttonText}>
+                <Text style={globalStyles.buttonText}>
                   {showOtpInput ? 'Verify OTP' : 'Send OTP'}
                 </Text>}
             </TouchableOpacity>
@@ -275,14 +278,6 @@ export default function Login() {
 
 const styles = StyleSheet.create({
 
-  container:{
-    flexGrow:1,
-    justifyContent:'center',
-    alignItems:'center',
-    padding:20,
-    backgroundColor:'#fff'
-  },
-
   logo:{ width:160, height:160, marginBottom:10 },
 
   title:{ fontSize:26, fontWeight:'700', marginBottom:20 },
@@ -307,21 +302,13 @@ const styles = StyleSheet.create({
 
   tabs:{ flexDirection:'row', marginBottom:15 },
 
-  tab:{ flex:1, padding:10, borderRadius:10, backgroundColor:'#ddd', margin:4, alignItems:'center' },
-
-  activeTab:{ backgroundColor:'#007BFF' },
-
-  tabText:{ fontWeight:'600' },
-
-  activeTabText:{ color:'#fff' },
-
   inputRow:{ flexDirection:'row', alignItems:'center', marginBottom:15 },
 
   code:{ marginRight:10, fontWeight:'600' },
 
-  input:{ flex:1, height:48, borderWidth:1, borderColor:'#ccc', borderRadius:10, paddingHorizontal:10 },
 
-  button:{ top:10, height:50, backgroundColor:'#007BFF', borderRadius:12, justifyContent:'center', alignItems:'center' },
+input:{ flex:1, height:48, borderWidth:1, borderColor:'#ccc', borderRadius:10, paddingHorizontal:10 },
+  //button:{ top:10, height:50, backgroundColor:'#007BFF', borderRadius:12, justifyContent:'center', alignItems:'center' },
 
   buttonText:{ color:'#fff', fontWeight:'600' },
 

@@ -8,6 +8,7 @@ const API = {
   UPDATE_CART: '/update_cart.php',
   ADD_PRODUCT: '/add-product.php',
   CATEGORIES: '/categories.php',
+  CATEGORY_PRODUCTS: '/category_products.php'
 };
 
 export default API;

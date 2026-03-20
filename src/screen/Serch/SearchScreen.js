@@ -12,6 +12,7 @@ Keyboard
 
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {globalStyles,colors} from '../../styles/globalStyles';
 
 export default function SearchScreen({route,navigation}){
 
@@ -163,7 +164,7 @@ activeOpacity={0.7}
 
 return(
 
-<SafeAreaView style={styles.safeArea}>
+<SafeAreaView style={globalStyles.safeArea}>
 
 <View style={{flex:1}}>
 
@@ -189,7 +190,7 @@ returnKeyType="search"
 
 {/* PRODUCT AREA */}
 
-<View style={{flex:1}}>
+<View style={{flex:1, backgroundColor:colors.background}}>
 
 <FlatList
 data={filtered}
@@ -296,7 +297,8 @@ borderColor:"#ddd",
 padding:10,
 borderRadius:10,
 width:'48%',
-marginBottom:10
+marginBottom:10,
+backgroundColor:colors.productColumnBackground
 },
 
 productImg:{

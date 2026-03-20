@@ -117,3 +117,26 @@ export const getHomeData = async (lang, countryCode) => {
   }
 
 };
+
+export const getCategoryProducts = async (categoryId, lang, country_code) => {
+
+  const url = `${API.CATEGORY_PRODUCTS}?category_id=${categoryId}&lang=${lang}&country_code=${country_code}`;
+  console.log("Calling API:", url);
+  // const res = await fetch(url);
+  // return await res.json();
+  try {
+
+    const response = await get(url);
+
+    console.log("Calling API - Home API response:", response);
+
+    return response;
+
+  } catch (error) {
+
+    console.log("getHomeData ERROR:", error);
+
+    throw error;
+
+  }
+};

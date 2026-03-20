@@ -13,6 +13,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import i18n from '../../localization/i18n';
 import ImageCarousel from '../../components/ImageCarousel';
 
+
 export default function ProductDetailUI(props) {
   const {
     navigation,

@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
+  Alert
 } from 'react-native';
 
 import { useDispatch, useSelector } from 'react-redux';
@@ -15,6 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import i18n from '../../localization/i18n';
+import {globalStyles,colors} from '../../styles/globalStyles';
 
 export default function CartScreen({navigation}) {
 
@@ -31,54 +33,38 @@ export default function CartScreen({navigation}) {
   }, []);
 
   const loadCart = async () => {
+  try {
     const userData = await AsyncStorage.getItem("USER_DATA");
     const parsedUser = userData ? JSON.parse(userData) : null;
 
     if (!parsedUser?.id) return;
 
-    dispatch(fetchCart(parsedUser.id));
-  };
+    await dispatch(fetchCart(parsedUser.id)).unwrap();
+
+  } catch (error) {
+    console.log("❌ loadCart ERROR:", error);
+
+    const errorMessage =
+      error?.message || error || 'Something went wrong';
+
+    if (String(errorMessage).toLowerCase().includes('network')) {
+      Alert.alert('No Internet', 'Please check your connection');
+    } else {
+      Alert.alert('Error', errorMessage);
+    }
+  }
+};
 
   /* ================= INCREASE ================= */
   const increaseQty = async (item) => {
-    setCartLoading(true);
-    try {
-      if (updatingItemId === item.id) return;
 
-      setUpdatingItemId(item.id);
+  if (updatingItemId === item.id) return;
 
-      const newQty = Number(item.quantity) + 1;
-
-      const userData = await AsyncStorage.getItem("USER_DATA");
-      const parsedUser = userData ? JSON.parse(userData) : null;
-      if (!parsedUser?.id) return;
-
-      const payload = {
-        customer_id: parsedUser.id,
-        prod_id: item.prod_id,
-        color_code: item.color_code,
-        size_or_weight: item.size_or_weight,
-        quantity: newQty,
-      };
-
-      await dispatch(updateCart(payload)).unwrap();
-
-    } catch (error) {
-      console.log("❌ increaseQty ERROR:", error);
-    } finally {
-      setUpdatingItemId(null);
-      setCartLoading(false);
-    }
-  };
-
-  /* ================= DELETE ================= */
-const deleteItem = async (item) => {
+  setUpdatingItemId(item.id);
   setCartLoading(true);
 
   try {
-    if (updatingItemId === item.id) return;
-
-    setUpdatingItemId(item.id);
+    const newQty = Number(item.quantity) + 1;
 
     const userData = await AsyncStorage.getItem("USER_DATA");
     const parsedUser = userData ? JSON.parse(userData) : null;
@@ -89,13 +75,66 @@ const deleteItem = async (item) => {
       prod_id: item.prod_id,
       color_code: item.color_code,
       size_or_weight: item.size_or_weight,
-      quantity: 0, // ✅ IMPORTANT (DELETE)
+      quantity: newQty,
     };
 
     await dispatch(updateCart(payload)).unwrap();
 
   } catch (error) {
+
+    console.log("❌ increaseQty ERROR:", error);
+
+    const errorMessage =
+      error?.message || error || 'Something went wrong';
+
+    if (String(errorMessage).toLowerCase().includes('network')) {
+      Alert.alert('No Internet', 'Please check your connection');
+    } else {
+      Alert.alert('Error', errorMessage);
+    }
+
+  } finally {
+    setUpdatingItemId(null);
+    setCartLoading(false);
+  }
+};
+
+  /* ================= DELETE ================= */
+const deleteItem = async (item) => {
+
+  if (updatingItemId === item.id) return;
+
+  setUpdatingItemId(item.id);
+  setCartLoading(true);
+
+  try {
+    const userData = await AsyncStorage.getItem("USER_DATA");
+    const parsedUser = userData ? JSON.parse(userData) : null;
+    if (!parsedUser?.id) return;
+
+    const payload = {
+      customer_id: parsedUser.id,
+      prod_id: item.prod_id,
+      color_code: item.color_code,
+      size_or_weight: item.size_or_weight,
+      quantity: 0,
+    };
+
+    await dispatch(updateCart(payload)).unwrap();
+
+  } catch (error) {
+
     console.log("❌ deleteItem ERROR:", error);
+
+    const errorMessage =
+      error?.message || error || 'Something went wrong';
+
+    if (String(errorMessage).toLowerCase().includes('network')) {
+      Alert.alert('No Internet', 'Please check your connection');
+    } else {
+      Alert.alert('Error', errorMessage);
+    }
+
   } finally {
     setUpdatingItemId(null);
     setCartLoading(false);
@@ -104,43 +143,55 @@ const deleteItem = async (item) => {
 
   /* ================= DECREASE ================= */
   const decreaseQty = async (item) => {
-    setCartLoading(true);
-    try {
-      if (updatingItemId === item.id) return;
-      if (Number(item.quantity) <= 1) return;
 
-      setUpdatingItemId(item.id);
+  if (updatingItemId === item.id) return;
+  if (Number(item.quantity) <= 1) return;
 
-      const newQty = Number(item.quantity) - 1;
+  setUpdatingItemId(item.id);
+  setCartLoading(true);
 
-      const userData = await AsyncStorage.getItem("USER_DATA");
-      const parsedUser = userData ? JSON.parse(userData) : null;
-      if (!parsedUser?.id) return;
+  try {
+    const newQty = Number(item.quantity) - 1;
 
-      const payload = {
-        customer_id: parsedUser.id,
-        prod_id: item.prod_id,
-        color_code: item.color_code,
-        size_or_weight: item.size_or_weight,
-        quantity: newQty,
-      };
+    const userData = await AsyncStorage.getItem("USER_DATA");
+    const parsedUser = userData ? JSON.parse(userData) : null;
+    if (!parsedUser?.id) return;
 
-      await dispatch(updateCart(payload)).unwrap();
+    const payload = {
+      customer_id: parsedUser.id,
+      prod_id: item.prod_id,
+      color_code: item.color_code,
+      size_or_weight: item.size_or_weight,
+      quantity: newQty,
+    };
 
-    } catch (error) {
-      console.log("❌ decreaseQty ERROR:", error);
-    } finally {
-      setUpdatingItemId(null);
-      setCartLoading(false);
+    await dispatch(updateCart(payload)).unwrap();
+
+  } catch (error) {
+
+    console.log("❌ decreaseQty ERROR:", error);
+
+    const errorMessage =
+      error?.message || error || 'Something went wrong';
+
+    if (String(errorMessage).toLowerCase().includes('network')) {
+      Alert.alert('No Internet', 'Please check your connection');
+    } else {
+      Alert.alert('Error', errorMessage);
     }
-  };
+
+  } finally {
+    setUpdatingItemId(null);
+    setCartLoading(false);
+  }
+};
 
   /* ================= ITEM ================= */
   const renderItem = ({item}) => {
   const isUpdating = updatingItemId === item.id;
 
   return (
-    <View style={[styles.card,{ opacity: isUpdating ? 0.5 : 1 }]}>
+    <View style={[styles.card, { borderColor: colors.border, opacity: isUpdating ? 0.5 : 1 }]}>
 
       <Image source={{uri: item.image}} style={styles.image} />
 
@@ -160,7 +211,9 @@ const deleteItem = async (item) => {
           </TouchableOpacity>
         </View>
 
-        <Text>{i18n.t('SIZE')}: {item.size_or_weight}</Text>
+        <Text style={globalStyles.text}>
+          {i18n.t('SIZE')}: {item.size_or_weight}
+        </Text>
 
         {/* QTY */}
         <View style={styles.qtyContainer}>
@@ -206,7 +259,7 @@ const deleteItem = async (item) => {
 
 
   return(
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={globalStyles.safeArea}>
       
       {/* HEADER */}
       <View style={styles.header}>
@@ -224,30 +277,32 @@ const deleteItem = async (item) => {
         <View style={{ width: 30 }} />
       </View>
 
-      <View style={{flex:1, padding:15,}}  pointerEvents={cartLoading ? "none" : "auto"}>
+      <View style={{flex:1, padding:15,backgroundColor:colors.background}}  pointerEvents={cartLoading ? "none" : "auto"}>
         
         <FlatList
           data={items}
           keyExtractor={(item)=>item.id.toString()}
           renderItem={renderItem}
           disabled={cartLoading}
+          showsVerticalScrollIndicator={false}
         />
-
+        {cartLoading && <View style={{width:60, height:60,
+        position:'absolute',
+        top: '45%',
+        backgroundColor:'#727577',
+          justifyContent:'center', alignItems:'center', alignSelf:'center', borderRadius:10}}> 
+          <ActivityIndicator 
+              size="small"
+              color="#fff"/> 
+              </View>}
+      </View>
+      <View style={{backgroundColor:colors.background, height:60}} pointerEvents={cartLoading ? "none" : "auto"}>
         {/* TOTAL */}
         <View style={styles.totalBar}>
           <Text style={styles.totalText}>
             Total: ₹ {total}
           </Text>
         </View>
-      {cartLoading && <View style={{width:60, height:60,
-       position:'absolute',
-       top: '40%',
-      backgroundColor:'#727577',
-         justifyContent:'center', alignItems:'center', alignSelf:'center', borderRadius:10}}> 
-        <ActivityIndicator 
-            size="small"
-            color="#fff"/> 
-            </View>}
       </View>
     </SafeAreaView>
   );
@@ -263,12 +318,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 15,
     borderBottomWidth: 1,
-    borderColor: '#eee',
+    borderColor: colors.border,
   },
 
   backBtn: { padding: 5 },
 
-  headerTitle: { fontSize: 18, fontWeight: 'bold' },
+  headerTitle: { fontSize: 20, fontWeight: 'bold', color: colors.headerTitleColor },
 
   card:{
     flexDirection:"row",
@@ -291,7 +346,8 @@ const styles = StyleSheet.create({
   qtyContainer:{
     flexDirection:"row",
     alignItems:"center",
-    marginTop:8
+    marginTop:8,
+    color:colors.text
   },
 
   qtyBtn:{
@@ -299,7 +355,7 @@ const styles = StyleSheet.create({
     height:35,
     borderRadius:6,
     borderWidth:1,
-    borderColor:"#27ae60",
+    borderColor:colors.primary,
     justifyContent:"center",
     alignItems:"center"
   },
@@ -307,25 +363,27 @@ const styles = StyleSheet.create({
   qtySymbol:{
     fontSize:18,
     fontWeight:"bold",
-    color:"#27ae60"
+    color:colors.primary
   },
 
   qtyText:{
     marginHorizontal:15,
     fontSize:16,
-    fontWeight:"bold"
+    fontWeight:"bold",
+    color:colors.text
   },
 
-  price:{ marginTop:5, fontWeight:"bold", color:"#27ae60" },
+  price:{ marginTop:5, fontWeight:"bold", color:colors.price },
 
   totalBar:{
     padding:15,
     borderTopWidth:1,
-    borderColor:"#eee"
+    borderColor:colors.border,
   },
 
   totalText:{
     fontSize:18,
-    fontWeight:"bold"
+    fontWeight:"bold",
+    color:colors.price
   }
 });

@@ -14,6 +14,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import {getHomeData} from '../../services/productService';
 import i18n from '../../localization/i18n';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {globalStyles,colors} from '../../styles/globalStyles';
+import { Alert } from 'react-native';
 
 
 
@@ -71,7 +73,6 @@ useEffect(()=>{
 const loadHome = async () => {
 
   const user = await AsyncStorage.getItem('USER_DATA');
-
   let parsedUser = user ? JSON.parse(user) : null;
 
   if(parsedUser){
@@ -79,23 +80,40 @@ const loadHome = async () => {
   }
 
   try{
-
     setRefreshing(true);
-    
+
     const json = await getHomeData(
       i18n.locale,
-      parsedUser?.country_code   // ✅ PASS HERE
+      parsedUser?.country_code
     );
+
+    // ❗ handle empty / invalid response
+    if (!json) {
+      throw new Error("No response from server");
+    }
 
     setOffers(json?.offers || []);
     setCategories(json?.categories || []);
     setProducts(json?.products || []);
 
-  }catch(error){
-    console.log("API ERROR:",error);
-  }
+  } catch (error) {
 
-  setRefreshing(false);
+    console.log("API ERROR:", error);
+
+    // ✅ detect internet issue (important)
+    if (
+      error.message === "Network request failed" ||
+      error.message?.includes("Network") ||
+      error.message?.includes("fetch")
+    ) {
+      Alert.alert("No Internet", "Please check your connection");
+    } else {
+      Alert.alert("Error", "Something went wrong");
+    }
+
+  } finally {
+    setRefreshing(false); // ✅ always run
+  }
 };
 
 
@@ -150,26 +168,31 @@ For: {getCategoryName(item.apply_for_category)}
 
 const renderCategory = ({item}) => (
 
-<View style={styles.categoryBox}>
+<TouchableOpacity
+  style={styles.categoryBox}
+  onPress={() =>
+    navigation.navigate("CategoryProductScreen", {
+      categoryId: item.id,
+      categoryName: item.category_name
+    })
+  }
+>
 
 <View style={styles.categoryImageContainer}>
-
 <ImageWithLoader
 uri={item.image}
 style={styles.categoryImg}
 resizeMode="contain"
 />
-
 </View>
 
 <Text style={styles.categoryText}>
 {item.category_name}
 </Text>
 
-</View>
+</TouchableOpacity>
 
 );
-
 
 
 /* PRODUCTS */
@@ -237,7 +260,7 @@ Search product...
 
 {/* OFFERS */}
 
-<Text style={styles.title}>{i18n.t('OFFERS')}</Text>
+<Text style={globalStyles.title}>{i18n.t('OFFERS')}</Text>
 
 <FlatList
 data={offers}
@@ -251,7 +274,7 @@ showsHorizontalScrollIndicator={false}
 
 {/* CATEGORIES */}
 
-<Text style={styles.title}>{i18n.t('CATEGORIES')}</Text>
+<Text style={globalStyles.title}>{i18n.t('CATEGORIES')}</Text>
 
 <FlatList
   data={categories}
@@ -266,7 +289,7 @@ showsHorizontalScrollIndicator={false}
 
 {/* PRODUCTS TITLE */}
 
-<Text style={styles.title}>{i18n.t('PRODUCTS')}</Text>
+<Text style={globalStyles.title}>{i18n.t('PRODUCTS')}</Text>
 
 </View>
 
@@ -278,7 +301,7 @@ return(
 
 <SafeAreaView edges={['top','left','right']} style={styles.safeArea}>
 
-<View style={styles.header}>
+<View style={[styles.header, {borderColor: colors.border}]}>
 
 <Text style={styles.headerTitle}>Hello, {userName}!</Text>
 
@@ -288,7 +311,7 @@ return(
 
 </View>
 
-
+<View style={globalStyles.container}>
 
 {refreshing ? (
 
@@ -301,14 +324,14 @@ data={products}
 renderItem={renderProduct}
 keyExtractor={(item)=>item.id.toString()}
 numColumns={2}
-columnWrapperStyle={{justifyContent:'space-between', paddingHorizontal:10}}
+columnWrapperStyle={{justifyContent:'space-between', paddingHorizontal:5}}
 ListHeaderComponent={ListHeader}
-contentContainerStyle={{paddingBottom:20}}
+contentContainerStyle={{paddingBottom:5}}
 showsVerticalScrollIndicator={false}
 />
 
 )}
-
+</View>
 </SafeAreaView>
 
 );
@@ -323,7 +346,8 @@ const styles = StyleSheet.create({
 
 safeArea:{
 flex:1,
-backgroundColor:"#fff"
+backgroundColor:colors.safeAreaColor,
+borderColor:'#2b0303',
 },
 
 header:{
@@ -332,12 +356,13 @@ justifyContent:'space-between',
 alignItems:'center',
 padding:15,
 borderBottomWidth:1,
-borderColor:'#eee'
+borderColor:colors.border
 },
 
 headerTitle:{
 fontSize:15,
-fontWeight:'bold'
+fontWeight:'bold',
+color:colors.headerTitleColor
 },
 
 searchContainer:{
@@ -399,13 +424,17 @@ fontSize:12
 
 categoryBox:{
 alignItems:"center",
-margin:5
+margin:5,
+backgroundColor:colors.productColumnBackground,
+borderRadius:10,
+padding:10,
+width:'30%'
 },
 
 categoryImageContainer:{
 width:60,
 height:50,
-backgroundColor:"#ddd",
+backgroundColor:colors.productColumnBackground,
 borderRadius:10,
 justifyContent:"center",
 alignItems:"center"
@@ -428,13 +457,13 @@ color:"#087b92"
 },
 
 productBox:{
-margin:10,
+margin:5,
 borderWidth:1,
 borderColor:"#ddd",
 padding:10,
 borderRadius:10,
 width:'46%',
-backgroundColor:"#fff"
+backgroundColor:colors.productColumnBackground
 },
 
 productImg:{

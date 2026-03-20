@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import axios from 'axios';
 import { fetchCartAPI, updateCartAPI, addToCartAPI } from '../../../services/productService';
 import i18n from '../../../localization/i18n';
 
@@ -21,10 +22,22 @@ export const addToCart = createAsyncThunk(
 
     } catch (error) {
       console.log("❌ addToCart ERROR:", error);
-      return rejectWithValue(error);
+
+      // ✅ FIX: return serializable error
+      if (axios.isAxiosError(error)) {
+        return rejectWithValue({
+          message: error.message || 'Network Error',
+        });
+      }
+
+      return rejectWithValue({
+        message: 'Something went wrong',
+      });
     }
   }
 );
+
+
 /* 🔥 FETCH CART */
 export const fetchCart = createAsyncThunk(
   'cart/fetchCart',
@@ -38,10 +51,21 @@ export const fetchCart = createAsyncThunk(
 
     } catch (error) {
       console.log("❌ fetchCart ERROR:", error);
-      return rejectWithValue(error);
+
+      // ✅ FIX
+      if (axios.isAxiosError(error)) {
+        return rejectWithValue({
+          message: error.message || 'Network Error',
+        });
+      }
+
+      return rejectWithValue({
+        message: 'Something went wrong',
+      });
     }
   }
 );
+
 
 /* 🔥 UPDATE CART */
 export const updateCart = createAsyncThunk(
@@ -61,10 +85,21 @@ export const updateCart = createAsyncThunk(
 
     } catch (error) {
       console.log("❌ updateCart ERROR:", error);
-      return rejectWithValue(error);
+
+      // ✅ FIX
+      if (axios.isAxiosError(error)) {
+        return rejectWithValue({
+          message: error.message || 'Network Error',
+        });
+      }
+
+      return rejectWithValue({
+        message: 'Something went wrong',
+      });
     }
   }
 );
+
 
 const cartSlice = createSlice({
   name: 'cart',
@@ -72,16 +107,13 @@ const cartSlice = createSlice({
   initialState: {
     items: [],
     total: 0,
-
-    loading: false,      // for fetch
-    updating: false,     // for qty update
-
+    loading: false,
+    updating: false,
     error: null,
   },
 
   reducers: {
 
-    /* OPTIONAL LOCAL ACTIONS */
     addToCartLocal: (state, action) => {
       state.items.push(action.payload);
     },
@@ -106,15 +138,20 @@ const cartSlice = createSlice({
 
     .addCase(fetchCart.fulfilled, (state, action) => {
       state.loading = false;
-
       state.items = action.payload?.cart || [];
       state.total = action.payload?.total_amount || 0;
     })
 
     .addCase(fetchCart.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.payload || "Failed to fetch cart";
+
+      // ✅ FIX: only store string
+      state.error =
+        action.payload?.message ||
+        action.error?.message ||
+        "Failed to fetch cart";
     })
+
 
     /* ================= UPDATE CART ================= */
 
@@ -129,8 +166,13 @@ const cartSlice = createSlice({
 
     .addCase(updateCart.rejected, (state, action) => {
       state.updating = false;
-      state.error = action.payload || "Failed to update cart";
+
+      state.error =
+        action.payload?.message ||
+        action.error?.message ||
+        "Failed to update cart";
     })
+
 
     /* ================= ADD TO CART ================= */
 
@@ -145,8 +187,12 @@ const cartSlice = createSlice({
 
     .addCase(addToCart.rejected, (state, action) => {
       state.updating = false;
-      state.error = action.payload || "Failed to add to cart";
-    })
+
+      state.error =
+        action.payload?.message ||
+        action.error?.message ||
+        "Failed to add to cart";
+    });
 
   }
 });

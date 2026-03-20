@@ -10,6 +10,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import i18n from '../localization/i18n';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {globalStyles,colors} from '../styles/globalStyles';
 
 export default function LanguageScreen({navigation}) {
 
@@ -56,10 +57,7 @@ export default function LanguageScreen({navigation}) {
   };
 
   return (
-    <SafeAreaView  style={styles.safeArea}>
-    <View style={styles.container}>
-
-      {/* 🔹 Header with Back Button */}
+    <SafeAreaView  style={globalStyles.safeArea}>
       <View style={styles.header}>
   
         {/* Back Button */}
@@ -76,6 +74,10 @@ export default function LanguageScreen({navigation}) {
         <View style={{width: 24}} />
 
       </View>
+    <View style={styles.container}>
+
+      {/* 🔹 Header with Back Button */}
+      
 
       {/* 🔹 Language Options */}
       <RadioButton value="en" label="English" />

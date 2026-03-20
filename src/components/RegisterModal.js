@@ -10,6 +10,7 @@ import {
   Keyboard,
   ActivityIndicator
 } from 'react-native';
+import {globalStyles,colors} from '../../src/styles/globalStyles';
 
 export default function RegisterModal({
   visible,
@@ -36,7 +37,7 @@ export default function RegisterModal({
           <View style={styles.modalBox}>
 
             <TouchableOpacity
-              style={styles.closeButton}
+              style={globalStyles.button}
               onPress={onClose}
             >
               <Text style={styles.closeText}>✕</Text>
@@ -47,7 +48,7 @@ export default function RegisterModal({
             <TextInput
               style={styles.input}
               placeholder="Enter Name"
-               placeholderTextColor="#888"
+               placeholderTextColor={colors.placeholderTextColor}
               value={name}
               onChangeText={setName}
             />
@@ -55,7 +56,7 @@ export default function RegisterModal({
             <TextInput
               style={styles.input}
               placeholder="Email (Optional)"
-              placeholderTextColor="#888"
+              placeholderTextColor={colors.placeholderTextColor}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"

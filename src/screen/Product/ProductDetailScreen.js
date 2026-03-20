@@ -15,6 +15,7 @@ import { fetchCart, updateCart, addToCart } from '../../redux/store/slices/cartS
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ProductDetailUI from './ProductDetailUI';
 import i18n from '../../localization/i18n';
+import {globalStyles,colors} from '../../../src/styles/globalStyles';
 
 const { width } = Dimensions.get('window');
 
@@ -79,14 +80,30 @@ useEffect(() => {
 
   const loadCart = async () => {
 
-    const userData = await AsyncStorage.getItem('USER_DATA');
-    const parsedUser = userData ? JSON.parse(userData) : null;
+    try {
+      const userData = await AsyncStorage.getItem('USER_DATA');
+      const parsedUser = userData ? JSON.parse(userData) : null;
 
-    if (parsedUser?.id) {
-      await dispatch(fetchCart(parsedUser.id, i18n.locale)).unwrap(); // ✅ WAIT
+      if (parsedUser?.id) {
+        await dispatch(fetchCart(parsedUser.id)).unwrap();
+      }
+
+    } catch (error) {
+
+      console.log("FetchCart Error:", error);
+
+      const errorMessage =
+        error?.message || error || 'Something went wrong';
+
+      if (errorMessage.toLowerCase().includes('network')) {
+        Alert.alert('No Internet', 'Please check your connection');
+      } else {
+        Alert.alert('Error', errorMessage);
+      }
+
+    } finally {
+      setCartLoaded(true); // ✅ ALWAYS RUN
     }
-
-    setCartLoaded(true); // ✅ AFTER API
   };
 
   loadCart();
@@ -137,16 +154,14 @@ useEffect(() => {
   /* QUANTITY */
   const increaseQty = async () => {
 
+  if (updating) return;
+  if (!selectedVariant) return;
+  if (Number(quantity) >= Number(selectedVariant.stock)) return;
+
+  const newQty = Number(quantity) + 1;
+  setQuantity(String(newQty));
+
   try {
-
-    if (updating) return; // ✅ IMPORTANT FIX
-    console.log("Selected Variant Stock:", selectedVariant?.stock,);
-    if (!selectedVariant) return;
-    if (Number(quantity) >= Number(selectedVariant.stock)) return;
-
-    const newQty = Number(quantity) + 1;
-    console.log("Selected Variant Stock:new", newQty,);
-    setQuantity(String(newQty));
 
     if (existingCartItem) {
 
@@ -167,21 +182,35 @@ useEffect(() => {
     }
 
   } catch (error) {
+
     console.log("❌ increaseQty ERROR:", error);
+
+    const errorMessage =
+      error?.message ||
+      error ||
+      'Something went wrong';
+
+    if (String(errorMessage).toLowerCase().includes('network')) {
+      Alert.alert('No Internet', 'Please check your connection');
+    } else {
+      Alert.alert('Error', errorMessage);
+    }
+
+    // 🔥 rollback UI if API fails
+    setQuantity(prev => String(Number(prev) - 1));
   }
 };
 
 
   const decreaseQty = async () => {
 
+  if (updating) return;
+  if (Number(quantity) <= 1) return;
+
+  const newQty = Number(quantity) - 1;
+  setQuantity(String(newQty));
+
   try {
-
-    if (updating) return; // ✅ IMPORTANT
-
-    if (Number(quantity) <= 1) return;
-
-    const newQty = Number(quantity) - 1;
-    setQuantity(String(newQty));
 
     if (existingCartItem) {
 
@@ -202,19 +231,36 @@ useEffect(() => {
     }
 
   } catch (error) {
+
     console.log("❌ decreaseQty ERROR:", error);
+
+    const errorMessage =
+      error?.message ||
+      error ||
+      'Something went wrong';
+
+    if (String(errorMessage).toLowerCase().includes('network')) {
+      Alert.alert('No Internet', 'Please check your connection');
+    } else {
+      Alert.alert('Error', errorMessage);
+    }
+
+    // 🔥 rollback UI if API fails
+    setQuantity(prev => String(Number(prev) + 1));
   }
 };
 
   /* ✅ ADD TO CART */
   const handleAddToCart = async () => {
+
   if (!selectedVariant || !selectedColor) {
     Alert.alert('Error', 'Please select variant');
     return;
   }
 
+  setCartLoading(true); // ✅ move outside try (important)
+
   try {
-    setCartLoading(true);
 
     const userData = await AsyncStorage.getItem('USER_DATA');
     const parsedUser = userData ? JSON.parse(userData) : null;
@@ -236,20 +282,27 @@ useEffect(() => {
 
     console.log('AddToCart Payload:', payload);
 
-    /* ✅ USE REDUX */
     const response = await dispatch(addToCart(payload)).unwrap();
 
-    if (response?.status === 'success') {
-      Alert.alert('Success', response.message || 'Added to cart');
-    } else {
-      Alert.alert('Error', response.message || 'Something went wrong');
-    }
+    Alert.alert('Success', response?.message || 'Added to cart');
 
   } catch (error) {
+
     console.log('ADD TO CART ERROR:', error);
-    Alert.alert('Error', 'Server error');
+
+    const errorMessage =
+      error?.message ||
+      error ||
+      'Something went wrong';
+
+    if (String(errorMessage).toLowerCase().includes('network')) {
+      Alert.alert('No Internet', 'Please check your connection');
+    } else {
+      Alert.alert('Error', errorMessage);
+    }
+
   } finally {
-    setCartLoading(false);
+    setCartLoading(false); // ✅ always reset loader
   }
 };
 
@@ -294,7 +347,7 @@ useEffect(() => {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#fff' },
+  safeArea: { flex: 1, backgroundColor: colors.safeAreaColor },
 
   header: {
     flexDirection: 'row',
@@ -302,14 +355,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 15,
     borderBottomWidth: 1,
-    borderColor: '#eee',
+    borderColor: colors.border,
   },
 
   backBtn: { padding: 5 },
 
-  headerTitle: { fontSize: 18, fontWeight: 'bold' },
+  headerTitle: { fontSize: 20, fontWeight: 'bold', color: colors.headerTitleColor },
 
-  container: { flex: 1 },
+  container: [globalStyles.scrollViewContainer],
 
   imageWrapper: {
     width: width,
@@ -369,7 +422,7 @@ const styles = StyleSheet.create({
 
   price: {
     fontSize: 22,
-    color: '#8a4a05',
+    color: colors.price,
     marginTop: 5,
     fontWeight: 'bold',
   },
@@ -433,9 +486,9 @@ const styles = StyleSheet.create({
 
   bottomBar: {
     padding: 15,
-    borderColor: '#eee',
+    borderColor: colors.border,
     borderTopWidth: 2,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
   },
 
   qtyContainer: {
@@ -449,7 +502,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#27ae60',
+    borderColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -457,7 +510,7 @@ const styles = StyleSheet.create({
   qtySymbol: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#27ae60',
+    color: colors.primary,
   },
 
   qtyText: {
@@ -470,7 +523,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#27ae60',
+    backgroundColor: colors.primary,
     padding: 15,
     borderRadius: 10,
   },
