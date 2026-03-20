@@ -47,7 +47,7 @@ const typography = {
 export const globalStyles = StyleSheet.create({
  container: {
   flexGrow: 1,
-  padding: 20,
+  padding: 10,
   backgroundColor: colors.background,       // ✅ change
 },
 container2:{

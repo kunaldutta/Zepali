@@ -311,7 +311,7 @@ return(
 
 </View>
 
-<View style={globalStyles.container}>
+<View style={[globalStyles.container,{height:'92%'}]}>
 
 {refreshing ? (
 
