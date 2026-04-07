@@ -1,0 +1,515 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  TextInput,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+  PermissionsAndroid,
+  ActivityIndicator
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import i18n from '../../localization/i18n';
+import AppHeader from '../../components/AppHeader';
+import { globalStyles, colors } from '../../styles/globalStyles';
+import { useAddress } from '../../components/AddressContext';
+import DefaultValueModal from './DefaultValueModal';
+import Geolocation from '@react-native-community/geolocation';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
+const AddAddress = ({ route, navigation }) => {
+  const { addAddress } = useAddress();
+  console.log("AddAddress Rendered with route params:", route.params);
+  const {address_1, address_2, city, latitude, longitude, state, zip_code} = route.params || {};
+  const [currentMapAddress, setCurrentMapAddress] = useState('')
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [userData, setUserData] = useState({
+    user_id: '',
+    user_name: '',
+    address_1: '',
+    address_2: address_1 +  address_2,
+    land_mark: '',
+    contact_no: '',
+    city: city,
+    state: state,
+    zip_code: zip_code,
+    latitude: latitude,
+    longitude: longitude,
+    default_value: 'N',
+  });
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+  /* ✅ LOAD USER (FIXED - moved from render) */
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const storedUser = await AsyncStorage.getItem("USER_DATA");
+        const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+
+        if (parsedUser?.id) {
+          setUserData(prev => ({
+            ...prev,
+            user_id: String(parsedUser.id),
+          }));
+        }
+      } catch (err) {
+        console.log("User load error:", err);
+      }
+    };
+
+    loadUser();
+  }, []);
+  
+  useEffect(() => {
+          const showSub = Keyboard.addListener('keyboardDidShow', () => {
+            setKeyboardVisible(true);
+          });
+  
+          const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+            setKeyboardVisible(false);
+          });
+  
+          return () => {
+            showSub.remove();
+            hideSub.remove();
+          };
+      }, []);
+
+  // ✅ LOCATION PERMISSION
+const requestLocationPermission = async () => {
+  if (Platform.OS === 'android') {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+    );
+    return granted === PermissionsAndroid.RESULTS.GRANTED;
+  }
+  return true;
+};
+
+// ✅ GET CURRENT LOCATION
+const getCurrentLocation = async () => {
+  try {
+    // ✅ Wait for UI frame to be ready (fix for Activity issue)
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    const hasPermission = await requestLocationPermission();
+    if (!hasPermission) return;
+
+    setLocationLoading(true);
+
+    Geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+
+        getAddressFromCoords(latitude, longitude);
+        setLocationLoading(false);
+      },
+      async (error) => {
+        console.log("DEVICE FAILED:", error.message);
+
+        try {
+          const res = await fetch("https://ipapi.co/json/");
+          const data = await res.json();
+
+          if (data?.latitude && data?.longitude) {
+            getAddressFromCoords(data.latitude, data.longitude);
+          } else {
+            Alert.alert("Location Error", "Unable to fetch location");
+          }
+        } catch (e) {
+          if (error?.message === 'No location provider available.') {
+            Alert.alert("Location Error", "Please enable your location");
+          } else {
+            Alert.alert("Something went wrong", "Please check your internet connection");
+          }
+        } finally {
+          setLocationLoading(false);
+        }
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 15000,
+        maximumAge: 60000,
+      }
+    );
+
+  } catch (err) {
+    console.log("LOCATION ERROR:", err);
+    setLocationLoading(false);
+  }
+};
+
+// ✅ GOOGLE GEOCODING
+const GOOGLE_API_KEY = "AIzaSyASeQVPcvxEogcrrLg5MExUWcXAgYuJekY";
+
+const getAddressFromCoords = async (lat, lng) => {
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_API_KEY}`;
+
+    console.log("API URL:", url);
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    console.log("GEOCODE RESPONSE:", data); // 👈 ADD THIS
+
+    if (data.status === "OK" && data.results.length > 0) {
+      const result = data.results[0];
+      console.log ('Loc Result ==',result);
+      let city = '', state = '', zip = '';
+
+      result.address_components.forEach(comp => {
+        if (comp.types.includes('locality')) city = comp.long_name;
+        if (comp.types.includes('administrative_area_level_1')) state = comp.long_name;
+        if (comp.types.includes('postal_code')) zip = comp.long_name;
+      });
+
+      const fullAddress = result.formatted_address;
+      const parts = fullAddress.split(',');
+
+      // ✅ address_1 → first 2 parts
+      const address1 = parts.slice(0, 2).join(',').trim();
+
+      // ✅ address_2 → ONLY locality (3rd part)
+      const address2 = parts.length > 2 ? parts[2].trim() : '';
+
+    setUserData(prev => ({
+      ...prev,
+      address_1: address1,
+      address_2: address2,
+      city,
+      state,
+      zip_code: zip,
+    }));
+
+    } else {
+      Alert.alert("Error", data.status);
+    }
+
+  } catch (e) {
+    console.log("GEOCODE ERROR:", e);
+  }
+};
+const openMapWithCurrentLocation = async () => {
+  try {
+    // ✅ FIX: wait for Activity to attach
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    const hasPermission = await requestLocationPermission();
+    if (!hasPermission) return;
+
+    Geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+
+        navigation.navigate('MapPicker', {
+          latitude,
+          longitude,
+          onSelectLocation: (data) => {
+            setUserData(prev => ({
+              ...prev,
+              ...data,
+            }));
+          },
+        });
+      },
+      async (error) => {
+        console.log("LOCATION ERROR:", error);
+
+        // 🔥 fallback
+        navigation.navigate('MapPicker', {
+          latitude: 17.465809,
+          longitude: 78.362732,
+          onSelectLocation: (data) => {
+            setUserData(prev => ({
+              ...prev,
+              ...data,
+            }));
+          },
+        });
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 15000,
+      }
+    );
+
+  } catch (err) {
+    console.log("MAP OPEN ERROR:", err);
+  }
+};
+  /* ✅ ADD ADDRESS API */
+  const sendDataToServer = async () => {
+  try {
+    setLoading(true);
+
+    console.log("Sending Data:", userData);
+
+    const response = await addAddress(userData); // ✅ use context
+
+    if (response?.success) {
+      Alert.alert('Success', response?.message || 'Address added successfully');
+      navigation.goBack();
+    } else {
+      Alert.alert('Error', response?.message || 'Something went wrong');
+    }
+
+  } catch (error) {
+    console.log("Add Address ERROR:", error);
+    Alert.alert('Error', 'Failed to add address');
+  } finally {
+    setLoading(false);
+  }
+};
+
+  /* INPUT FIELD */
+  const renderInput = (field, placeholder, keyboardType = 'default') => (
+    <View style={styles.inputContainer}>
+      {userData[field] ? <Text style={styles.label}>{placeholder}</Text> : null}
+
+      <TextInput
+        placeholder={placeholder}
+        value={userData[field]}
+        placeholderTextColor={colors.placeholderTextColor}
+        onChangeText={(text) =>
+          setUserData({ ...userData, [field]: text })
+        }
+        style={globalStyles.input}
+        keyboardType={keyboardType}
+      />
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.containemain}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+  <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    
+    <View style={{ flex: 1 }}>
+
+      {/* HEADER */}
+      <AppHeader
+        title={i18n.t('ADD_ADDRESS') || 'ADD ADDRESS'}
+        onBackPress={() => navigation.goBack()}
+        showCart={false}
+      />
+
+      {/* FORM */}
+      <View style={{ flex: 1, backgroundColor: colors.background, }}>
+        <View style={{flexDirection:'row'}}>
+        <TouchableOpacity
+            style={{
+              backgroundColor: colors.primary,
+              padding: 8,
+              borderRadius: 8,
+              marginTop: 10,
+              marginLeft: '5%',
+              marginBottom: 1,
+              width: '30%',
+              alignItems: 'center',
+              alignContent:'center'
+
+            }}
+            onPress={getCurrentLocation}
+            disabled={locationLoading}
+          >
+            <Ionicons name="location" size={20} color="#fff" />
+            {locationLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              
+              <Text style={{ color: 'white', fontWeight: 'bold', fontSize:12 }}>
+                Current Location
+              </Text>
+            )}
+        </TouchableOpacity>
+       <TouchableOpacity
+          style={{
+            backgroundColor: colors.blueBackgroundColor,
+              padding: 8,
+              borderRadius: 8,
+              marginTop: 10,
+              marginLeft: '30%',
+              marginBottom: 1,
+              width: '30%',
+              alignItems: 'center',
+              alignContent:'center'
+          }}
+          onPress={openMapWithCurrentLocation}
+        >
+          <Ionicons name="map" size={20} color="#fff" />
+          <Text style={{ color: 'white', fontWeight: 'bold' }}>
+            Use Map
+          </Text>
+      </TouchableOpacity>
+        </View>
+        <ScrollView
+          contentContainerStyle={[styles.container,{paddingBottom: isKeyboardVisible ? 300 : 150}]}
+          keyboardShouldPersistTaps="handled"   // ✅ IMPORTANT
+          showsVerticalScrollIndicator={false}
+        >
+          {renderInput('user_name', 'Name')}
+          {renderInput('address_1', 'Address Line 1')}
+          {renderInput('address_2', 'Address Line 2')}
+          {renderInput('land_mark', 'Landmark')}
+          {renderInput('contact_no', 'Contact Number', 'phone-pad')}
+          {renderInput('city', 'City')}
+          {renderInput('state', 'State')}
+          {renderInput('zip_code', 'Zip Code', 'numeric')}
+        </ScrollView>
+
+        {/* FOOTER */}
+        {!isKeyboardVisible && (<View style={styles.footer}>
+          <Text style={styles.defaultlabel}>Default Address</Text>
+
+          <TouchableOpacity
+            style={styles.defauktAddressButton}
+            onPress={() => setModalVisible(true)}
+          >
+            <Text style={styles.buttonText}>
+              {userData.default_value === 'Y' ? 'Yes' : 'No'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.placeOrderButton}
+            onPress={sendDataToServer}
+            disabled={loading}
+          >
+            <Text style={styles.buttonText}>
+              {loading ? 'Submitting...' : 'Submit'}
+            </Text>
+          </TouchableOpacity>
+        </View>)}
+
+        {/* MODAL */}
+        <DefaultValueModal
+          modalVisible={modalVisible}
+          setModalVisible={setModalVisible}
+          setUserData={setUserData}
+          userData={userData}
+        />
+      </View>
+    </View>
+
+  </TouchableWithoutFeedback>
+</KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+};
+
+/* STYLES */
+const styles = StyleSheet.create({
+  containemain: {
+    flex: 1,
+    backgroundColor: colors.safeAreaColor,
+  },
+
+  header: {
+    height: 60,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+
+  backButton: {
+    backgroundColor: 'black',
+    height: 40,
+    width: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  headerContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+
+  container: {
+    padding: 20,
+    alignItems: 'center',
+  },
+
+  inputContainer: {
+    width: '100%',
+    marginBottom: 10,
+  },
+
+  label: {
+    marginBottom: 5,
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#808988',
+  },
+
+  defaultlabel: {
+    marginBottom: 5,
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#808988',
+  },
+
+  input: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    borderRadius: 5,
+  },
+
+  footer: {
+    padding: 15,
+    alignItems: 'center',
+    backgroundColor: colors.safeAreaColor,
+  },
+
+  placeOrderButton: {
+    backgroundColor: '#34495e',
+    height: 40,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '50%',
+    marginBottom: 5,
+  },
+
+  defauktAddressButton: {
+    backgroundColor: '#565a43',
+    height: 40,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '50%',
+    marginBottom: 15,
+  },
+
+  buttonText: {
+    fontSize: 16,
+    color: 'white',
+    fontWeight: 'bold',
+  },
+});
+
+export default AddAddress;

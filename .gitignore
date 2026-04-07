@@ -1,0 +1,33 @@
+node_modules
+
+node_modules
+node_modules
+# React Native
+node_modules/
+
+# Android
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+
+# APK / AAB
+*.apk
+*.aab
+
+# Native
+*.so
+
+# Gradle
+.gradle/
+build/
+
+# iOS
+ios/build/
+ios/Pods/
+
+# Misc
+.DS_Store
+.env
+.idea/
+.yarn/

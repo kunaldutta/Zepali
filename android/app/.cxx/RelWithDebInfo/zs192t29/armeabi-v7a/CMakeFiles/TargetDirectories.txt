@@ -1,0 +1,3 @@
+/Users/kunaldutta/Documents/GitHub/Zepali/android/app/.cxx/RelWithDebInfo/zs192t29/armeabi-v7a/CMakeFiles/appmodules.dir
+/Users/kunaldutta/Documents/GitHub/Zepali/android/app/.cxx/RelWithDebInfo/zs192t29/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/kunaldutta/Documents/GitHub/Zepali/android/app/.cxx/RelWithDebInfo/zs192t29/armeabi-v7a/CMakeFiles/rebuild_cache.dir

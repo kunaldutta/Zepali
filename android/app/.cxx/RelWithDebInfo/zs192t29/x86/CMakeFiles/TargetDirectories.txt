@@ -1,0 +1,3 @@
+/Users/kunaldutta/Documents/GitHub/Zepali/android/app/.cxx/RelWithDebInfo/zs192t29/x86/CMakeFiles/appmodules.dir
+/Users/kunaldutta/Documents/GitHub/Zepali/android/app/.cxx/RelWithDebInfo/zs192t29/x86/CMakeFiles/edit_cache.dir
+/Users/kunaldutta/Documents/GitHub/Zepali/android/app/.cxx/RelWithDebInfo/zs192t29/x86/CMakeFiles/rebuild_cache.dir
