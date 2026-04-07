@@ -17,6 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { globalStyles, colors } from "../../styles/globalStyles";
 import AppHeader from "../../components/AppHeader";
 import i18n from "../../localization/i18n";
+import CustomAlert from "../../components/CustomAlert";
 
 // ✅ IMPORT YOUR COMPONENT
 import DataPackList from "./DataPackList";
@@ -32,6 +33,10 @@ const RechargeScreen = ({ navigation }) => {
   // ✅ NEW STATES
   const [mode, setMode] = useState("topup"); // topup | datapack
   const [selectedPack, setSelectedPack] = useState(null);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertTitle, setAlertTitle] = useState("success"); // success | error
+  const [alertVisible, setAlertVisible] = useState(false);
 
   const handleRecharge = async () => {
   if (number.length !== 10) {
@@ -67,18 +72,27 @@ const RechargeScreen = ({ navigation }) => {
       res = await rechargeMobile(payload);
 
       if (res?.data?.status) {
-      Alert.alert("Success", "Recharge Successful ✅");
+      Alert.alert("Success", "Recharge Successful");
       setNumber("");
       setAmount("");
       setSelectedPack(null);
     } else {
       setFailureReason(res?.data?.details || "Recharge failed");
       if (res?.data?.details?.amount) {
-        Alert.alert("Failed", "Invalid amount");
+        setAlertVisible(true);
+        setAlertTitle("Failed");
+        setAlertMessage("Invalid amount");
+        
       }else if (res?.data?.details?.number) {
-        Alert.alert("Failed", "Invalid number");
+        
+        setAlertVisible(true);
+        setAlertTitle("Failed");
+        setAlertMessage("Invalid number");
       } else {
-        Alert.alert("Failed", failureReason);
+       
+        setAlertVisible(true);
+        setAlertTitle("Failed");
+        setAlertMessage(failureReason);
       }
     }
 
@@ -101,12 +115,16 @@ const RechargeScreen = ({ navigation }) => {
       res = await buyDataPack(payload); // ✅ HERE YOU USE IT
 
       if (res?.status) {
-        let successMessage = res?.message === 'Successfully Completed Transaction' ? "Data Pack Purchased, it will be activated shortly ✅" : "Data Pack Purchased, it will be activated shortly ✅";
-        Alert.alert("Success", successMessage);
+        let successMessage = "Data Pack Purchased, it will be activated shortly";
+        setAlertVisible(true);
+        setAlertTitle("success");
+        setAlertMessage(successMessage);
         setNumber("");
         setSelectedPack(null);
       }else {
-        Alert.alert("Error", "Its failed, Something went wrong");
+        setAlertVisible(true);
+        setAlertTitle("Error");
+        setAlertMessage("Its failed, Something went wrong");
       }
     }
 
@@ -283,6 +301,15 @@ const RechargeScreen = ({ navigation }) => {
           )}
         </TouchableOpacity>
       </View>
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        onOk={() => {
+          setAlertVisible(false);
+        }}
+      />
+
 
     </View>
 );
