@@ -34,6 +34,7 @@ import BusListScreen from './src/screen/BusTicketBooking/BusListScreen';
 import BusSearchScreen from './src/screen/BusTicketBooking/BusSearchScreen';
 import TicketBookingStatus from './src/screen/BusTicketBooking/TicketBookingStatus';
 import RechargeScreen from './src/screen/Recharges/RechargeScreen';
+import RechargeConfirm from './src/screen/Recharges/RechargeConfirm';
 import {
   requestUserPermission,
   getFCMToken,
@@ -192,7 +193,8 @@ const RootApp = () => {
           <Stack.Screen name="BusListScreen" component={BusListScreen} />
           <Stack.Screen name="BusSearchScreen" component={BusSearchScreen} />
           <Stack.Screen name="TicketBookingStatus" component={TicketBookingStatus} />
-            <Stack.Screen name="RechargeScreen" component={RechargeScreen} />
+          <Stack.Screen name="RechargeScreen" component={RechargeScreen} />
+          <Stack.Screen name="RechargeConfirm" component={RechargeConfirm} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
