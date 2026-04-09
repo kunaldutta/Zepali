@@ -27,6 +27,11 @@ const API = {
   RECHARGE: "/recharge.php",
   GET_DATA_PACKS: "/get_datapacks.php",
   BUY_DATA_PACK: "/buy_datapack.php",
+  CREATE_PAYMENT: "/create_payment.php",
+  CREATE_ORDER: "/create_order.php",
+  CALCULATE_AMOUNT: "/calculate_amount.php",
+  VERIFY_PAYMENT: "/verify_payment.php",
+  UPDATE_PAYMENT_STATUS: "/update_payment_status.php"
 };
 
 export default API;

@@ -38,103 +38,64 @@ const RechargeScreen = ({ navigation }) => {
   const [alertTitle, setAlertTitle] = useState("success"); // success | error
   const [alertVisible, setAlertVisible] = useState(false);
 
-  const handleRecharge = async () => {
+  const handleRecharge = () => {
   if (number.length !== 10) {
-    Alert.alert("Invalid", "Enter valid 10-digit number");
+    setAlertVisible(true);
+    setAlertTitle("Invalid");
+    setAlertMessage("Enter valid 10-digit number");
     return;
   }
 
-  // ✅ Data Pack validation
   if (mode === "datapack" && !selectedPack) {
-    Alert.alert("Select Pack", "Please select a data pack");
+    setAlertVisible(true);
+    setAlertTitle("Select Pack");
+    setAlertMessage("Please select a data pack");
     return;
   }
 
-  if (mode === "topup" && !amount) {
-    Alert.alert("Invalid", "Enter amount");
+  if (mode === "topup" && (!amount || amount < 20 || amount > 25000)) {
+    setAlertVisible(true);
+    setAlertTitle("Invalid");
+    setAlertMessage("Enter amount between 20 and 25000");
     return;
   }
 
-  try {
-    setLoading(true);
+  // ✅ Prepare payload here
+  let payload;
 
-    let res;
-
-    // ✅ DIFFERENT API BASED ON MODE
-    if (mode === "topup") {
-      const payload = {
-        number,
-        amount,
-        provider,
-        remarks: "Topup",
-      };
-
-      res = await rechargeMobile(payload);
-
-      if (res?.data?.status) {
-      Alert.alert("Success", "Recharge Successful");
-      setNumber("");
-      setAmount("");
-      setSelectedPack(null);
-    } else {
-      setFailureReason(res?.data?.details || "Recharge failed");
-      if (res?.data?.details?.amount) {
-        setAlertVisible(true);
-        setAlertTitle("Failed");
-        setAlertMessage("Invalid amount");
-        
-      }else if (res?.data?.details?.number) {
-        
-        setAlertVisible(true);
-        setAlertTitle("Failed");
-        setAlertMessage("Invalid number");
-      } else {
-       
-        setAlertVisible(true);
-        setAlertTitle("Failed");
-        setAlertMessage(failureReason);
-      }
-    }
-
-
-    } else {
-      const payload = provider === "ncell" ? {
-        number,
-        provider,
-        product_code: selectedPack.product_code, // ✅ IMPORTANT
-        remarks: "Data Pack",
-        amount: selectedPack.amount, // ✅ send pack amount
-      }: {
-        number,
-        provider,
-        package_id: selectedPack.package_id, // ✅ IMPORTANT
-        remarks: "Data Pack",
-        amount: selectedPack.amount, // ✅ send pack amount
-      };
-      console.log("Buying pack with payload:", payload);
-      res = await buyDataPack(payload); // ✅ HERE YOU USE IT
-
-      if (res?.status) {
-        let successMessage = "Data Pack Purchased, it will be activated shortly";
-        setAlertVisible(true);
-        setAlertTitle("success");
-        setAlertMessage(successMessage);
-        setNumber("");
-        setSelectedPack(null);
-      }else {
-        setAlertVisible(true);
-        setAlertTitle("Error");
-        setAlertMessage("Its failed, Something went wrong");
-      }
-    }
-
-    // ✅ Common response handling
-    
-  } catch (err) {
-    Alert.alert("Error", "Something went wrong");
-  } finally {
-    setLoading(false);
+  if (mode === "topup") {
+    payload = {
+      type: "topup",
+      number,
+      amount,
+      provider,
+      remarks: "Topup",
+    };
+  } else {
+    payload =
+      provider === "ncell"
+        ? {
+            type: "datapack",
+            number,
+            provider,
+            product_code: selectedPack.product_code,
+            amount: selectedPack.amount,
+            remarks: "Data Pack",
+            packDetails: selectedPack,
+          }
+        : {
+            type: "datapack",
+            number,
+            provider,
+            package_id: selectedPack.package_id,
+            amount: selectedPack.amount,
+            remarks: "Data Pack",
+            packDetails: selectedPack,
+          };
   }
+
+  // ✅ Navigate instead of API call
+  navigation.navigate("RechargeConfirm", { payload });
 };
 
   const ProviderBtn = ({ label, value }) => (
