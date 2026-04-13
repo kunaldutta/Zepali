@@ -33,15 +33,16 @@ export const searchBuses = async ({ source, destination, date }) => {
 
 
 // 🔹 BOOK TICKET
-export const bookBusTicket = async ({ bus_id, schedule_id, passengers }) => {
+export const bookBusTicket = async ({ bus_id, schedule_id, booking_date, passengers }) => {
   try {
     const user = await AsyncStorage.getItem("USER_DATA");
     const parsedUser = JSON.parse(user);
-
+    console.log("bookBusTicket called with:", passengers);
     return await post(API.BOOK_TICKET, {
       user_id: parsedUser?.id,
       bus_id: bus_id,
       schedule_id: schedule_id,
+      booking_date: booking_date,
       passengers: passengers,
     });
 

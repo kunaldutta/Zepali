@@ -60,12 +60,12 @@ export default function Login() {
   useEffect(() => {
   async function init() {
     // ✅ Request permission (iOS)
-    //const uniqueId = await DeviceInfo.getUniqueId();
+    const uniqueId = await DeviceInfo.getUniqueId();
       
 
     const authStatus = await messaging().requestPermission();
     const uuid = uuidv4();
-    setUuid(uuid);
+    setUuid(uniqueId);
     console.log('Permission granted==', uuid);
     const enabled =
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||

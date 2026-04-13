@@ -1,5 +1,6 @@
 import messaging from '@react-native-firebase/messaging';
-import {PermissionsAndroid, Platform, Alert} from 'react-native';
+import { PermissionsAndroid, Platform } from 'react-native';
+import notifee, { AndroidImportance } from '@notifee/react-native';
 
 /* =========================
    REQUEST PERMISSION
@@ -28,25 +29,54 @@ export async function requestUserPermission() {
 export async function getFCMToken() {
   const token = await messaging().getToken();
   console.log('🔥 FCM Token:', token);
-
   return token;
+}
+
+/* =========================
+   CREATE CHANNEL (ONCE)
+========================= */
+async function createChannel() {
+  await notifee.createChannel({
+    id: 'default',
+    name: 'Default',
+    importance: AndroidImportance.HIGH,
+  });
+}
+
+/* =========================
+   SHOW NOTIFICATION
+========================= */
+async function showNotification(remoteMessage) {
+  await createChannel();
+
+  await notifee.displayNotification({
+    title: remoteMessage?.data?.title || 'Notification',
+    body: remoteMessage?.data?.body || 'You have a new message',
+
+    android: {
+      channelId: 'default',
+      smallIcon: 'ic_launcher', // ✅ REQUIRED
+      importance: AndroidImportance.HIGH,
+      pressAction: {
+        id: 'default',
+      },
+    },
+  });
 }
 
 /* =========================
    FOREGROUND HANDLER
 ========================= */
 export function notificationListener(navigation) {
-  // Foreground
+
+  // ✅ Foreground (NO ALERT)
   messaging().onMessage(async remoteMessage => {
     console.log('🔥 Foreground:', remoteMessage);
 
-    Alert.alert(
-      remoteMessage.notification?.title || 'Notification',
-      remoteMessage.notification?.body || '',
-    );
+    await showNotification(remoteMessage);
   });
 
-  // Background click
+  // ✅ Background click
   messaging().onNotificationOpenedApp(remoteMessage => {
     console.log('👉 Opened from background:', remoteMessage);
 
@@ -56,7 +86,7 @@ export function notificationListener(navigation) {
     }
   });
 
-  // Quit state click
+  // ✅ Quit state click
   messaging()
     .getInitialNotification()
     .then(remoteMessage => {
@@ -74,8 +104,10 @@ export function notificationListener(navigation) {
 /* =========================
    BACKGROUND HANDLER
 ========================= */
-export async function backgroundHandler() {
+export function backgroundHandler() {
   messaging().setBackgroundMessageHandler(async remoteMessage => {
     console.log('🔥 Background:', remoteMessage);
+
+    await showNotification(remoteMessage);
   });
 }

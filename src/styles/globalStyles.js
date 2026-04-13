@@ -16,7 +16,7 @@ const colors = {
   BottomTabBarBackground:'#f4d3a9', //#EFE3D3,
   activeTabBackground: '#f2f0ee',
   inactiveTabBackground: '#9a8262',
-  price: '#633606',
+  price: '#ae681c',
   productColumnBackground: '#f7fafa',
   descriptioncolor:"#058484",
   blueBackgroundColor: '#2980b9',
@@ -26,7 +26,7 @@ const colors = {
 const spacing = {
   xs: 4,
   sm: 8,
-  md: 16,
+  md: 10,
   lg: 24,
   xl: 32,
 };
@@ -106,8 +106,22 @@ container2:{
   button: {
     backgroundColor: colors.primary,
     padding: spacing.md,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
+    alignContent : 'center',
+    justifyContent:'center',
+    elevation: 3,
+  },
+  shadowWrapper: {
+    borderRadius: 0,
+    backgroundColor: 'transparent',
+  },
+
+  bottomShadow: {
+    marginBottom: 15,
+    borderRadius: 14,
+    backgroundColor: colors.secondary,
+    elevation: 3,
   },
 
   providerBtn: {
@@ -175,7 +189,11 @@ container2:{
   activeTabText:{ 
     color:'#fff' 
   },
-
+  dateTimeText: {
+    color: '#9b5408',
+    fontSize: 14,
+    fontWeight: "600",
+  },
   title: {
     ...typography.title,
     color: colors.text,

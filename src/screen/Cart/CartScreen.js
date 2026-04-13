@@ -309,7 +309,7 @@ const renderFooter = useMemo(() => {
     <Text style={{ fontSize: 16, fontWeight: 'bold', marginTop:5 }}>
         {i18n.t('BILLING_SUMMARY')}
       </Text>
-    <View style={{marginVertical: 25, backgroundColor:'white', width:'100%', height:100, elevation: 2,}}>
+    <View style={{marginVertical: 25, width:'100%', height:100}}>
       <CartBillSummary summary={summary} />
     </View>
   

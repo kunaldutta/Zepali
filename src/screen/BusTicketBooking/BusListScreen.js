@@ -5,6 +5,7 @@ import {
   FlatList,
   Button,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
 import { searchBuses } from "../../services/busService"; // ✅ updated import
 import i18n from "../../localization/i18n";
@@ -95,23 +96,31 @@ export default function BusListScreen({ route, navigation }) {
 
           <Text>{item.bus_type}</Text>
 
-          <Text>₹ {item.price}</Text>
+          <Text style={globalStyles.dateTimeText}>₹ {item.price}</Text>
 
           <Text>
-            {item.departure_time} - {item.arrival_time}
+            <Text style={globalStyles.dateTimeText}>Date:</Text> {date}{'\n'}
+            <Text style={globalStyles.dateTimeText}>Time:</Text> {item.departure_time} - {item.arrival_time}
           </Text>
 
           <Text>Seats left: {item.available_seats}</Text>
 
           <View style={{ marginTop: 8 }}>
-            <Button
-              title="Book Now"
+            
+            <View style={[globalStyles.bottomShadow,{marginTop: 25}]} >
+            <TouchableOpacity
+            style={[globalStyles.button, { height: 40, padding:6 }]}
               onPress={() =>
-                navigation.navigate("BookingScreen", { bus: item })
+                navigation.navigate("BookingScreen", { bus: item, date: date })
               }
-            />
+            >
+              <Text style={globalStyles.buttonText}>Book Now</Text>
+            </TouchableOpacity>
+            </View>
+            </View>
+            
           </View>
-        </View>
+        
        
       )}
     />

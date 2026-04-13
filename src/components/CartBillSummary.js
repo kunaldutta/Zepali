@@ -45,16 +45,15 @@ export default CartBillSummary;
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 15,
     backgroundColor: 'white',
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 12,
     elevation: 2,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 6
+    marginBottom: 0
   },
   divider: {
     height: 1,

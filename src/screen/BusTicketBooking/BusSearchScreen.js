@@ -40,7 +40,7 @@ export default function BusSearchScreen({ navigation }) {
     const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
     const day = String(selectedDate.getDate()).padStart(2, "0");
 
-    const formatted = `${year}-${month}-${day}`;
+    const formatted = `${day}-${month}-${year}`;
     setDate(formatted);
   };
 
@@ -183,9 +183,15 @@ export default function BusSearchScreen({ navigation }) {
         )}
 
         {/* SEARCH BUTTON */}
-        <View style={{ marginTop: 20 }}>
-          <Button title="Search Buses" onPress={handleSearch} />
-        </View>
+      
+        <View style={[globalStyles.bottomShadow,{marginTop: 25}]} >
+                    <TouchableOpacity
+                    style={[globalStyles.button, { height: 45 }]}
+                      onPress={handleSearch}
+                    >
+                      <Text style={globalStyles.buttonText}>Search Buses</Text>
+                    </TouchableOpacity>
+                    </View>
       </View>
     </SafeAreaView>
   );

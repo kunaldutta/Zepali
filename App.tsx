@@ -4,7 +4,6 @@ import {
   StyleSheet,
   useColorScheme,
   AppState,
-  Image,
 } from 'react-native';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -35,18 +34,20 @@ import BusSearchScreen from './src/screen/BusTicketBooking/BusSearchScreen';
 import TicketBookingStatus from './src/screen/BusTicketBooking/TicketBookingStatus';
 import RechargeScreen from './src/screen/Recharges/RechargeScreen';
 import RechargeConfirm from './src/screen/Recharges/RechargeConfirm';
+
 import {
   requestUserPermission,
   getFCMToken,
-  notificationListener,
   backgroundHandler,
 } from './src/services/NotificationService';
 
 import i18n from './src/localization/i18n';
 import { fetchCart } from './src/redux/store/slices/cartSlice';
 
+import messaging from '@react-native-firebase/messaging';
+import notifee, { AndroidImportance } from '@notifee/react-native';
 
-/* ✅ CONSTANT */
+/* CONSTANT */
 const STORAGE_KEYS = {
   USER: 'USER_DATA',
   LANGUAGE: 'appLanguage',
@@ -54,7 +55,7 @@ const STORAGE_KEYS = {
 
 const Stack = createNativeStackNavigator();
 
-/* ✅ INNER APP */
+/* INNER APP */
 const RootApp = () => {
   const dispatch = useDispatch<any>();
   const isDarkMode = useColorScheme() === 'dark';
@@ -63,40 +64,63 @@ const RootApp = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [appKey, setAppKey] = useState(0);
 
-  /* ✅ INITIAL LOAD */
+  /* INITIAL LOAD */
   useEffect(() => {
     loadApp();
     requestUserPermission();
     getFCMToken();
-    notificationListener(); // can pass navigation later
+
+    // ✅ Only background handler
     backgroundHandler();
   }, []);
 
-  // useEffect(() => {
-  //   requestUserPermission();
-  //   getFCMToken();
-  //   notificationListener(); // can pass navigation later
-  //   backgroundHandler();
-  // }, []);
-
-  /* ✅ APP RESUME HANDLER */
+  /* NOTIFICATION HANDLER (FOREGROUND) */
   useEffect(() => {
-    if (!AppState) return;
 
+    async function setup() {
+      await notifee.createChannel({
+        id: 'default',
+        name: 'Default',
+        importance: AndroidImportance.HIGH,
+      });
+    }
+
+    setup();
+
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+
+      console.log("FULL MSG:", remoteMessage);
+
+      try {
+        await notifee.displayNotification({
+          title: String(remoteMessage?.data?.title || "Notification"),
+          body: String(remoteMessage?.data?.body || "You have a new update"),
+
+          android: {
+            channelId: 'default',
+            smallIcon: 'ic_notification', // ✅ MUST
+            importance: AndroidImportance.HIGH,
+            pressAction: { id: 'default' },
+          },
+        });
+
+      } catch (error) {
+        console.log("NOTIFEE ERROR:", error);
+      }
+
+    });
+
+    return unsubscribe;
+
+  }, []);
+
+  /* APP RESUME HANDLER */
+  useEffect(() => {
     const subscription = AppState.addEventListener('change', async (nextState) => {
       if (nextState === 'active') {
-        console.log('App resumed → refreshing cart');
-
         try {
           const user = await AsyncStorage.getItem(STORAGE_KEYS.USER);
-
-          let parsed = null;
-          try {
-            parsed = user ? JSON.parse(user) : null;
-          } catch (e) {
-            console.log('Invalid USER_DATA on resume');
-            return;
-          }
+          const parsed = user ? JSON.parse(user) : null;
 
           if (parsed?.id) {
             dispatch(fetchCart(parsed.id));
@@ -107,43 +131,32 @@ const RootApp = () => {
       }
     });
 
-    return () => subscription?.remove();
+    return () => subscription.remove();
   }, []);
 
-  /* ✅ LOAD APP */
+  /* LOAD APP */
   const loadApp = async () => {
     try {
-      /* ✅ LOAD LANGUAGE */
       const lang = await AsyncStorage.getItem(STORAGE_KEYS.LANGUAGE);
-      if (lang) {
-        i18n.locale = lang;
-      }
+      if (lang) i18n.locale = lang;
 
-      /* ✅ GET USER */
       const user = await AsyncStorage.getItem(STORAGE_KEYS.USER);
-      console.log('USER_DATA:', user);
 
       let parsedUser = null;
-
       try {
         parsedUser = user ? JSON.parse(user) : null;
-      } catch (e) {
-        console.log('Invalid USER_DATA, clearing...');
+      } catch {
         await AsyncStorage.removeItem(STORAGE_KEYS.USER);
       }
 
       if (parsedUser?.id) {
         setIsLoggedIn(true);
-
-        /* ✅ LOAD CART */
         dispatch(fetchCart(parsedUser.id));
       } else {
         setIsLoggedIn(false);
-
-        dispatch({
-          type: 'cart/clearCart',
-        });
+        dispatch({ type: 'cart/clearCart' });
       }
+
     } catch (error) {
       console.log('App load error:', error);
     } finally {
@@ -151,13 +164,11 @@ const RootApp = () => {
     }
   };
 
-  /* ✅ GLOBAL REFRESH */
   globalThis.refreshApp = () => {
     loadApp();
     setAppKey(prev => prev + 1);
   };
 
-  /* ✅ LOADING UI (NO WHITE SCREEN) */
   if (loading) {
     return (
       <SafeAreaProvider>
@@ -201,7 +212,7 @@ const RootApp = () => {
   );
 };
 
-/* ✅ MAIN APP */
+/* MAIN APP */
 function App() {
   return (
     <Provider store={store}>

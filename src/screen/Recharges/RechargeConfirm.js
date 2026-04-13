@@ -22,6 +22,8 @@ import AppHeader from "../../components/AppHeader";
 import CustomAlert from "../../components/CustomAlert";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RazorpayCheckout from "react-native-razorpay";
+import i18n from "../../localization/i18n";
+import { BASE_URL } from "../../network/apiClient";
 
 const RechargeConfirm = ({ route, navigation }) => {
   const { payload } = route.params;
@@ -74,7 +76,7 @@ const RechargeConfirm = ({ route, navigation }) => {
     try {
       const user = await AsyncStorage.getItem('USER_DATA');
       const parsedUser = user ? JSON.parse(user) : null;
-
+      console.log("USER DATA:", parsedUser);
       // ✅ USER VALIDATION
       if (!parsedUser?.id) {
         showError("User not found. Please login again.");
@@ -86,7 +88,8 @@ const RechargeConfirm = ({ route, navigation }) => {
       const paymentRes = await createPayment({
         amount_npr: payload.amount,
         user_id: parsedUser.id,
-        recharge_type: payload.type
+        recharge_type: payload.type,
+        number: payload.number
       });
 
       if (!paymentRes?.status) {
@@ -116,14 +119,14 @@ const RechargeConfirm = ({ route, navigation }) => {
         key: "rzp_test_Sb1UJwd853g7gw",
         amount: orderRes.amount,
         order_id: orderRes.order_id,
-        name: "Your App Name",
-
+        name: "Zepali",
+        image: `${BASE_URL}/logo/zepali_foreground.png`,
         prefill: {
-          email: "test@example.com",
-          contact: "8100236062",
+          email: parsedUser?.email_id ?? "",
+          contact: parsedUser?.mobile_number ?? "",
         },
 
-        theme: { color: "#3399cc" },
+        theme: { color: colors.safeAreaColor },
 
         method: {
           upi: true,
@@ -176,10 +179,10 @@ const RechargeConfirm = ({ route, navigation }) => {
 
             if (rechargeRes?.status) {
               setAlertTitle("Success");
-              setAlertMessage("Recharge Successful");
+              setAlertMessage(rechargeRes?.state === 'Queued' ? "Recharge is being processed" : "Recharge Successful");
             } else {
               setAlertTitle("Pending");
-              setAlertMessage("Recharge failed but payment successful. We will process for refund soon.");
+              setAlertMessage("If your Recharge failed We will process for your refund soon.");
             }
 
             setAlertVisible(true);
@@ -209,7 +212,7 @@ const RechargeConfirm = ({ route, navigation }) => {
 
             if (status === 'CANCELLED') {
               setAlertTitle("Cancelled");
-              setAlertMessage("Payment cancelled by user");
+              setAlertMessage("Payment cancelled");
             } else {
               setAlertTitle("Failed");
               setAlertMessage("Payment failed. Try again");
@@ -231,9 +234,10 @@ const RechargeConfirm = ({ route, navigation }) => {
       <AppHeader
         title="Confirm Recharge"
         onBackPress={() => navigation.goBack()}
+        showCart={false}
       />
-
       <View style={styles.container}>
+      <View style={styles.subContainer}>
         <View style={styles.card}>
           <Text style={styles.label}>Mobile Number</Text>
           <Text style={styles.value}>{payload.number}</Text>
@@ -243,19 +247,26 @@ const RechargeConfirm = ({ route, navigation }) => {
             {payload.provider.toUpperCase()}
           </Text>
 
-          <Text style={styles.label}>Recharge Amount (NPR)</Text>
-          <Text style={styles.value}>₹ {payload.amount}</Text>
-
+          <View style={styles.row}>
+            <Text style={styles.label}>Recharge Amount (NPR): </Text>
+            <Text style={styles.value}>रु {payload.amount}</Text>
+          </View>
+          <View style={styles.row}>
           <Text style={styles.label}>Payable Amount (INR)</Text>
           <Text style={styles.value}>₹ {finalAmount}</Text>
+          </View>
 
-          <Text style={styles.label}>Platform Charge (6%)</Text>
+          <View style={styles.row}>
+          <Text style={styles.label}>Platform Charge</Text>
           <Text style={styles.value}>₹ {platformCharge}</Text>
+          </View>
 
+          <View style={styles.row}>
           <Text style={styles.label}>Total Payable</Text>
           <Text style={styles.amount}>
             ₹ {(finalAmount + platformCharge).toFixed(2)}
           </Text>
+          </View>
         </View>
 
         <TouchableOpacity
@@ -269,6 +280,7 @@ const RechargeConfirm = ({ route, navigation }) => {
             <Text style={styles.buttonText}>Confirm & Pay</Text>
           )}
         </TouchableOpacity>
+      </View>
       </View>
 
       <CustomAlert
@@ -290,11 +302,18 @@ export default RechargeConfirm;
 
 
 const styles = StyleSheet.create({
-  container: {
+  subContainer: {
     flex: 1,
     padding: 20,
     justifyContent: "space-between",
   },
+
+  container: {
+    flex: 1,
+    width: "100%",
+    backgroundColor: colors.background,
+  },
+
 
   card: {
     backgroundColor: "#fff",
@@ -303,22 +322,26 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
 
-  label: {
-    color: "#888",
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginTop: 10,
-    fontSize: 13,
   },
-
+  label: {
+    fontSize: 14,
+    color: colors.primary,
+  },
   value: {
     fontSize: 16,
-    fontWeight: "600",
-    marginTop: 2,
+    fontWeight: 'bold',
+    color: colors.primary,
   },
 
   amount: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#2ecc71",
+    color: colors.price,
     marginTop: 5,
   },
 

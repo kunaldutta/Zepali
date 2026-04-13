@@ -304,7 +304,7 @@ showsHorizontalScrollIndicator={false}
 
 {/* CATEGORIES */}
 
-{categories&&(<Text style={globalStyles.title}>{i18n.t('CATEGORIES')}</Text>)}
+{categories?.length > 0 &&(<Text style={globalStyles.title}>{i18n.t('CATEGORIES')}</Text>)}
 
 <FlatList
   data={categories}
@@ -321,7 +321,7 @@ showsHorizontalScrollIndicator={false}
 
 {/* PRODUCTS TITLE */}
 
-<Text style={globalStyles.title}>{i18n.t('PRODUCTS')}</Text>
+{products.length > 0 && (<Text style={globalStyles.title}>{i18n.t('PRODUCTS')}</Text>)}
 
 </View>
 
