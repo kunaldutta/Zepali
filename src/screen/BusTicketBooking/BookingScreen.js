@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -23,16 +23,16 @@ import RazorpayCheckout from "react-native-razorpay";
 
 import {
   createBookingOrder,
-  bookingInit,
-  updateBookingPayment,
-  confirmBooking,
   createTempBooking,
-  refundDirect,
-  refundBooking
+  verifyBusPayment,
+  updateBookingPayment,
 } from "../../services/bookingService";
+import { BASE_URL } from "../../network/apiClient";
 
 export default function BookingScreen({ route, navigation }) {
   const { bus, date } = route.params;
+  const inputRefs = useRef([]);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
   const [passengers, setPassengers] = useState([
     { name: "", age: "", gender: "", phone: "" },
@@ -46,7 +46,22 @@ export default function BookingScreen({ route, navigation }) {
 
   // ✅ keyboard
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [scrollEnabled, setScrollEnabled] = useState(false);
 
+  useEffect(() => {
+      const showSub = Keyboard.addListener("keyboardDidShow", () => {
+        setIsKeyboardVisible(true);
+      });
+
+      const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+        setIsKeyboardVisible(false);
+      });
+
+      return () => {
+        showSub.remove();
+        hideSub.remove();
+      };
+    }, []);
   useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
       setKeyboardHeight(e.endCoordinates.height);
@@ -145,23 +160,17 @@ export default function BookingScreen({ route, navigation }) {
 
     const totalAmount = bus.price * passengers.length;
 
-    // =========================
     // STEP 1: CREATE ORDER
-    // =========================
     const orderRes = await createBookingOrder({
       amount: totalAmount,
     });
-
-    console.log("ORDER RESPONSE:", orderRes);
 
     if (!orderRes?.status || !orderRes?.order_id) {
       Alert.alert("Error", "Order creation failed");
       return;
     }
 
-    // =========================
-    // 🔥 STEP 2: SAVE TEMP BOOKING (IMPORTANT)
-    // =========================
+    // STEP 2: CREATE TEMP BOOKING
     const tempRes = await createTempBooking({
       user_id: parsedUser.id,
       bus_id: bus.bus_id,
@@ -173,140 +182,75 @@ export default function BookingScreen({ route, navigation }) {
     });
 
     if (!tempRes?.status) {
-      Alert.alert("Error", "Unable to start booking. Try again.");
+      Alert.alert("Error", "Unable to start booking");
       return;
     }
 
-    // =========================
-    // STEP 3: OPEN RAZORPAY
-    // =========================
+    const transactionId = tempRes.transaction_id;
+
+    // STEP 3: PAYMENT
     const options = {
       description: "Bus Booking",
       currency: "INR",
       key: "rzp_test_Sb1UJwd853g7gw",
+
       amount: orderRes.amount,
       order_id: orderRes.order_id,
-      name: "Zepali",
+
+      name: "Zepali", // ✅ App name
+
+      image: BASE_URL + "/logo/zepali_foreground.png", // ✅ LOGO (IMPORTANT)
+
+      theme: {
+        color: colors.safeAreaColor, // 🔥 your primary color
+      },
+
       prefill: {
         email: parsedUser?.email_id ?? "",
         contact: parsedUser?.mobile_number ?? "",
+        name: parsedUser?.name ?? "",
       },
-      theme: { color: colors.primary },
-      method: {
-        upi: true,
-        card: true,
-        netbanking: true,
-        wallet: true,
+
+      notes: {
+        app: "Zepali Bus Booking",
       },
     };
 
     RazorpayCheckout.open(options)
-
-      // =========================
-      // ✅ SUCCESS
-      // =========================
       .then(async (data) => {
-        console.log("PAYMENT SUCCESS:", data);
-
-        let bookingId = null;
-
         try {
-          // =========================
-          // STEP 4: CREATE BOOKING (fallback if webhook delayed)
-          // =========================
-          const bookingRes = await bookingInit({
-            user_id: parsedUser.id,
-            bus_id: bus.bus_id,
-            schedule_id: bus.schedule_id,
-            booking_date: date,
-            total_passengers: passengers.length,
-            total_amount: totalAmount,
+          const verifyRes = await verifyBusPayment({
+            razorpay_payment_id: data.razorpay_payment_id,
             razorpay_order_id: data.razorpay_order_id,
+            razorpay_signature: data.razorpay_signature,
+            transaction_id: transactionId,
           });
 
-          if (!bookingRes?.status) {
-            throw new Error("Booking init failed");
+          if (!verifyRes?.status) {
+            throw new Error("Verification failed");
           }
 
-          bookingId = bookingRes.booking_id;
-
-          // =========================
-          // STEP 5: UPDATE PAYMENT
-          // =========================
-          const paymentRes = await updateBookingPayment({
-            booking_id: bookingId,
-            status: "SUCCESS",
-            payment_id: data.razorpay_payment_id,
-          });
-
-          if (!paymentRes?.status) {
-            throw new Error("Payment update failed");
-          }
-
-          // =========================
-          // STEP 6: INSERT PASSENGERS
-          // =========================
-          const passengerRes = await confirmBooking({
-            booking_id: bookingId,
-            passengers: passengers,
-          });
-
-          if (!passengerRes?.status) {
-            throw new Error("Passenger insert failed");
-          }
-
-          // =========================
-          // ✅ SUCCESS FLOW
-          // =========================
-          Alert.alert(
-            "Booking Pending",
-            "Your booking is under review. Admin will confirm shortly."
-          );
+          Alert.alert("Success 🎉", "Booking Confirmed");
 
         } catch (err) {
-          console.log("CRITICAL ERROR AFTER PAYMENT:", err);
-
-          // =========================
-          // 🔥 REFUND LOGIC
-          // =========================
-          try {
-            if (bookingId) {
-              await refundBooking({ booking_id: bookingId });
-            } else {
-              await refundDirect({
-                payment_id: data.razorpay_payment_id,
-                amount: totalAmount,
-              });
-            }
-
-            Alert.alert(
-              "Refund Initiated",
-              "Something went wrong. Amount will be refunded shortly."
-            );
-
-          } catch (refundErr) {
-            console.log("REFUND FAILED:", refundErr);
-
-            Alert.alert(
-              "Error",
-              "Payment done but refund failed. Please contact support."
-            );
-          }
+          Alert.alert(
+            "Error",
+            "Payment done but booking verification failed"
+          );
         }
       })
+      .catch(async (error) => {
 
-      // =========================
-      // ❌ FAILED / CANCELLED
-      // =========================
-      .catch((error) => {
-        console.log("PAYMENT FAILED:", error);
+          console.log("PAYMENT FAILED:", error?.code);
 
-        if (error?.code === 0) {
-          Alert.alert("Cancelled", "Payment cancelled");
-        } else {
-          Alert.alert("Failed", "Payment failed. Try again");
-        }
-      });
+          // 🔥 update backend
+          await updateBookingPayment({
+            transaction_id: transactionId,
+            status: "FAILED"
+          });
+
+          Alert.alert("Failed", "Payment failed or cancelled");
+        });
 
   } catch (error) {
     console.log("MAIN ERROR:", error);
@@ -336,17 +280,18 @@ export default function BookingScreen({ route, navigation }) {
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0} // ✅ IMPORTANT
       >
         <View style={{ flex: 1 }}>
           <View
             style={{
-              padding: 20,
+              padding: 10,
               backgroundColor: colors.background,
               flex: 1,
             }}
           >
-            <Text style={{ fontSize: 18, marginBottom: 10 }}>
+            <Text style={{ fontSize: 18, marginBottom: 8 }}>
               {i18n.t("BOOKING_FOR_BUS", {
                 bus: bus.operator_name,
               })}
@@ -355,11 +300,12 @@ export default function BookingScreen({ route, navigation }) {
             <FlatList
               data={passengers}
               keyExtractor={(_, i) => i.toString()}
-              keyboardShouldPersistTaps="handled"
+              keyboardShouldPersistTaps="always"
               contentContainerStyle={{
                 paddingBottom: keyboardHeight + 20,
                 flexGrow: 1,
               }}
+              showsVerticalScrollIndicator={false}
               renderItem={({ item, index }) => (
                 <View
                   style={{
@@ -373,56 +319,78 @@ export default function BookingScreen({ route, navigation }) {
                   {passengers.length > 1 && (
                     <TouchableOpacity
                       onPress={() => removePassenger(index)}
+                      activeOpacity={0.7}
                       style={{
                         position: "absolute",
                         top: 5,
-                        right: 5,
+                        right: 10,
                         width: 36,
                         height: 36,
                         borderRadius: 18,
-                        backgroundColor: "#fff",
+                        backgroundColor: colors.primary,
                         alignItems: "center",
                         justifyContent: "center",
-                        elevation: 4,
+
+                        elevation: 5,     // Android
+                        zIndex: 999,      // iOS + Android
                       }}
                     >
-                      <Text style={{ fontSize: 18, color: "red" }}>✕</Text>
+                      <Text style={{ fontSize: 15, color: "#add207", fontWeight: "bold" }}>X</Text>
                     </TouchableOpacity>
                   )}
 
                   <Text>Passenger {index + 1}</Text>
 
                   <TextInput
-                    placeholder="Name"
-                    value={item.name}
-                    onChangeText={(text) =>
-                      updatePassenger(index, "name", text)
-                    }
-                    style={[globalStyles.input, { marginTop: 10, fontSize: 12 }]}
-                    placeholderTextColor={colors.placeholderTextColor}
-                  />
+                      placeholder="Name"
+                      ref={(ref) => (inputRefs.current[`${index}-name`] = ref)}
+                      value={item.name}
+                      onChangeText={(text) =>
+                        updatePassenger(index, "name", text)
+                      }
+                      returnKeyType="next"
+                      onSubmitEditing={() => {
+                        inputRefs.current[`${index}-age`]?.focus();
+                      }}
+                      style={[globalStyles.input, { height: 45, paddingVertical: 0, textAlignVertical: 'center', top: 15 }]}
+                    />
 
                   <TextInput
-                    placeholder="Age"
-                    keyboardType="numeric"
-                    value={item.age}
-                    onChangeText={(text) =>
-                      updatePassenger(index, "age", text)
-                    }
-                    style={[globalStyles.input, { marginTop: 15, fontSize: 12 }]}
-                    placeholderTextColor={colors.placeholderTextColor}
-                  />
+                      placeholder="Age"
+                      ref={(ref) => (inputRefs.current[`${index}-age`] = ref)}
+                      keyboardType="numeric"
+                      value={item.age}
+                      onChangeText={(text) =>
+                        updatePassenger(index, "age", text)
+                      }
+                      returnKeyType="next"
+                      onSubmitEditing={() => {
+                        inputRefs.current[`${index}-phone`]?.focus();
+                      }}
+
+                      style={[globalStyles.input, { height: 45, paddingVertical: 0, textAlignVertical: 'center', top: 12 }]}
+                    />
 
                   <TextInput
                     placeholder="Phone Number"
+                    ref={(ref) => (inputRefs.current[`${index}-phone`] = ref)}
                     keyboardType="phone-pad"
                     value={item.phone}
                     onChangeText={(text) =>
                       handlePhoneChange(index, text)
                     }
-                    editable={!sameNumberForAll || index === 0}
-                    style={[globalStyles.input, { marginTop: 15, height: 45, fontSize: 12 }]}
-                    placeholderTextColor={colors.placeholderTextColor}
+
+                    returnKeyType="done"
+
+                    onSubmitEditing={() => {
+                      if (index < passengers.length - 1) {
+                        inputRefs.current[`${index + 1}-name`]?.focus();
+                      } else {
+                        Keyboard.dismiss();
+                      }
+                    }}
+
+                    style={[globalStyles.input, { height: 45, paddingVertical: 0, textAlignVertical: 'center', top: 10 }]}
                   />
 
                   {/* ✅ Checkbox only on first passenger */}
@@ -462,7 +430,7 @@ export default function BookingScreen({ route, navigation }) {
                     onPress={() => openGenderModal(index)}
                     style={[
                       globalStyles.input,
-                      { marginTop: 15, justifyContent: "center" },
+                      { marginTop: 5, justifyContent: "center", top: 8, width: 150 },
                     ]}
                   >
                     <Text
@@ -478,24 +446,26 @@ export default function BookingScreen({ route, navigation }) {
                 </View>
               )}
             />
-            <View style={[globalStyles.bottomShadow,{marginBottom: 2}]} >
+              {!isKeyboardVisible && (<View style={{ height: '16%', bottom: 0, width: '100%' }} >
+            <View style={[globalStyles.bottomShadow,{marginBottom: 1, width: '90%', left: '5%', top: 2}]} >
                         <TouchableOpacity
-                        style={[globalStyles.button, { height: 40, padding:6 }]}
+                        style={[globalStyles.button, { height: 40, padding:6, width: '100%' }]}
                           onPress={addPassenger}
                         >
-                          <Text style={globalStyles.buttonText}>Book Now</Text>
+                          <Text style={globalStyles.buttonText}>Add Passenger</Text>
                         </TouchableOpacity>
                         </View>
-            {/* <Button title="Add Passenger" onPress={addPassenger} /> */}
+
             <View style={{ height: 10 }} />
-            <View style={[globalStyles.bottomShadow,{marginBottom: 2}]} >
+            <View style={[globalStyles.bottomShadow,{marginBottom: 10, width: '90%', left: '5%'}]} >
                         <TouchableOpacity
-                        style={[globalStyles.button, { height: 40, padding:6 }]}
+                        style={[globalStyles.button, { height: 40, padding:6, width: '100%' }]}
                           onPress={bookTicket}
                         >
                           <Text style={globalStyles.buttonText}>Book Now</Text>
                         </TouchableOpacity>
                         </View>
+            </View>)}
             {/* <Button title="Confirm Booking" onPress={bookTicket} /> */}
 
             <Modal visible={genderModal} transparent animationType="fade">

@@ -206,7 +206,10 @@ const RechargeScreen = ({ navigation }) => {
             }}
             keyboardType="numeric"
             maxLength={10}
-            style={[globalStyles.input, {marginBottom: failureReason?.number ? 1 : 15} ]}
+              style={[globalStyles.input, {height: 45,               // ✅ FIXED HEIGHT (IMPORTANT)
+                  paddingVertical: 0,       // ✅ prevents jump
+                  textAlignVertical: 'center',} ]}
+            scrollEnabled={false}
           />
           {(failureReason?.number) && (
             <Text style={{ color: "red", marginTop: 1 }}>
@@ -223,7 +226,10 @@ const RechargeScreen = ({ navigation }) => {
             }}
             keyboardType="numeric"
             editable={mode === "topup"}
-            style={[globalStyles.input, {marginBottom:failureReason?.amount ? 1 : 15, marginTop: failureReason?.number ? 10 : 0} ]}
+            style={[globalStyles.input, {height: 45,               // ✅ FIXED HEIGHT (IMPORTANT)
+                paddingVertical: 0,       // ✅ prevents jump
+                textAlignVertical: 'center',} ]}
+            scrollEnabled={false}
           />
           {(failureReason?.amount) && (
             <Text style={{ color: "red", marginTop: 1 }}>

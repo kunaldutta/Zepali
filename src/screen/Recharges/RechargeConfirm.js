@@ -13,7 +13,7 @@ import {
   calculateAmount,
   createPayment,
   createRazorpayOrder,
-  verifyPayment,
+  verifyRechargePayment,
   updatePaymentStatus
 } from "../../services/paymentService";
 
@@ -143,7 +143,7 @@ const RechargeConfirm = ({ route, navigation }) => {
           console.log("PAYMENT SUCCESS:", data);
 
           try {
-            const verifyRes = await verifyPayment({
+            const verifyRes = await verifyRechargePayment({
               razorpay_payment_id: data.razorpay_payment_id,
               razorpay_order_id: data.razorpay_order_id,
               razorpay_signature: data.razorpay_signature,

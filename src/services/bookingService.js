@@ -63,6 +63,13 @@ export const refundBooking = async (data) => {
   });
 };
 
+export const verifyBusPayment = async (data) => {
+  return await post(API.VERIFY_BUS_PAYMENT, {
+    ...data,
+    lang: i18n.locale,
+  });
+};
+
 // ==========================
 // 🔥 DIRECT REFUND (FALLBACK)
 // ==========================

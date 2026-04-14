@@ -14,9 +14,9 @@ export const calculateAmount = async (data) => {
   return await post(API.CALCULATE_AMOUNT, data);
 };
 
-export const verifyPayment = async (data) => {
+export const verifyRechargePayment = async (data) => {
   try {
-    return await post(API.VERIFY_PAYMENT, data);
+    return await post(API.VERIFY_RECHARGE_PAYMENT, data);
   } catch (err) {
     console.log("VERIFY PAYMENT ERROR:", err);
     return { status: false };

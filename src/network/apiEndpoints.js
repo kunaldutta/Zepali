@@ -30,7 +30,8 @@ const API = {
   CREATE_PAYMENT: "/create_payment.php",
   CREATE_ORDER: "/create_order.php",
   CALCULATE_AMOUNT: "/calculate_amount.php",
-  VERIFY_PAYMENT: "/verify_payment.php",
+  VERIFY_RECHARGE_PAYMENT: "/verify_recharge_payment.php",
+  VERIFY_BUS_PAYMENT: "/verify_bus_payment.php",
   UPDATE_PAYMENT_STATUS: "/update_payment_status.php",
   REFUND_BOOKING: "/refund_booking.php",
   CREATE_BOOKING_ORDER: "/create_booking_order.php",
@@ -38,7 +39,7 @@ const API = {
   BOOKING_INIT: "/booking_init.php",
   UPDATE_BOOKING_PAYMENT: "/update_booking_payment.php",
   CONFIRM_BOOKING: "/confirm_booking.php",
-  REFUND_DIRECT: "/refund_direct.php", // 🔥 important
+  REFUND_DIRECT: "/refund_direct.php", // 🔥 important // 🔥 important
 };
 
 export default API;

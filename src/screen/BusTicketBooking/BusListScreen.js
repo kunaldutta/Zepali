@@ -79,51 +79,52 @@ export default function BusListScreen({ route, navigation }) {
             backgroundColor: colors.background,
             flex: 1,
         }}>
-    <FlatList
-      data={busList}
-      keyExtractor={(item) => item.schedule_id.toString()}
-      renderItem={({ item }) => (
-        <View
-          style={{
-            padding: 12,
-            borderBottomWidth: 1,
-            borderColor: "#ddd",
-          }}
-        >
-          <Text style={{ fontWeight: "bold" }}>
-            {item.operator_name}
-          </Text>
-
-          <Text>{item.bus_type}</Text>
-
-          <Text style={globalStyles.dateTimeText}>₹ {item.price}</Text>
-
-          <Text>
-            <Text style={globalStyles.dateTimeText}>Date:</Text> {date}{'\n'}
-            <Text style={globalStyles.dateTimeText}>Time:</Text> {item.departure_time} - {item.arrival_time}
-          </Text>
-
-          <Text>Seats left: {item.available_seats}</Text>
-
-          <View style={{ marginTop: 8 }}>
-            
-            <View style={[globalStyles.bottomShadow,{marginTop: 25}]} >
-            <TouchableOpacity
-            style={[globalStyles.button, { height: 40, padding:6 }]}
-              onPress={() =>
-                navigation.navigate("BookingScreen", { bus: item, date: date })
-              }
+        <FlatList
+          data={busList}
+          keyExtractor={(item) => item.schedule_id.toString()}
+          renderItem={({ item }) => (
+            <View
+              style={{
+                padding: 10,
+                borderBottomWidth: 0,
+                borderColor: "#dad8d8",
+              }}
             >
-              <Text style={globalStyles.buttonText}>Book Now</Text>
-            </TouchableOpacity>
-            </View>
+              <View style={{backgroundColor: '#fff', padding: 8, borderRadius: 8, elevation: 3}}>
+              <Text style={{ fontWeight: "bold" }}>
+                {item.operator_name}
+              </Text>
+
+              <Text>{item.bus_type}</Text>
+
+              <Text style={globalStyles.dateTimeText}>₹ {item.price}</Text>
+
+              <Text>
+                <Text style={globalStyles.dateTimeText}>Date:</Text> {date}{'\n'}
+                <Text style={globalStyles.dateTimeText}>Time:</Text> {item.departure_time} - {item.arrival_time}
+              </Text>
+
+              <Text>Seats left: {item.available_seats}</Text>
+
+              <View style={{ marginTop: 8 }}>
+                
+                <View style={[globalStyles.bottomShadow,{marginTop: 25}]} >
+                <TouchableOpacity
+                style={[globalStyles.button, { height: 40, padding:6 }]}
+                  onPress={() =>
+                    navigation.navigate("BookingScreen", { bus: item, date: date })
+                  }
+                >
+                  <Text style={globalStyles.buttonText}>Book Now</Text>
+                </TouchableOpacity>
+                </View>
+                </View>
+                </View>
             </View>
             
-          </View>
-        
-       
-      )}
-    />
+          
+          )}
+        />
     </View>
      </SafeAreaView>
   );

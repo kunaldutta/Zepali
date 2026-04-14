@@ -156,6 +156,7 @@ container2:{
     backgroundColor: '#FFF',
     height:45,
     marginBottom: 15,
+    elevation: 2,
   },
 
   input2: {
@@ -240,6 +241,8 @@ pickerBox: {
     borderColor: "#ccc",
     borderRadius: 6,
     backgroundColor: "#fff",
+    height: 50,
+    justifyContent: "center",
   },
   dateBox: {
     borderWidth: 1,
@@ -248,6 +251,7 @@ pickerBox: {
     borderRadius: 6,
     justifyContent: "center",
     backgroundColor: "#fff",
+    elevation: 5,
   },
   sideLabel: {
     fontSize: 14,
