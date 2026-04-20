@@ -8,111 +8,127 @@ import {
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
-import { rechargeMobile, buyDataPack } from "../../services/RechargeService";
+import {
+  rechargeMobile,
+  buyDataPack,
+} from "../../services/RechargeService";
+
 import {
   calculateAmount,
   createPayment,
   createRazorpayOrder,
   verifyRechargePayment,
-  updatePaymentStatus
+  updatePaymentStatus,
 } from "../../services/paymentService";
 
 import { colors, globalStyles } from "../../styles/globalStyles";
 import AppHeader from "../../components/AppHeader";
 import CustomAlert from "../../components/CustomAlert";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import RazorpayCheckout from "react-native-razorpay";
-import i18n from "../../localization/i18n";
 import { BASE_URL } from "../../network/apiClient";
 
 const RechargeConfirm = ({ route, navigation }) => {
   const { payload } = route.params;
+
+  console.log("Payload:", payload);
+
   const [loading, setLoading] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
+
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
 
   const [finalAmount, setFinalAmount] = useState(0);
   const [platformCharge, setPlatformCharge] = useState(0);
+  const [totalAmount, setTotalAmount] = useState(0);
 
   useEffect(() => {
     fetchCalculation();
   }, []);
+
+  const showAlert = (title, msg) => {
+    setAlertTitle(title);
+    setAlertMessage(msg);
+    setAlertVisible(true);
+  };
 
   const fetchCalculation = async () => {
     try {
       setLoading(true);
 
       const res = await calculateAmount({
-        amount_npr: payload.amount
+        amount_npr: payload.amount,
       });
 
       if (res?.status) {
-        setFinalAmount(Number(res.amount_inr || 0));
-        setPlatformCharge(Number(res.charge || 0));
-      } else {
-        showError(res?.message || "Calculation failed");
-      }
+        const amount = Number(res.amount_inr || 0);
+        const charge = Number(res.charge || 0);
 
+        setFinalAmount(amount);
+        setPlatformCharge(charge);
+        setTotalAmount(amount + charge);
+      } else {
+        showAlert("Error", res?.message || "Calculation failed");
+      }
     } catch (e) {
-      console.log("CALC ERROR:", e);
-      showError("Something went wrong");
+      showAlert("Error", "Failed to calculate amount");
     } finally {
       setLoading(false);
     }
   };
 
-  const showError = (msg) => {
-    setAlertTitle("Error");
-    setAlertMessage(msg);
-    setAlertVisible(true);
-  };
-
   const handleConfirm = async () => {
-    if (loading) return;
+    if (loading || processingPayment) return;
 
-    setLoading(true);
+    setProcessingPayment(true);
 
     try {
-      const user = await AsyncStorage.getItem('USER_DATA');
+      const user = await AsyncStorage.getItem("USER_DATA");
       const parsedUser = user ? JSON.parse(user) : null;
-      console.log("USER DATA:", parsedUser);
-      // ✅ USER VALIDATION
+
       if (!parsedUser?.id) {
-        showError("User not found. Please login again.");
-        setLoading(false);
+        showAlert("Error", "User not found. Please login again.");
+        setProcessingPayment(false);
         return;
       }
 
-      // ✅ CREATE TRANSACTION
+      // ✅ STEP 1: Create transaction
       const paymentRes = await createPayment({
         amount_npr: payload.amount,
         user_id: parsedUser.id,
         recharge_type: payload.type,
-        number: payload.number
+        number: payload.number,
+
+        package_id: payload.package_id ?? "",
+        product_code: payload.product_code ?? "",
+
+        // 🔥 ADD THIS LINE
+        provider: payload.provider,
       });
 
       if (!paymentRes?.status) {
-        showError(paymentRes?.message || "Payment init failed");
-        setLoading(false);
+        showAlert("Error", paymentRes?.message || "Payment init failed");
+        setProcessingPayment(false);
         return;
       }
 
       const txnId = paymentRes.transaction_id;
 
-      // ✅ CREATE ORDER
+      // ✅ STEP 2: Create Razorpay order
       const orderRes = await createRazorpayOrder({
         amount_inr: paymentRes.final_amount,
-        transaction_id: txnId
+        transaction_id: txnId,
       });
 
       if (!orderRes?.status) {
-        showError("Order creation failed");
-        setLoading(false);
+        showAlert("Error", "Order creation failed");
+        setProcessingPayment(false);
         return;
       }
 
-      // ✅ RAZORPAY OPTIONS
+      // ✅ STEP 3: Razorpay Checkout
       const options = {
         description: "Recharge Payment",
         currency: "INR",
@@ -125,107 +141,60 @@ const RechargeConfirm = ({ route, navigation }) => {
           email: parsedUser?.email_id ?? "",
           contact: parsedUser?.mobile_number ?? "",
         },
-
         theme: { color: colors.safeAreaColor },
-
-        method: {
-          upi: true,
-          card: true,
-          netbanking: true,
-          wallet: true
-        }
       };
 
       RazorpayCheckout.open(options)
-
-        // ✅ SUCCESS
         .then(async (data) => {
-          console.log("PAYMENT SUCCESS:", data);
-
           try {
+            // ✅ STEP 4: Verify payment
             const verifyRes = await verifyRechargePayment({
               razorpay_payment_id: data.razorpay_payment_id,
               razorpay_order_id: data.razorpay_order_id,
               razorpay_signature: data.razorpay_signature,
-              transaction_id: txnId
+              transaction_id: txnId,
             });
 
-            // 🔥 IMPORTANT FIX
             if (!verifyRes?.status) {
-
-              await updatePaymentStatus({
-                transaction_id: txnId,
-                status: "FAILED"
-              });
-
-              showError("Payment verification failed");
+              showAlert(
+                "Verification Failed",
+                "Payment verification failed. If amount was deducted, refund will be processed."
+              );
               return;
             }
 
-            // ✅ RECHARGE
-            let rechargeRes;
-
-            if (payload.type === "topup") {
-              rechargeRes = await rechargeMobile({
-                ...payload,
-                transaction_id: txnId
-              });
-            } else {
-              rechargeRes = await buyDataPack({
-                ...payload,
-                transaction_id: txnId
-              });
-            }
-
-            if (rechargeRes?.status) {
-              setAlertTitle("Success");
-              setAlertMessage(rechargeRes?.state === 'Queued' ? "Recharge is being processed" : "Recharge Successful");
-            } else {
-              setAlertTitle("Pending");
-              setAlertMessage("If your Recharge failed We will process for your refund soon.");
-            }
-
-            setAlertVisible(true);
+            // ✅ SUCCESS
+            showAlert(
+              "Payment Successful",
+              "Your payment is successful. Recharge is being processed."
+            );
 
           } catch (err) {
-            console.log("POST PAYMENT ERROR:", err);
-            showError("Something went wrong after payment");
+            showAlert(
+              "Processing Error",
+              "Payment done but processing failed. Please contact support."
+            );
           } finally {
-            setLoading(false);
+            setProcessingPayment(false);
           }
         })
 
-        // ❌ FAILED / CANCELLED
-        .catch(async (error) => {
-            console.log("PAYMENT FAILED:", error);
+        .catch((error) => {
+          const status = error?.code === 0 ? "CANCELLED" : "FAILED";
 
-            const status = error?.code === 0 ? 'CANCELLED' : 'FAILED';
+          showAlert(
+            status === "CANCELLED" ? "Cancelled" : "Failed",
+            status === "CANCELLED"
+              ? "Payment cancelled"
+              : "Payment failed. Try again"
+          );
 
-            try {
-              await updatePaymentStatus({
-                transaction_id: txnId,
-                status: status
-              });
-            } catch (e) {
-              console.log("STATUS UPDATE ERROR:", e);
-            }
-
-            if (status === 'CANCELLED') {
-              setAlertTitle("Cancelled");
-              setAlertMessage("Payment cancelled");
-            } else {
-              setAlertTitle("Failed");
-              setAlertMessage("Payment failed. Try again");
-            }
-
-          setAlertVisible(true);
-          setLoading(false);
+          setProcessingPayment(false);
         });
 
     } catch (e) {
-      console.log("ERROR:", e);
-      showError("Something went wrong");
-      setLoading(false);
+      showAlert("Error", "Something went wrong");
+      setProcessingPayment(false);
     }
   };
 
@@ -236,51 +205,53 @@ const RechargeConfirm = ({ route, navigation }) => {
         onBackPress={() => navigation.goBack()}
         showCart={false}
       />
+
       <View style={styles.container}>
-      <View style={styles.subContainer}>
-        <View style={styles.card}>
-          <Text style={styles.label}>Mobile Number</Text>
-          <Text style={styles.value}>{payload.number}</Text>
+        <View style={styles.subContainer}>
+          <View style={styles.card}>
+            <Text style={styles.label}>Mobile Number</Text>
+            <Text style={styles.value}>{payload.number}</Text>
 
-          <Text style={styles.label}>Provider</Text>
-          <Text style={styles.value}>
-            {payload.provider.toUpperCase()}
-          </Text>
+            <Text style={styles.label}>Provider</Text>
+            <Text style={styles.value}>
+              {payload.provider.toUpperCase()}
+            </Text>
 
-          <View style={styles.row}>
-            <Text style={styles.label}>Recharge Amount (NPR): </Text>
-            <Text style={styles.value}>रु {payload.amount}</Text>
-          </View>
-          <View style={styles.row}>
-          <Text style={styles.label}>Payable Amount (INR)</Text>
-          <Text style={styles.value}>₹ {finalAmount}</Text>
+            <View style={styles.row}>
+              <Text style={styles.label}>Recharge (NPR)</Text>
+              <Text style={styles.value}>रु {payload.amount}</Text>
+            </View>
+
+            <View style={styles.row}>
+              <Text style={styles.label}>Amount (INR)</Text>
+              <Text style={styles.value}>₹ {finalAmount}</Text>
+            </View>
+
+            <View style={styles.row}>
+              <Text style={styles.label}>Platform Charge</Text>
+              <Text style={styles.value}>₹ {platformCharge}</Text>
+            </View>
+
+            <View style={styles.row}>
+              <Text style={styles.label}>Total Payable</Text>
+              <Text style={styles.amount}>
+                ₹ {totalAmount.toFixed(2)}
+              </Text>
+            </View>
           </View>
 
-          <View style={styles.row}>
-          <Text style={styles.label}>Platform Charge</Text>
-          <Text style={styles.value}>₹ {platformCharge}</Text>
-          </View>
-
-          <View style={styles.row}>
-          <Text style={styles.label}>Total Payable</Text>
-          <Text style={styles.amount}>
-            ₹ {(finalAmount + platformCharge).toFixed(2)}
-          </Text>
-          </View>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleConfirm}
+            disabled={processingPayment}
+          >
+            {processingPayment ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Confirm & Pay</Text>
+            )}
+          </TouchableOpacity>
         </View>
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleConfirm}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Confirm & Pay</Text>
-          )}
-        </TouchableOpacity>
-      </View>
       </View>
 
       <CustomAlert
@@ -298,8 +269,8 @@ const RechargeConfirm = ({ route, navigation }) => {
   );
 };
 
-export default RechargeConfirm;
 
+export default RechargeConfirm;
 
 const styles = StyleSheet.create({
   subContainer: {
@@ -307,25 +278,19 @@ const styles = StyleSheet.create({
     padding: 20,
     justifyContent: "space-between",
   },
-
   container: {
     flex: 1,
-    width: "100%",
     backgroundColor: colors.background,
   },
-
-
   card: {
     backgroundColor: "#fff",
     borderRadius: 12,
     padding: 20,
     elevation: 3,
   },
-
   row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 10,
   },
   label: {
@@ -334,24 +299,20 @@ const styles = StyleSheet.create({
   },
   value: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.primary,
   },
-
   amount: {
     fontSize: 22,
     fontWeight: "bold",
     color: colors.price,
-    marginTop: 5,
   },
-
   button: {
     backgroundColor: colors.primary,
     padding: 15,
     borderRadius: 10,
     alignItems: "center",
   },
-
   buttonText: {
     color: "#fff",
     fontWeight: "bold",

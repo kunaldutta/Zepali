@@ -64,3 +64,8 @@ export const getUserBookings = async (user_id) => {
     lang: i18n.locale,   // ✅ ADD THIS
   });
 };
+
+export const cancelBooking = async (data) => {
+  console.log("API CALL - Cancel Booking with data:", data);
+  return await post(API.CANCEL_BOOKING, data);
+};

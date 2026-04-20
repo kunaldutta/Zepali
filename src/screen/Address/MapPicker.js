@@ -18,6 +18,7 @@ import { colors } from '../../styles/globalStyles';
 const GOOGLE_API_KEY = "AIzaSyASeQVPcvxEogcrrLg5MExUWcXAgYuJekY";
 
 export default function MapPicker({ route, navigation }) {
+  console.log("MapPicker route params:", route.params);
   const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -155,7 +156,7 @@ export default function MapPicker({ route, navigation }) {
   const confirmLocation = async () => {
     try {
       if (!address) {
-        alert("Please select location");
+        Alert("Please select location");
         return;
       }
 
@@ -185,7 +186,26 @@ export default function MapPicker({ route, navigation }) {
           if (comp.types.includes('administrative_area_level_1')) state = comp.long_name;
           if (comp.types.includes('postal_code')) zip = comp.long_name;
         });
-
+        console.log("Parsed address:", route.params?.address);
+        if( route?.params !== undefined ){ 
+          navigation.navigate('EditAddressScreen', {
+            address: {
+              id: route.params.address.id,
+              user_name: route.params.address.user_name,
+              usr_id: route.params.address.usr_id,
+              land_mark: route.params.address.land_mark,
+              default_value: route.params.address.default_value,
+              contact_no: route.params.address.contact_no,
+              address_1: route.params.address.address_1,
+              address_2: address1 + ', ' + address2,
+              city,
+              state,
+              zip_code: zip,
+              latitude: region.latitude,
+              longitude: region.longitude,
+            }
+          });
+        }else{
         navigation.navigate('AddAddress', {
           address_1: address1,
           address_2: address2,
@@ -195,6 +215,7 @@ export default function MapPicker({ route, navigation }) {
           latitude: region.latitude,
           longitude: region.longitude,
         });
+      }
       }
 
     } catch (e) {

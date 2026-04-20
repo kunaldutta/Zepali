@@ -164,7 +164,8 @@ useEffect(() => {
   };
 
   const finalPrice = (price, offer) =>{
-    console.log('finalPrice ===', offer)
+    //console.log('finalPrice ===', offer)
+    console.log('finalPrice ===', price)
     let finalPrice = price - (price * (offer/100))
     console.log('finalPrice ===', finalPrice)
     return finalPrice; 
@@ -426,8 +427,8 @@ const onWishlistPress = async () => {
 
             {selectedVariant && (
               <>
-              <Text style={[styles.price, { textDecorationLine: 'line-through' }]}>₹ {selectedVariant.price}</Text>
-              <Text style={styles.productFinalPrice}>₹ {product.selected_color.final_price}</Text>
+              <Text style={[styles.price, { textDecorationLine: 'line-through' }]}>₹ {selectedVariant?.price}</Text>
+              <Text style={styles.productFinalPrice}>₹ {selectedVariant?.final_price}</Text>
               </>
             )}
             

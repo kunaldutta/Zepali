@@ -14,6 +14,7 @@ import { globalStyles, colors } from "../../styles/globalStyles";
 import i18n from "../../localization/i18n";
 import AppHeader from "../../components/AppHeader";
 import { useNavigation } from "@react-navigation/native";
+import CancelBookingButton from "../../components/CancelBookingButton";
 
 export default function TicketBookingStatus() {
   const [bookings, setBookings] = useState([]);
@@ -66,7 +67,7 @@ export default function TicketBookingStatus() {
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>
-      <Text style={styles.title}>
+      <Text style={[styles.title,]}>
         🚌 {item?.bus_name} ({item?.bus_type})
       </Text>
 
@@ -82,7 +83,7 @@ export default function TicketBookingStatus() {
       <View style={{flexDirection:'row', alignItems:'center'}}>
         <Text style={globalStyles.sideLabel}>
             {i18n.t("OPERATOR") || "Operator"}: </Text> 
-        <Text style={globalStyles.label}> {t(item?.operator_name)}</Text>
+        <Text style={[globalStyles.label,{numberOfLines: 2, width: '80%'}]}> {t(item?.operator_name)}</Text>
         
       </View>
       
@@ -133,6 +134,13 @@ export default function TicketBookingStatus() {
       </Text>
 
       {item.passengers?.map(renderPassenger)}
+
+      <CancelBookingButton
+        bookingId={item.booking_id}
+        status={item.status}
+        refundStatus={item.refund_status}
+        onSuccess={loadBookings}
+      />
     </View>
   );
 

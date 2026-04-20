@@ -85,7 +85,7 @@ export default function BusListScreen({ route, navigation }) {
           renderItem={({ item }) => (
             <View
               style={{
-                padding: 10,
+                padding: 5,
                 borderBottomWidth: 0,
                 borderColor: "#dad8d8",
               }}
@@ -115,7 +115,7 @@ export default function BusListScreen({ route, navigation }) {
                     navigation.navigate("BookingScreen", { bus: item, date: date })
                   }
                 >
-                  <Text style={globalStyles.buttonText}>Book Now</Text>
+                  <Text style={globalStyles.buttonText}>{i18n.t("BOOK_NOW") || "Book Now"}</Text>
                 </TouchableOpacity>
                 </View>
                 </View>

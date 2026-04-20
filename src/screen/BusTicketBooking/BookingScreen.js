@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, use } from "react";
 import {
   View,
   Text,
@@ -26,13 +26,16 @@ import {
   createTempBooking,
   verifyBusPayment,
   updateBookingPayment,
+  termsAndConditions,
 } from "../../services/bookingService";
 import { BASE_URL } from "../../network/apiClient";
+import TermsCheckbox from "../../components/TermsCheckbox";
 
 export default function BookingScreen({ route, navigation }) {
   const { bus, date } = route.params;
   const inputRefs = useRef([]);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [termsVersion, setTermsVersion] = useState(null);
 
   const [passengers, setPassengers] = useState([
     { name: "", age: "", gender: "", phone: "" },
@@ -46,7 +49,8 @@ export default function BookingScreen({ route, navigation }) {
 
   // ✅ keyboard
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const [scrollEnabled, setScrollEnabled] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [termsUrl, setTermsUrl] = useState('');
 
   useEffect(() => {
       const showSub = Keyboard.addListener("keyboardDidShow", () => {
@@ -76,7 +80,19 @@ export default function BookingScreen({ route, navigation }) {
       hideSub.remove();
     };
   }, []);
+  useEffect(() => {
+    termsAndConditions({ type: "bus_booking" })
+    .then((res) => {
+      console.log("Terms and conditions updated:", res);
+      setTermsVersion(res?.data?.version);
+      setTermsUrl(BASE_URL + res.data.content);
+    })
+    .catch((e) => console.log(e));
+  }, []);
 
+  const acceptTerms = () => {
+    setTermsAccepted(true);
+  };
   // ✅ Update passenger
   const updatePassenger = (index, key, value) => {
     const updated = [...passengers];
@@ -144,6 +160,11 @@ export default function BookingScreen({ route, navigation }) {
   };
 
   const bookTicket = async () => {
+    console.log("Booking with passengers:", passengers, "Terms accepted:", termsAccepted);
+    if(!termsAccepted) {
+      Alert.alert("Error", "Please accept the terms and conditions");
+      return;
+    }
   if (!validatePassengers()) {
     Alert.alert("Error", "Please fill all passenger details properly");
     return;
@@ -179,6 +200,7 @@ export default function BookingScreen({ route, navigation }) {
       passengers: passengers,
       total_amount: totalAmount,
       razorpay_order_id: orderRes.order_id,
+      terms_condition_version: termsVersion, // 🔥 send version or identifier of T&C
     });
 
     if (!tempRes?.status) {
@@ -286,12 +308,12 @@ export default function BookingScreen({ route, navigation }) {
         <View style={{ flex: 1 }}>
           <View
             style={{
-              padding: 10,
+              padding: 0,
               backgroundColor: colors.background,
               flex: 1,
             }}
           >
-            <Text style={{ fontSize: 18, marginBottom: 8 }}>
+            <Text style={{ fontSize: 18, marginBottom: 8, left: 10, top: 5 }}>
               {i18n.t("BOOKING_FOR_BUS", {
                 bus: bus.operator_name,
               })}
@@ -310,6 +332,8 @@ export default function BookingScreen({ route, navigation }) {
                 <View
                   style={{
                     marginBottom: 15,
+                    width: "96%",
+                    left: "2%",
                     padding: 12,
                     borderRadius: 8,
                     backgroundColor: "#fff",
@@ -342,7 +366,7 @@ export default function BookingScreen({ route, navigation }) {
                   <Text>Passenger {index + 1}</Text>
 
                   <TextInput
-                      placeholder="Name"
+                      placeholder={i18n.t("NAME") || "Name"}
                       ref={(ref) => (inputRefs.current[`${index}-name`] = ref)}
                       value={item.name}
                       onChangeText={(text) =>
@@ -356,7 +380,7 @@ export default function BookingScreen({ route, navigation }) {
                     />
 
                   <TextInput
-                      placeholder="Age"
+                      placeholder={i18n.t("AGE") || "Age"}
                       ref={(ref) => (inputRefs.current[`${index}-age`] = ref)}
                       keyboardType="numeric"
                       value={item.age}
@@ -372,7 +396,7 @@ export default function BookingScreen({ route, navigation }) {
                     />
 
                   <TextInput
-                    placeholder="Phone Number"
+                    placeholder={i18n.t("PHONE_NUMBER") || "Phone Number"}
                     ref={(ref) => (inputRefs.current[`${index}-phone`] = ref)}
                     keyboardType="phone-pad"
                     value={item.phone}
@@ -440,19 +464,32 @@ export default function BookingScreen({ route, navigation }) {
                           : colors.placeholderTextColor, fontSize: 12,
                       }}
                     >
-                      {item.gender || "Select Gender"}
+                      {item.gender || i18n.t("SELECT_GENDER") || "Select Gender"}
                     </Text>
                   </TouchableOpacity>
                 </View>
               )}
             />
-              {!isKeyboardVisible && (<View style={{ height: '16%', bottom: 0, width: '100%' }} >
+              {keyboardHeight === 0 && (<View style={{ height: '22%', marginBottom: 0, width: '100%', backgroundColor: colors.safeAreaColor }} >
+            <View style={{ height: 10, top: 0 }} />
+            <TermsCheckbox
+              accepted={termsAccepted}
+              setAccepted={setTermsAccepted}
+              onOpenTerms={() => {
+                if (termsUrl) {
+                  navigation.navigate("WebViewScreen", { url: termsUrl });
+                } else {
+                  //alert("Terms not available");
+                }
+              }}
+            />
+            
             <View style={[globalStyles.bottomShadow,{marginBottom: 1, width: '90%', left: '5%', top: 2}]} >
                         <TouchableOpacity
                         style={[globalStyles.button, { height: 40, padding:6, width: '100%' }]}
                           onPress={addPassenger}
                         >
-                          <Text style={globalStyles.buttonText}>Add Passenger</Text>
+                          <Text style={globalStyles.buttonText}>{i18n.t("ADD_PASSENGER")}</Text>
                         </TouchableOpacity>
                         </View>
 
@@ -462,7 +499,7 @@ export default function BookingScreen({ route, navigation }) {
                         style={[globalStyles.button, { height: 40, padding:6, width: '100%' }]}
                           onPress={bookTicket}
                         >
-                          <Text style={globalStyles.buttonText}>Book Now</Text>
+                          <Text style={globalStyles.buttonText}>{i18n.t("BOOK_NOW")}</Text>
                         </TouchableOpacity>
                         </View>
             </View>)}

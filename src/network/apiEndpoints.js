@@ -27,8 +27,8 @@ const API = {
   RECHARGE: "/recharge.php",
   GET_DATA_PACKS: "/get_datapacks.php",
   BUY_DATA_PACK: "/buy_datapack.php",
-  CREATE_PAYMENT: "/create_payment.php",
-  CREATE_ORDER: "/create_order.php",
+  CREATE_PAYMENT: "/create_recharge_payment.php",
+  CREATE_ORDER: "/create_recharge_order.php",
   CALCULATE_AMOUNT: "/calculate_amount.php",
   VERIFY_RECHARGE_PAYMENT: "/verify_recharge_payment.php",
   VERIFY_BUS_PAYMENT: "/verify_bus_payment.php",
@@ -40,6 +40,9 @@ const API = {
   UPDATE_BOOKING_PAYMENT: "/update_booking_payment.php",
   CONFIRM_BOOKING: "/confirm_booking.php",
   REFUND_DIRECT: "/refund_direct.php", // 🔥 important // 🔥 important
+  BUS_TICKET_TERMS_AND_CONDITIONS: "/bus_ticket_terms_and_conditions.php", // 🔥 important
+  CANCEL_BOOKING: "/cancel_booking.php", // 🔥 important
+  UPDATE_USER_PROFILE: "/update_user_profile.php", // 🔥 important
 };
 
 export default API;

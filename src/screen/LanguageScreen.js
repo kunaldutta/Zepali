@@ -11,6 +11,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import i18n from '../localization/i18n';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {globalStyles,colors} from '../styles/globalStyles';
+import AppHeader from '../components/AppHeader';
 
 export default function LanguageScreen({navigation}) {
 
@@ -58,22 +59,11 @@ export default function LanguageScreen({navigation}) {
 
   return (
     <SafeAreaView  style={globalStyles.safeArea}>
-      <View style={styles.header}>
-  
-        {/* Back Button */}
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
-        </TouchableOpacity>
-
-        {/* Center Title */}
-        <Text style={styles.headerTitle}>
-          {i18n.t('LANGUAGE') || 'Select Language'}
-        </Text>
-
-        {/* Right placeholder (to balance layout) */}
-        <View style={{width: 24}} />
-
-      </View>
+      <AppHeader
+        title={i18n.t("LANGUAGE") || "Select Language"}
+        onBackPress={() => navigation.goBack()}
+        showCart={false}
+      />
     <View style={styles.container}>
 
       {/* 🔹 Header with Back Button */}
@@ -90,14 +80,11 @@ export default function LanguageScreen({navigation}) {
 }
 
 const styles = StyleSheet.create({
-  safeArea:{
-flex:1,
-backgroundColor:"#fff"
-},
+
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#fff'
+    backgroundColor: colors.background
   },
 
   header: {
@@ -127,7 +114,7 @@ headerTitle: {
     width: 22,
     borderRadius: 11,
     borderWidth: 2,
-    borderColor: '#007BFF',
+    borderColor: colors.secondary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10
@@ -137,7 +124,7 @@ headerTitle: {
     height: 12,
     width: 12,
     borderRadius: 6,
-    backgroundColor: '#007BFF'
+    backgroundColor: colors.secondary
   },
 
   text: {

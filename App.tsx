@@ -34,6 +34,10 @@ import BusSearchScreen from './src/screen/BusTicketBooking/BusSearchScreen';
 import TicketBookingStatus from './src/screen/BusTicketBooking/TicketBookingStatus';
 import RechargeScreen from './src/screen/Recharges/RechargeScreen';
 import RechargeConfirm from './src/screen/Recharges/RechargeConfirm';
+import WebViewScreen from './src/screen/WebView/WebViewScreen';
+import TestRechargeScreen from './src/screen/Recharges/TestRechargeScreen';
+import RechargeStatusScreen from './src/screen/Recharges/RechargeStatusScreen';
+import EditProfile from './src/screen/Profile/EditProfile';
 
 import {
   requestUserPermission,
@@ -206,6 +210,10 @@ const RootApp = () => {
           <Stack.Screen name="TicketBookingStatus" component={TicketBookingStatus} />
           <Stack.Screen name="RechargeScreen" component={RechargeScreen} />
           <Stack.Screen name="RechargeConfirm" component={RechargeConfirm} />
+          <Stack.Screen name="WebViewScreen" component={WebViewScreen} />
+          <Stack.Screen name="TestRechargeScreen" component={TestRechargeScreen} />
+          <Stack.Screen name="RechargeStatusScreen" component={RechargeStatusScreen} />
+          <Stack.Screen name="EditProfile" component={EditProfile} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

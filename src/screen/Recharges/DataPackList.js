@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -6,15 +6,18 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
+  TextInput,
 } from "react-native";
 
 import { getDataPacks } from "../../services/RechargeService";
 import { colors } from "../../styles/globalStyles";
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const DataPackList = ({ provider, number, onSelect }) => {
   const [packs, setPacks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedPack, setSelectedPack] = useState(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     setSelectedPack(null);
@@ -25,8 +28,6 @@ const DataPackList = ({ provider, number, onSelect }) => {
     try {
       setLoading(true);
       const res = await getDataPacks(provider);
-
-      // ✅ Correct mapping from Khalti API
       setPacks(res?.detail?.packages || []);
     } catch (e) {
       console.log("Pack error:", e);
@@ -35,53 +36,137 @@ const DataPackList = ({ provider, number, onSelect }) => {
     }
   };
 
+  // ✅ FILTER LOGIC
+  const filteredPacks = useMemo(() => {
+    if (!search) return packs;
+
+    const query = search.toLowerCase();
+
+    return packs.filter((item) => {
+      return (
+        item.product_name?.toLowerCase().includes(query) ||
+        item.short_detail?.toLowerCase().includes(query) ||
+        String(item.amount).includes(query)
+      );
+    });
+  }, [search, packs]);
+
   if (loading) {
     return <ActivityIndicator style={{ marginTop: 20 }} />;
   }
 
   return (
-    <FlatList
-      data={packs}
-      keyExtractor={(item, index) => index.toString()} // ✅ FIXED
-      scrollEnabled={false} // ✅ FIX VirtualizedList error
-      contentContainerStyle={{ paddingBottom: 20 }}
-      renderItem={({ item, index }) => {
-        const isSelected = selectedPack?.index === index;
+    <View style={{ flex: 1 }}>
+            {/* ✅ SEARCH BAR */}
+            <View style={styles.searchContainer}>
+        {/* Input FIRST */}
+        <TextInput
+          placeholder="Search packs (e.g. 1GB, 199...)"
+          value={search}
+          onChangeText={setSearch}
+          style={styles.searchInput}
+          placeholderTextColor="#999"
+        />
 
-        return (
-          <TouchableOpacity
-            onPress={() => {
-              setSelectedPack({ ...item, index }); // ✅ store index
-              onSelect && onSelect(item); // send back to parent
-            }}
-            style={[
-              styles.card,
-              isSelected && styles.activeCard,
-            ]}
-          >
-            <View style={{ flex: 1 }}>
-              <Text style={styles.title}>
-                {item.product_name}
-              </Text>
+        {/* 🔍 Search Icon (RIGHT SIDE) */}
+        <Ionicons
+          name="search"
+          size={18}
+          color="#666"
+          style={{ marginLeft: 6 }} // ✅ spacing from input
+        />
 
-              <Text style={isSelected ? styles.activeSub : styles.sub}>
-                {item.short_detail}
-              </Text>
-            </View>
-
-            <Text style={styles.price}>
-              रु {item.amount}
-            </Text>
+        {/* ❌ Clear Button */}
+        {search.length > 0 && (
+          <TouchableOpacity onPress={() => setSearch("")}>
+            <Ionicons name="close-circle" size={18} color="#e36f6f" />
           </TouchableOpacity>
-        );
-      }}
-    />
+        )}
+      </View>
+
+      <FlatList
+        data={filteredPacks}
+        keyExtractor={(item, index) => index.toString()}
+        scrollEnabled={false}
+        contentContainerStyle={{ paddingBottom: 20 }}
+        ListEmptyComponent={() => (
+          <Text style={styles.emptyText}>No packs found</Text>
+        )}
+        renderItem={({ item }) => {
+          // ✅ FIXED SELECTION LOGIC (NO INDEX)
+          const isSelected =
+            selectedPack?.product_name === item.product_name &&
+            selectedPack?.amount === item.amount;
+
+          return (
+            <TouchableOpacity
+              onPress={() => {
+                setSelectedPack(item); // ✅ FIXED
+                onSelect && onSelect(item);
+              }}
+              style={[
+                styles.card,
+                isSelected && styles.activeCard,
+                {
+                  elevation: isSelected ? 4 : 1,
+                  height: 80,
+                },
+              ]}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.title, { fontSize: 12 }]}>
+                  {item.product_name}
+                </Text>
+
+                <Text
+                  style={[
+                    isSelected ? styles.activeSub : styles.sub,
+                    { fontSize: 10 },
+                  ]}
+                >
+                  {item.short_detail}
+                </Text>
+              </View>
+
+              <Text style={[styles.price, { fontSize: 13 }]}>
+                रु {item.amount}
+              </Text>
+            </TouchableOpacity>
+          );
+        }}
+      />
+    </View>
   );
 };
 
 export default DataPackList;
 
 const styles = StyleSheet.create({
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    backgroundColor: "#fff",
+    marginBottom: 10,
+    height: 44,
+    elevation: 2,
+  },
+  searchInput: {
+    flex: 1, // ✅ VERY IMPORTANT
+    fontSize: 14,
+    color: "#000",
+    paddingVertical: 0,
+  },
+
+  emptyText: {
+    textAlign: "center",
+    marginTop: 20,
+    color: "#999",
+  },
+
   card: {
     padding: 15,
     marginBottom: 10,
@@ -101,25 +186,21 @@ const styles = StyleSheet.create({
 
   title: {
     fontWeight: "bold",
-    fontSize: 14,
     color: "#000",
   },
-  
 
   sub: {
-    fontSize: 12,
     color: "#666",
     marginTop: 2,
   },
+
   activeSub: {
-    fontSize: 12,
     color: "#940b0b",
     marginTop: 2,
   },
 
   price: {
     fontWeight: "bold",
-    fontSize: 16,
     color: "#000",
   },
 });

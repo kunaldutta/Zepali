@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   Platform,
   ScrollView,
   KeyboardAvoidingView,
+  Keyboard,
 } from "react-native";
 
 import { rechargeMobile, buyDataPack } from "../../services/RechargeService";
@@ -37,6 +38,22 @@ const RechargeScreen = ({ navigation }) => {
   const [alertMessage, setAlertMessage] = useState("");
   const [alertTitle, setAlertTitle] = useState("success"); // success | error
   const [alertVisible, setAlertVisible] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+      const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+        setKeyboardHeight(e.endCoordinates.height);
+      });
+  
+      const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+        setKeyboardHeight(0);
+      });
+  
+      return () => {
+        showSub.remove();
+        hideSub.remove();
+      };
+    }, []);
 
   const handleRecharge = () => {
   if (number.length !== 10) {
@@ -103,6 +120,7 @@ const RechargeScreen = ({ navigation }) => {
       style={[
         globalStyles.providerBtn,
         provider === value && globalStyles.activeProvider,
+        {height: 30, paddingVertical: 0, justifyContent: "center", marginTop: 0}
       ]}
       onPress={() => {
         setAmount("");
@@ -124,6 +142,7 @@ const RechargeScreen = ({ navigation }) => {
       style={[
         globalStyles.providerBtn,
         mode === value && globalStyles.activeProvider,
+       {height: 30, paddingVertical: 0, justifyContent: "center", marginTop: 0}
       ]}
       onPress={() => {
         setMode(value);
@@ -174,11 +193,6 @@ const RechargeScreen = ({ navigation }) => {
         
 
         <View style={globalStyles.centerContainer}>
-          {console.log('Selected Pack in UI ===', failureReason?.number)}
-          <Text style={globalStyles.title2}>
-            {i18n.t("MOBILE_RECHARGE_AND_TOP_UP") ||
-              "Mobile Recharge And Top Up"}
-          </Text>
 
           {/* MODE SWITCH */}
           <View style={styles.providerRow}>
@@ -187,7 +201,7 @@ const RechargeScreen = ({ navigation }) => {
           </View>
 
           {/* Provider */}
-          <View style={styles.providerRow}>
+          <View style={[styles.providerRow, {marginTop: 5}]}>
             <ProviderBtn label="NTC" value="ntc" />
             <ProviderBtn label="Ncell" value="ncell" />
             {mode === "topup" && (
@@ -203,10 +217,11 @@ const RechargeScreen = ({ navigation }) => {
             onChangeText={(text) => {
               setNumber(text);
               setFailureReason(null);
+              setKeyboardHeight(10);
             }}
             keyboardType="numeric"
             maxLength={10}
-              style={[globalStyles.input, {height: 45,               // ✅ FIXED HEIGHT (IMPORTANT)
+              style={[globalStyles.input, {height: 40,               // ✅ FIXED HEIGHT (IMPORTANT)
                   paddingVertical: 0,       // ✅ prevents jump
                   textAlignVertical: 'center',} ]}
             scrollEnabled={false}
@@ -226,9 +241,9 @@ const RechargeScreen = ({ navigation }) => {
             }}
             keyboardType="numeric"
             editable={mode === "topup"}
-            style={[globalStyles.input, {height: 45,               // ✅ FIXED HEIGHT (IMPORTANT)
+            style={[globalStyles.input, {height: 40,               // ✅ FIXED HEIGHT (IMPORTANT)
                 paddingVertical: 0,       // ✅ prevents jump
-                textAlignVertical: 'center',} ]}
+                textAlignVertical: 'center',marginBottom: 5} ]}
             scrollEnabled={false}
           />
           {(failureReason?.amount) && (
@@ -237,7 +252,7 @@ const RechargeScreen = ({ navigation }) => {
             </Text>
           )}
           {selectedPack&&(
-            <Text style={{ color: "#312929", marginTop: 0, marginBottom: 5, fontWeight:"600" }}>
+            <Text style={{ color: "#b05c0e", marginTop: 0, marginBottom: 5, fontWeight:"600", fontSize: 12 }}>
             Selected Pack: {selectedPack?.product_name}{"\n"}Validity: {selectedPack?.validity}
             </Text>
           )}
@@ -253,12 +268,13 @@ const RechargeScreen = ({ navigation }) => {
       </ScrollView>
 
       {/* ✅ FIXED BUTTON */}
-      <View style={styles.bottomContainer}>
-        <TouchableOpacity
-          style={[globalStyles.button, { width: "90%", marginLeft: "5%" }]}
-          onPress={handleRecharge}
-          disabled={loading}
-        >
+      {keyboardHeight === 0 && (
+        <View style={styles.bottomContainer}>
+          <TouchableOpacity
+            style={[globalStyles.button, { width: "90%", marginLeft: "5%" }]}
+            onPress={handleRecharge}
+            disabled={loading}
+          >
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
@@ -267,7 +283,7 @@ const RechargeScreen = ({ navigation }) => {
             </Text>
           )}
         </TouchableOpacity>
-      </View>
+      </View>)}
       <CustomAlert
         visible={alertVisible}
         title={alertTitle}
@@ -299,7 +315,8 @@ export default RechargeScreen;
 const styles = StyleSheet.create({
   providerRow: {
     flexDirection: "row",
-    marginBottom: 20,
+    marginBottom: 10,
+    height: 30, // ✅ FIXED HEIGHT
   },
   bottomContainer: {
     position: "absolute",

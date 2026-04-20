@@ -18,6 +18,7 @@ import {globalStyles,colors} from '../../styles/globalStyles';
 import { Alert } from 'react-native';
 import AppHeader from '../../components/AppHeader';
 import { BASE_URL } from '../../network/apiClient';
+import { useFocusEffect } from '@react-navigation/native';
 
 
 /* IMAGE WITH LOADER */
@@ -60,6 +61,7 @@ const [categories,setCategories] = useState([]);
 const [products,setProducts] = useState([]);
 const [refreshing,setRefreshing] = useState(false);
 const [userName,setUserName] = useState('');
+const [user,setUser] = useState(null);
 
 
 
@@ -67,15 +69,26 @@ useEffect(()=>{
  loadHome();
 },[]);
 
+useFocusEffect(
+  useCallback(() => {
+    loadUsserDetail();
+    }, [])
+  );
 
+const loadUsserDetail = async()=>{
 
+  const userData = await AsyncStorage.getItem('USER_DATA');
+  const parsedUser = userData ? JSON.parse(userData) : null;
+  setUser(parsedUser);
+  setUserName(parsedUser?.name || '');  
+};
 /* LOAD API */
 
 const loadHome = async () => {
 
   const user = await AsyncStorage.getItem('USER_DATA');
   let parsedUser = user ? JSON.parse(user) : null;
-
+  setUser(parsedUser);
   if(parsedUser){
     setUserName(parsedUser?.name || '');
   }
@@ -107,7 +120,12 @@ const loadHome = async () => {
       error.message?.includes("Network") ||
       error.message?.includes("fetch")
     ) {
-      Alert.alert("No Internet", "Please check your connection");
+      if(error.message === "Network Error"){
+        Alert.alert("Error", "Something went wrong. Please try again.");
+      } else {
+        Alert.alert("No Internet", "Please check your connection");
+      }
+      
     } else {
       Alert.alert("Error", "Something went wrong");
     }
@@ -334,22 +352,30 @@ return(
 <SafeAreaView edges={['top','left','right']} style={styles.safeArea}>
 
 <AppHeader
-  title={`Hello, ${userName}!`}
+  title={`  Hello, ${userName}!`}
   showBack={false}
   leftComponent={
     <View
       style={{
-        height: 32,
-        width: 32,
+        top: 0,
+        height: 40,
+        width: 40,
         backgroundColor: '#bd9f9ffe',
-        borderRadius: 16
+        borderRadius: 20
       }}
-      
-    />
+      >
+      <Image
+                        source={user?.user_image
+                            ? { uri: BASE_URL + user?.user_image }
+                            : require('../../../src/Assets/LoginLogo/user.jpg')
+                        }
+                        style={styles.image}
+                      />
+    </View>
   }
 />
 
-<View style={[globalStyles.container,{height:'92%'}]}>
+<View style={[globalStyles.container,{height:'90%'}]}>
 
 {refreshing ? (
 
@@ -553,6 +579,13 @@ fontSize:14,
 marginTop:2,
 fontWeight:"bold",
 color:colors.price
-}
+},
+image: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    resizeMode: 'cover',
+    alignSelf: 'center',
+  }
 
 });

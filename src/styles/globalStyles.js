@@ -126,18 +126,20 @@ container2:{
 
   providerBtn: {
     flex: 1,
-    padding: 12,
+    padding: 8,
     marginRight: 6,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: "#ddd",
     alignItems: "center",
     backgroundColor: "#fff",
+    elevation: 2,
   },
 
   activeProvider: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
+    elevation: 4,
   },
 
   buttonText: {
@@ -151,12 +153,13 @@ container2:{
   input: {
     borderWidth: 1,
     borderColor: colors.border,
-    padding: 14,
     borderRadius: 12,
     backgroundColor: '#FFF',
     height:45,
     marginBottom: 15,
     elevation: 2,
+    textAlign: 'auto',
+    paddingHorizontal: 12,
   },
 
   input2: {
@@ -200,9 +203,10 @@ container2:{
     color: colors.text,
   },
   title2: {
-    fontSize: 20,
+    fontSize: 14,
     fontWeight: "bold",
-    marginBottom: 25,
+    marginBottom: 10,
+    marginTop: 1,
     textAlign: "center",
     color: colors.text,
   },

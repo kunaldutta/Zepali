@@ -145,11 +145,11 @@ const AddressListScreen = ({ route, navigation }) => {
 
   /* ================= EDIT ================= */
   const handleEditAddress = (address) => {
-    navigation.navigate('EditAddressScreen', { address });
+    navigation.navigate('MapPicker', { address });
   };
 
   /* ================= ADD ================= */
-  const handlePlaceOrder = () => {
+  const addNewAddress = () => {
     navigation.navigate('MapPicker');
   };
 
@@ -239,7 +239,7 @@ const AddressListScreen = ({ route, navigation }) => {
         )}
       </View>
 
-      <TouchableOpacity style={styles.placeOrderButton} onPress={handlePlaceOrder}>
+      <TouchableOpacity style={styles.placeOrderButton} onPress={addNewAddress}>
         <Text style={styles.buttonText}>Add New Address</Text>
       </TouchableOpacity>
 

@@ -27,7 +27,7 @@ import { updateAddressAPI } from '../../services/productService'
 
 const EditAddressScreen = ({ route, navigation }) => {
   const { address } = route.params;
-
+  console.log("Editing address:", address);
   const [userName, setUserName] = useState(address.user_name);
   const [address1, setAddress1] = useState(address.address_1);
   const [address2, setAddress2] = useState(address.address_2);
@@ -40,6 +40,8 @@ const EditAddressScreen = ({ route, navigation }) => {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [latitude, setLatitude] = useState(address.latitude);
+  const [longitude, setLongitude] = useState(address.longitude);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
   
@@ -85,6 +87,8 @@ const EditAddressScreen = ({ route, navigation }) => {
       zip_code: zipCode,
       contact_no: contactNo || '',
       default_value: defaultValue,
+      latitude: latitude || '',
+      longitude: longitude || '',
       land_mark: landMark,
     };
 

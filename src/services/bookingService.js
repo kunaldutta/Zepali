@@ -79,3 +79,11 @@ export const refundDirect = async (data) => {
     lang: i18n.locale,
   });
 };
+
+
+export const termsAndConditions = async (data) => {
+  return await post(API.BUS_TICKET_TERMS_AND_CONDITIONS, {
+    ...data,
+    language: i18n.locale,   // ✅ ADD THIS
+  });
+};
