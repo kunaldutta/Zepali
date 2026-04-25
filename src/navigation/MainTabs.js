@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import HomeScreen from '../screen/Tabs/HomeScreen';
 import RechargeScreen from '../screen/Recharges/RechargeScreen';
+import TestRechargeScreen from '../screen/Recharges/TestRechargeScreen';
 import Transactions from '../screen/Tabs/Transactions';
 import Profile from '../screen/Tabs/Profile';
 

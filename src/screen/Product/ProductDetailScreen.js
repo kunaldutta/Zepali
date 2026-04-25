@@ -113,15 +113,7 @@ useEffect(() => {
       setProduct(productData);
       setSelectedColor(selColor);
         console.log('Selected variant ==PDS', selectedVariant);
-        if (selectedVariant) {
-          const updatedVariant = {
-            ...variant,
-            measurement_value: selectedVariant   // 👈 replace here
-          };
-          setSelectedVariant(updatedVariant);
-        }else {
-            setSelectedVariant(variant);
-        }
+      setSelectedVariant(variant);
 
       console.log('Product Detail ===', productData);
       console.log('Product Detail ===2', selColor, variant);
@@ -153,14 +145,13 @@ useEffect(() => {
   /* ---------------- HANDLERS ---------------- */
 
   const changeColor = async (color) => {
-    console.log('Color ==', color)
+    setSelectedVariant(null); // ✅ VERY IMPORTANT (reset old selection)
+
     setLoading(true);
     await loadProduct(color.color);
 
     setActiveIndex(0);
-
     setQuantity(1);
-
   };
 
   const finalPrice = (price, offer) =>{

@@ -23,14 +23,20 @@ import AppHeader from '../../components/AppHeader';
 import { BASE_URL } from '../../network/apiClient';
 import RelatedProducts  from '../../components/RelatedProducts';
 import CartBillSummary from '../../components/CartBillSummary';
+import PointsSelector from '../../components/PointsSelector';
 
 
 export default function CartScreen({navigation}) {
   
   const { selectedAddress, fetchAddresses, addresses } = useAddress();
   const dispatch = useDispatch();
+  const [pointsData, setPointsData] = useState({
+    points: 0,
+    amount: 0,
+  });
 
   const { items, total, summary, loading } = useSelector(state => state.cart);
+  console.log('Summery = ', summary, total);
   const uniqueCategories = useMemo(() => {
   return items?.length
     ? [...new Set(items.map(item => item.category_id))]
@@ -40,6 +46,7 @@ export default function CartScreen({navigation}) {
   /* ✅ LOCAL LOADER (ROW BASED) */
   const [updatingItemId, setUpdatingItemId] = useState(null);
   const [cartLoading, setCartLoading] = useState(loading);
+  const [loggedinUser, setloggedinUser] = useState(loading);
   /* ================= LOAD CART ================= */
   useEffect(() => {
     loadCart();
@@ -50,6 +57,7 @@ export default function CartScreen({navigation}) {
   try {
     const userData = await AsyncStorage.getItem("USER_DATA");
     const parsedUser = userData ? JSON.parse(userData) : null;
+    setloggedinUser(parsedUser);
 
     if (!parsedUser?.id) return;
 
@@ -300,13 +308,59 @@ const handlePlaceOrder = () => {
     </View>
   );
 };
+const updatedSummary = useMemo(() => {
+  if (!summary) return summary;
+
+  const points = pointsData?.amount || 0;
+
+  // Base after product discount
+  const baseAfterDiscount =
+    (summary?.total_original_price || 0) -
+    (summary?.total_discount || 0);
+
+  // Apply points BEFORE GST
+  const taxableAmount = Math.max(0, baseAfterDiscount - points);
+
+  // GST % (derive safely)
+  const gstPercent =
+    baseAfterDiscount > 0
+      ? (summary.total_gst_amount / baseAfterDiscount)
+      : 0;
+
+  const newGST = taxableAmount * gstPercent;
+
+  const finalPayable = taxableAmount + newGST;
+
+  return {
+    ...summary,
+    points_discount: points,
+    total_gst_amount: newGST,
+    final_payable: finalPayable,
+  };
+}, [summary, pointsData]);
+
 
 const renderFooter = useMemo(() => {
   if (!items.length) return null;
   console.log('Calculating unique categories for related products...', summary);
   return (
     <>
-    <Text style={{ fontSize: 16, fontWeight: 'bold', marginTop:5 }}>
+    <View style={{marginVertical: 25, width:'100%', height:100,  elevation:3 }}>
+    <PointsSelector
+      userId={loggedinUser?.id}
+      cartTotal={summary?.total_original_price}
+      onChange={(data) => {
+        setPointsData(data);
+
+        // 🔥 CALL API AGAIN WITH POINTS
+        dispatch(fetchCart({
+          customer_id: loggedinUser?.id,
+          points_amount: data.amount
+        }));
+      }}
+    />
+    </View>
+    <Text style={{ fontSize: 16, fontWeight: 'bold', marginTop:55, }}>
         {i18n.t('BILLING_SUMMARY')}
       </Text>
     <View style={{marginVertical: 25, width:'100%', height:100, }}>
@@ -333,7 +387,7 @@ const renderFooter = useMemo(() => {
       })}
     </>
   );
-}, [uniqueCategories, items]);
+}, [uniqueCategories, items, pointsData, summary]);
 
 
   return(
@@ -352,7 +406,7 @@ const renderFooter = useMemo(() => {
 
           // ✅ SAFE CHECK
           if (!addresses || addresses.length === 0) {
-            navigation.navigate('AddAddress');
+            navigation.navigate('MapPicker');
             return;
           }
 
@@ -400,7 +454,7 @@ const renderFooter = useMemo(() => {
 
   {/* TOTAL */}
   <Text style={styles.totalText}>
-    {i18n.t('TOTAL') || 'Total'}: ₹ {total}
+    {i18n.t('TOTAL') || 'Total'}: ₹ {summary?.final_payable?.toFixed(2)}
   </Text>
 
   {/* BUTTON */}

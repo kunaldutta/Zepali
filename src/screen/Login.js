@@ -144,6 +144,7 @@ export default function Login() {
       });
 
       if (json?.status) {
+        console.log('json user',json.user);
         await AsyncStorage.setItem('USER_DATA', JSON.stringify(json.user));
         setShowLanguageModal(true);
       } 
@@ -173,7 +174,9 @@ export default function Login() {
         name,
         email,
         mobile_no: mobile,
-        country_code: getCountryCode()
+        country_code: getCountryCode(),
+        uuid: uuid,
+        fcm_token: fcmToken
       });
 
       if (json.status) {

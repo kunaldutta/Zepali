@@ -273,7 +273,11 @@ const openMapWithCurrentLocation = async () => {
 };
 
   /* INPUT FIELD */
-  const renderInput = (field, placeholder, keyboardType = 'default') => (
+  const renderInput = (field, placeholder, keyboardType = 'default') => {
+    console
+  const isMultiline = field === 'address_2';
+
+  return (
     <View style={styles.inputContainer}>
       {userData[field] ? <Text style={styles.label}>{placeholder}</Text> : null}
 
@@ -284,11 +288,18 @@ const openMapWithCurrentLocation = async () => {
         onChangeText={(text) =>
           setUserData({ ...userData, [field]: text })
         }
-        style={globalStyles.input}
+        style={[
+          globalStyles.input,
+          isMultiline && styles.multilineInput
+        ]}
         keyboardType={keyboardType}
+        multiline={isMultiline}
+        numberOfLines={isMultiline ? 4 : 1}
+        textAlignVertical={isMultiline ? 'top' : 'center'} // ✅ FIX
       />
     </View>
   );
+};
 
   return (
     <SafeAreaView style={styles.containemain}>
@@ -296,7 +307,6 @@ const openMapWithCurrentLocation = async () => {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-  <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     
     <View style={{ flex: 1 }}>
 
@@ -309,60 +319,14 @@ const openMapWithCurrentLocation = async () => {
 
       {/* FORM */}
       <View style={{ flex: 1, backgroundColor: colors.background, }}>
-        <View style={{flexDirection:'row'}}>
-        <TouchableOpacity
-            style={{
-              backgroundColor: colors.primary,
-              padding: 8,
-              borderRadius: 8,
-              marginTop: 10,
-              marginLeft: '5%',
-              marginBottom: 1,
-              width: '30%',
-              alignItems: 'center',
-              alignContent:'center'
-
-            }}
-            onPress={getCurrentLocation}
-            disabled={locationLoading}
-          >
-            <Ionicons name="location" size={20} color="#fff" />
-            {locationLoading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              
-              <Text style={{ color: 'white', fontWeight: 'bold', fontSize:12 }}>
-                Current Location
-              </Text>
-            )}
-        </TouchableOpacity>
-       <TouchableOpacity
-          style={{
-            backgroundColor: colors.blueBackgroundColor,
-              padding: 8,
-              borderRadius: 8,
-              marginTop: 10,
-              marginLeft: '30%',
-              marginBottom: 1,
-              width: '30%',
-              alignItems: 'center',
-              alignContent:'center'
-          }}
-          onPress={openMapWithCurrentLocation}
-        >
-          <Ionicons name="map" size={20} color="#fff" />
-          <Text style={{ color: 'white', fontWeight: 'bold' }}>
-            Use Map
-          </Text>
-      </TouchableOpacity>
-        </View>
+        
         <ScrollView
           contentContainerStyle={[styles.container,{paddingBottom: isKeyboardVisible ? 300 : 150}]}
           keyboardShouldPersistTaps="handled"   // ✅ IMPORTANT
           showsVerticalScrollIndicator={false}
         >
           {renderInput('user_name', 'Name')}
-          {renderInput('address_1', 'Address Line 1')}
+          {renderInput('address_1', 'Building Name / Number')}
           {renderInput('address_2', 'Address Line 2')}
           {renderInput('land_mark', 'Landmark')}
           {renderInput('contact_no', 'Contact Number', 'phone-pad')}
@@ -405,7 +369,6 @@ const openMapWithCurrentLocation = async () => {
       </View>
     </View>
 
-  </TouchableWithoutFeedback>
 </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -417,7 +380,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.safeAreaColor,
   },
-
+  multilineInput: {
+  height: 70,
+  paddingTop: 10, // makes typing start from top nicely
+},
   header: {
     height: 60,
     flexDirection: 'row',

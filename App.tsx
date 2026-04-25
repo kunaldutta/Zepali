@@ -38,6 +38,8 @@ import WebViewScreen from './src/screen/WebView/WebViewScreen';
 import TestRechargeScreen from './src/screen/Recharges/TestRechargeScreen';
 import RechargeStatusScreen from './src/screen/Recharges/RechargeStatusScreen';
 import EditProfile from './src/screen/Profile/EditProfile';
+import {PointsProvider} from './src/components/PointsContext';
+import WalletDetails from './src/screen/Wallet/WalletDetails';
 
 import {
   requestUserPermission,
@@ -214,6 +216,7 @@ const RootApp = () => {
           <Stack.Screen name="TestRechargeScreen" component={TestRechargeScreen} />
           <Stack.Screen name="RechargeStatusScreen" component={RechargeStatusScreen} />
           <Stack.Screen name="EditProfile" component={EditProfile} />
+          <Stack.Screen name="WalletDetails" component={WalletDetails} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
@@ -225,7 +228,9 @@ function App() {
   return (
     <Provider store={store}>
       <AddressProvider>
+        <PointsProvider>
         <RootApp />
+        </PointsProvider>
       </AddressProvider>
     </Provider>
   );

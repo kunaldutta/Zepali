@@ -7,13 +7,14 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import {BASE_URL} from '../../network/apiClient';
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import AppHeader from "../../components/AppHeader";
 import { globalStyles, colors } from '../../styles/globalStyles';
 import i18n from '../../localization/i18n';
-
-const API_URL = `${BASE_URL}/get_recharge_history.php?user_id=14`;
+import AsyncStorage from '@react-native-async-storage/async-storage';
+// 👇 import your API function
+import { getRechargeHistory } from '../../services/RechargeService';
 
 export default function RechargeStatusScreen({navigation}) {
   const [transactions, setTransactions] = useState([]);
@@ -26,11 +27,16 @@ export default function RechargeStatusScreen({navigation}) {
 
   const fetchTransactions = async () => {
     try {
-      const response = await fetch(API_URL);
-      const json = await response.json();
+      const userData = await AsyncStorage.getItem('USER_DATA');
+      const parsedUser = userData ? JSON.parse(userData) : null;
+      console.log('USER-ID ===', parsedUser?.id)
+      const response = await getRechargeHistory({ user_id: parsedUser?.id });
 
-      if (json.status) {
-        setTransactions(json.data);
+      // depending on your API structure
+      if (response?.status) {
+        setTransactions(response.data || []);
+      } else {
+        setTransactions([]);
       }
     } catch (error) {
       console.log('API ERROR:', error);
@@ -77,16 +83,19 @@ export default function RechargeStatusScreen({navigation}) {
     }
   };
 
+  const formatDate = (date) => {
+    const d = new Date(date);
+    return d.toLocaleString();
+  };
+
   const renderItem = ({item}) => {
     return (
       <View style={styles.card}>
-        {/* Top Row */}
         <View style={styles.row}>
           <Text style={styles.number}>{item.number}</Text>
-          <Text style={styles.amount}>₹ {item.amount}</Text>
+          <Text style={styles.amount}>रु {item.amount}</Text>
         </View>
 
-        {/* Status */}
         <View style={styles.row}>
           <Text style={[styles.status, getStatusColor(item.status)]}>
             {getStatusIcon(item.status)} {item.status}
@@ -96,18 +105,10 @@ export default function RechargeStatusScreen({navigation}) {
           </Text>
         </View>
 
-        {/* Detail */}
         <Text style={styles.detail}>{item.detail}</Text>
-
-        {/* Date */}
         <Text style={styles.date}>{formatDate(item.date)}</Text>
       </View>
     );
-  };
-
-  const formatDate = (date) => {
-    const d = new Date(date);
-    return d.toLocaleString();
   };
 
   if (loading) {
@@ -125,27 +126,26 @@ export default function RechargeStatusScreen({navigation}) {
         onBackPress={() => navigation.goBack()}
         showCart={false}
       />
-      
-    <FlatList
-      data={transactions}
-      keyExtractor={(item, index) => index.toString()}
-      renderItem={renderItem}
-      contentContainerStyle={{paddingBottom: 20}}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-      backgroundColor={colors.background}
-      ListEmptyComponent={
-        <View style={styles.empty}>
-          <Text>No transactions found</Text>
-        </View>
-      }
-    />
-   
+
+      <FlatList
+        data={transactions}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={renderItem}
+        contentContainerStyle={{paddingBottom: 20}}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        style={{backgroundColor: colors.background}} // 👈 fixed
+        ListEmptyComponent={
+          <View style={styles.empty}>
+            <Text>No transactions found</Text>
+          </View>
+        }
+      />
     </SafeAreaView>
-   
   );
 }
+
 
 const styles = StyleSheet.create({
   loader: {

@@ -174,11 +174,18 @@ export default function MapPicker({ route, navigation }) {
         const address1 = parts.length >= 2
           ? parts.slice(0, 2).join(',')
           : result.formatted_address;
-
-        const address2 = parts.length >= 3
+        const a1 = parts.length >= 3
           ? parts[2].trim()
           : '';
+        const a2 = parts.length >= 4
+          ? parts[3].trim()
+          : '';
+          const a3 = parts.length >= 5
+          ? parts[4].trim()
+          : '';
 
+        const address2 = a1 +', ' + a2 +', ' + a3
+        console.log('A-2 ====', parts)
         let city = '', state = '', zip = '';
 
         result.address_components.forEach(comp => {
@@ -207,7 +214,7 @@ export default function MapPicker({ route, navigation }) {
           });
         }else{
         navigation.navigate('AddAddress', {
-          address_1: address1,
+          address_1: address1+', ',
           address_2: address2,
           city,
           state,

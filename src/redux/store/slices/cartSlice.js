@@ -41,18 +41,29 @@ export const addToCart = createAsyncThunk(
 /* 🔥 FETCH CART */
 export const fetchCart = createAsyncThunk(
   'cart/fetchCart',
-  async (customerId, { rejectWithValue }) => {
+  async (payload, { rejectWithValue }) => {
     try {
-      console.log("🔥 FETCH THUNK:", customerId);
 
-      const res = await fetchCartAPI(customerId);
+      console.log("🔥 FETCH THUNK:", payload);
+
+      let customerId = 0;
+      let pointsAmount = 0;
+
+      // ✅ Handle both cases
+      if (typeof payload === 'object') {
+        customerId = payload.customer_id;
+        pointsAmount = payload.points_amount || 0;
+      } else {
+        customerId = payload;
+      }
+
+      const res = await fetchCartAPI(customerId, pointsAmount);
 
       return res;
 
     } catch (error) {
       console.log("❌ fetchCart ERROR:", error);
 
-      // ✅ FIX
       if (axios.isAxiosError(error)) {
         return rejectWithValue({
           message: error.message || 'Network Error',

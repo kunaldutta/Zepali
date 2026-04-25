@@ -4,27 +4,41 @@ import i18n from '../localization/i18n';
 
 const CartBillSummary = ({ summary }) => {
 
-  if (!summary) return null; // ✅ safety
+  if (!summary) return null;
+
+  const originalPrice = Number(summary.total_original_price || 0);
+  const discount = Number(summary.total_discount || 0);
+  const gst = Number(summary.total_gst_amount || 0);
+  const finalAmount = Number(summary.grand_total || 0);
+  const pointsDiscount = Number(summary.points_discount || 0);
 
   return (
     <View style={styles.container}>
       
       <View style={styles.row}>
         <Text>{i18n.t('TOTAL_ORIGINAL_PRICE')}</Text>
-        <Text>₹{summary.total_original_price}</Text>
+        <Text>₹{originalPrice.toFixed(2)}</Text>
       </View>
-
+    {pointsDiscount > 0 && (
+        <View style={styles.row}>
+          <Text>Points Used</Text>
+          <Text style={{ color: 'green' }}>
+            ₹{pointsDiscount.toFixed(2)}
+          </Text>
+        </View>
+      )}
       <View style={styles.row}>
         <Text>{i18n.t('TOTAL_DISCOUNT')}</Text>
         <Text style={{ color: 'green' }}>
-          -₹{summary.total_discount}
+          -₹{discount.toFixed(2)}
         </Text>
       </View>
 
       <View style={styles.row}>
         <Text>{i18n.t('GST_AMOUNT')}</Text>
-        <Text>₹{summary.total_gst_amount}</Text>
+        <Text>₹{gst.toFixed(2)}</Text>
       </View>
+
 
       <View style={styles.divider} />
 
@@ -33,7 +47,7 @@ const CartBillSummary = ({ summary }) => {
           {i18n.t('NET_PAYABLE')}
         </Text>
         <Text style={styles.totalText}>
-          ₹{summary.grand_total}
+          ₹{finalAmount.toFixed(2)}
         </Text>
       </View>
 

@@ -1,10 +1,8 @@
 import axios from 'axios';
 
-//https://zepali.net/IndoNep
-//https://developersdumka.in/IndoNep
 export const BASE_URL = 'https://zepali.net/IndoNep';
+
 const apiClient = axios.create({
-  //developersdumka.in
   baseURL: BASE_URL,
   timeout: 10000,
   headers: {
@@ -19,9 +17,7 @@ apiClient.interceptors.request.use(
     console.log("API REQUEST:", config.url);
     return config;
   },
-  error => {
-    return Promise.reject(error);
-  }
+  error => Promise.reject(error)
 );
 
 /* RESPONSE INTERCEPTOR */
@@ -32,7 +28,7 @@ apiClient.interceptors.response.use(
     return response;
   },
   error => {
-    console.log("API ERROR:", error);
+    console.log("API ERROR:", error?.response?.data || error.message);
     return Promise.reject(error);
   }
 );

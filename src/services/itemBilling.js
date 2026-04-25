@@ -11,3 +11,14 @@ export const getCartSummary = async (user_id) => {
 export const applyGST = async (data) => {
   return await post(API.APPLY_GST, data);
 };
+
+export const fetchUserPointsAPI = async (userId, cartTotal) => {
+  try {
+    return await get(
+      `${API.GET_USER_POINTS_FOR_USE}?user_id=${userId}&cart_total=${cartTotal}`
+    );
+  } catch (error) {
+    console.log('fetchUserPointsAPI ERROR:', error);
+    throw error;
+  }
+};

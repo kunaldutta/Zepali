@@ -1,4 +1,4 @@
-import React, {useState, useCallback} from 'react';
+import React, {useState, useCallback, useRef} from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
@@ -19,8 +19,10 @@ import { BASE_URL } from '../../network/apiClient';
 
 export default function Profile({navigation}) {
 
-  const [userName,setUserName] = useState('');
-  const [user,setUser] = useState(null);
+  const [userName, setUserName] = useState('User');
+  const [user, setUser] = useState(null);
+
+  const flatListRef = useRef(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -32,8 +34,11 @@ export default function Profile({navigation}) {
     const userData = await AsyncStorage.getItem('USER_DATA');
     const parsedUser = userData ? JSON.parse(userData) : null;
 
-    setUser(parsedUser);
-    setUserName(parsedUser?.name || 'User');
+    // ✅ prevent unnecessary re-render (main fix)
+    if (parsedUser?.name !== userName) {
+      setUser(parsedUser);
+      setUserName(parsedUser?.name || 'User');
+    }
   };
 
   const handleLogout = () => {
@@ -42,7 +47,19 @@ export default function Profile({navigation}) {
       {
         text: "Logout",
         onPress: async () => {
-          await AsyncStorage.removeItem('USER_DATA');
+          const data = await AsyncStorage.getItem('USER_DATA');
+          console.log("Before delete:", data);
+
+          await AsyncStorage.multiRemove([
+            'USER_DATA',
+            'SELECTED_ADDRESS',
+            'TOKEN' // if you use any auth token
+          ]);
+
+          const data2 = await AsyncStorage.getItem('USER_DATA');
+          console.log("After delete:", data2);
+
+          //SELECTED_ADDRESS
           if (globalThis.refreshApp) {
             globalThis.refreshApp();
           }
@@ -51,59 +68,20 @@ export default function Profile({navigation}) {
     ]);
   };
 
+  // ✅ keep menuData stable
   const menuData = [
-    {
-      id: '1',
-      icon: 'person-outline',
-      text: i18n.t('EDIT_PROFILE'),
-      screen: 'EditProfile'
-    },
-    {
-      id: '2',
-      icon: 'location-outline',
-      text: i18n.t('ADDRESS'),
-      screen: 'AddressListScreen'
-    },
-    {
-      id: '3',
-      icon: 'receipt-outline',
-      text: i18n.t('ORDER_HISTORY'),
-      screen: 'Members'
-    },
-    {
-      id: '4',
-      icon: 'language-outline',
-      text: i18n.t('LANGUAGE'),
-      screen: 'Language'
-    },
-    {
-      id: '5',
-      icon: 'ticket-outline',
-      text: i18n.t('TICKET_BOOKING_STATUS'),
-      screen: 'TicketBookingStatus'
-    },
-    {
-      id: '6',
-      icon: 'phone-portrait-outline',
-      text: i18n.t('RECHARGE_HISTORY'),
-      screen: 'RechargeStatusScreen'
-    },
-    {
-      id: '7',
-      icon: 'heart-outline',
-      text: i18n.t('WISHLIST'),
-      screen: 'WishlistScreen'
-    },
-    {
-      id: '8',
-      icon: 'log-out-outline',
-      text: i18n.t('LOGOUT'),
-      action: 'logout',
-      color: 'red'
-    }
+    { id: '1', icon: 'person-outline', text: i18n.t('EDIT_PROFILE'), screen: 'EditProfile' },
+    { id: '2', icon: 'location-outline', text: i18n.t('ADDRESS'), screen: 'AddressListScreen' },
+    { id: '3', icon: 'receipt-outline', text: i18n.t('ORDER_HISTORY'), screen: 'Members' },
+    { id: '4', icon: 'language-outline', text: i18n.t('LANGUAGE'), screen: 'Language' },
+    { id: '5', icon: 'ticket-outline', text: i18n.t('TICKET_BOOKING_STATUS'), screen: 'TicketBookingStatus' },
+    { id: '6', icon: 'phone-portrait-outline', text: i18n.t('RECHARGE_HISTORY'), screen: 'RechargeStatusScreen' },
+    { id: '7', icon: 'heart-outline', text: i18n.t('WISHLIST'), screen: 'WishlistScreen' },
+    { id: '8', icon: 'log-out-outline', text: i18n.t('LOGOUT'), action: 'logout', color: 'red' }
   ];
 
-  const renderItem = ({item}) => {
+  // ✅ memoized renderItem (prevents list reset)
+  const renderItem = useCallback(({item}) => {
     const onPress = () => {
       if (item.action === 'logout') {
         handleLogout();
@@ -128,12 +106,12 @@ export default function Profile({navigation}) {
         <Ionicons name="chevron-forward-outline" size={20} color="#999" />
       </TouchableOpacity>
     );
-  };
+  }, [navigation]);
 
   return (
-    <SafeAreaView style={globalStyles.safeArea}>
+    <SafeAreaView style={[globalStyles.safeArea, { flex: 1 }]}>
       <AppHeader
-        title={"  "+userName}
+        title={"  " + userName}
         showBack={false}
         leftComponent={
           <View style={styles.avatarContainer}>
@@ -148,15 +126,18 @@ export default function Profile({navigation}) {
           </View>
         }
       />
+
       <View style={{ backgroundColor: colors.background, height: '100%' }}>
-      <FlatList
-        data={menuData}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={styles.container}
-        ListHeaderComponent={<Text style={styles.title}>Profile</Text>}
-        showsVerticalScrollIndicator={false}
-      />
+        <FlatList
+          ref={flatListRef}
+          data={menuData}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderItem}
+          contentContainerStyle={styles.container}
+          ListHeaderComponent={<Text style={styles.title}>Profile</Text>}
+          showsVerticalScrollIndicator={false}
+          removeClippedSubviews={false}
+        />
       </View>
     </SafeAreaView>
   );
@@ -164,7 +145,8 @@ export default function Profile({navigation}) {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    paddingBottom: 40,
+    paddingHorizontal: 16,
     backgroundColor: colors.background,
   },
   title: {

@@ -23,6 +23,8 @@ export default function PurchaseReviewScreen({ route, navigation }) {
   const [cartItems, setCartItems] = useState(initialCartItems || []);
   const [totalPrice, setTotalPrice] = useState(0);
 
+  console.log('Cart ITEMS ==', initialCartItems);
+
   // ✅ CALL API ON LOAD
   useEffect(() => {
     loadCart();
@@ -164,7 +166,7 @@ const styles = StyleSheet.create({
 
   confirmBtn: {
     backgroundColor: colors.primary,
-    padding: 15,
+    padding: '3%',
     borderRadius: 10,
     alignItems: 'center',
     width: '40%',
@@ -173,6 +175,6 @@ const styles = StyleSheet.create({
   confirmText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 15
+    fontSize: 14
   }
 });

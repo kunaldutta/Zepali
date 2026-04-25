@@ -43,6 +43,10 @@ const API = {
   BUS_TICKET_TERMS_AND_CONDITIONS: "/bus_ticket_terms_and_conditions.php", // 🔥 important
   CANCEL_BOOKING: "/cancel_booking.php", // 🔥 important
   UPDATE_USER_PROFILE: "/update_user_profile.php", // 🔥 important
+  GET_USER_POINTS:"/get_user_points.php",
+  GET_USER_POINTS_DETAIL: "/get_user_points_detail.php",
+  GET_RECHARGE_HISTORY:"/get_recharge_history.php",
+  GET_USER_POINTS_FOR_USE:"/get_user_points_for_use.php"
 };
 
 export default API;

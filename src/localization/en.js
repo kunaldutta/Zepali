@@ -84,4 +84,5 @@ export default {
   RECHARGE_HISTORY: "Recharge History",
   STATUS: "Status",
   EDIT_PROFILE: "Edit Profile",
+  WALLET_DETAILS: "Wallet Details"
 };

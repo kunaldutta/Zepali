@@ -14,11 +14,14 @@ export const fetchProducts = async () => {
   }
 };
 
-export const fetchCartAPI = async (customerId) => {
-
+export const fetchCartAPI = async (customerId, pointsAmount = 0) => {
   try {
 
-    const data = await get(`${API.GET_CART}?customer_id=${customerId}&lang=${i18n.locale}`); // ✅ PASS LOCALE
+    const url = `${API.GET_CART}?customer_id=${customerId}&points_amount=${pointsAmount}&lang=${i18n.locale}`;
+
+    console.log("CART API URL:", url); // 🔥 IMPORTANT DEBUG
+
+    const data = await get(url);
 
     console.log("fetchCartAPI response:", data);
 
@@ -30,7 +33,6 @@ export const fetchCartAPI = async (customerId) => {
     throw error;
 
   }
-
 };
 
 export const fetchAddressesAPI = async (userId) => {

@@ -17,17 +17,17 @@ const AddressCard = ({ selectedAddress, onPress }) => {
 
           {selectedAddress ? (
             <>
-              <Text style={styles.addressName}>
+              {/* <Text style={styles.addressName}>
                 {selectedAddress.user_name}
+              </Text> */}
+
+              <Text style={styles.addressText} >
+                {selectedAddress.user_name}, {selectedAddress.address_1}, {selectedAddress.address_2}
               </Text>
 
-              <Text style={styles.addressText} numberOfLines={2}>
-                {selectedAddress.address_1}, {selectedAddress.address_2}
-              </Text>
-
-              <Text style={styles.addressText}>
+              {/* <Text style={styles.addressText}>
                 {selectedAddress.city}, {selectedAddress.state} - {selectedAddress.zip_code}
-              </Text>
+              </Text> */}
 
               <Text style={styles.addressPhone}>
                 📞 {selectedAddress.contact_no}
@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: 10,
     backgroundColor: '#fff',
-    top:0
+    top:0 
   },
 
   row: {
@@ -82,6 +82,7 @@ const styles = StyleSheet.create({
   addressText: {
     fontSize: 13,
     color: '#555',
+    height: 30,
   },
 
   addressPhone: {

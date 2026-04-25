@@ -82,4 +82,5 @@ export default {
   RECHARGE_STATUS: "रिचार्ज स्थिति",
   STATUS: "स्थिति",
   EDIT_PROFILE: "प्रोफ़ाइल संपादित करें",
+  WALLET_DETAILS: "वॉलेट का विवरण"
 };

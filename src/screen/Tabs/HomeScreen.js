@@ -19,7 +19,8 @@ import { Alert } from 'react-native';
 import AppHeader from '../../components/AppHeader';
 import { BASE_URL } from '../../network/apiClient';
 import { useFocusEffect } from '@react-navigation/native';
-
+import {usePoints} from  '../../components/PointsContext'
+import WalletBadge from '../../components/WalletBadge'
 
 /* IMAGE WITH LOADER */
 
@@ -62,6 +63,7 @@ const [products,setProducts] = useState([]);
 const [refreshing,setRefreshing] = useState(false);
 const [userName,setUserName] = useState('');
 const [user,setUser] = useState(null);
+const {fetchUserPoints} = usePoints();
 
 
 
@@ -72,6 +74,7 @@ useEffect(()=>{
 useFocusEffect(
   useCallback(() => {
     loadUsserDetail();
+    //loadUserPoints();
     }, [])
   );
 
@@ -81,6 +84,13 @@ const loadUsserDetail = async()=>{
   const parsedUser = userData ? JSON.parse(userData) : null;
   setUser(parsedUser);
   setUserName(parsedUser?.name || '');  
+
+  
+    if (userData) {
+      console.log('userData ====', parsedUser?.id);
+
+      fetchUserPoints(parsedUser?.id); // ✅ auto load
+    }
 };
 /* LOAD API */
 
@@ -283,28 +293,6 @@ const ListHeader = () => (
 
 {/* SEARCH */}
 
-<View style={styles.searchContainer}>
-
-<Ionicons
-name="search"
-size={22}
-color="#777"
-style={styles.searchIcon}
-/>
-
-<TouchableOpacity
-style={{flex:1}}
-onPress={()=>navigation.navigate("SearchScreen",{products:products})}
->
-
-<Text style={{padding:10,color:"#777"}}>
-Search product...
-</Text>
-
-</TouchableOpacity>
-
-</View>
-
 
 
 {/* OFFERS
@@ -374,29 +362,59 @@ return(
     </View>
   }
 />
+<View style={{flexDirection:'row'}}>
+<View style={[styles.searchContainer, {width:'68%'}]}>
 
-<View style={[globalStyles.container,{height:'90%'}]}>
+      <Ionicons
+      name="search"
+      size={22}
+      color="#777"
+      style={styles.searchIcon}
+      />
+
+      <TouchableOpacity
+      style={{flex:1, }}
+      onPress={()=>navigation.navigate("SearchScreen",{products:products})}
+      >
+
+      <Text style={{padding:10,color:"#777"}}>
+      Search product...
+      </Text>
+
+      </TouchableOpacity>
+
+</View>
+<View style={{width:'25%', height:47, flexDirection:'row', top:9,}}>
+    <WalletBadge style={{width:'100%', height:'100%'}} 
+      onPress={() => navigation.navigate('WalletDetails')}
+    />
+</View>
+</View>
+
+
+
+<View style={[globalStyles.container,{height:'70%'}]}>
 
 {refreshing ? (
 
 <ActivityIndicator size="large" color="#000" style={{marginTop:20}} />
 
-) : (
+    ) : (
 
-<FlatList
-data={products}
-renderItem={renderProduct}
-keyExtractor={(item, index) => `${item.id}-${index}`}
-numColumns={2}
-columnWrapperStyle={{justifyContent:'space-between', paddingHorizontal:5}}
-ListHeaderComponent={ListHeader}
-contentContainerStyle={{paddingBottom:5}}
-showsVerticalScrollIndicator={false}
-refreshing={refreshing}
-  onRefresh={loadHome}
-/>
+        <FlatList
+        data={products}
+        renderItem={renderProduct}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
+        numColumns={2}
+        columnWrapperStyle={{justifyContent:'space-between', paddingHorizontal:5}}
+        ListHeaderComponent={ListHeader}
+        contentContainerStyle={{paddingBottom:5}}
+        showsVerticalScrollIndicator={false}
+        refreshing={refreshing}
+          onRefresh={loadHome}
+        />
 
-)}
+    )}
 </View>
 </SafeAreaView>
 
@@ -437,7 +455,8 @@ alignItems:'center',
 backgroundColor:'#f1f1f1',
 margin:10,
 borderRadius:10,
-paddingHorizontal:10
+paddingHorizontal:10,
+height: 45
 },
 
 searchIcon:{

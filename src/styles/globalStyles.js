@@ -4,7 +4,7 @@ import { BottomTabBar } from '@react-navigation/bottom-tabs';
 import { ScrollView, StyleSheet } from 'react-native';
 
 const colors = {
-  primary: '#6D4C41',        // warm gold
+  primary: '#334155',//'6D4C41',        // warm gold
   secondary: '#8D6E63',  
   headerTitleColor: '#2D1B16',    // soft brown
   background: '#F5E6D3',     // cream background
