@@ -244,6 +244,7 @@ export default function MapPicker({ route, navigation }) {
         }}>
           <TextInput
             placeholder="Search location..."
+            placeholderTextColor={colors.placeholderTextColor}
             value={searchText}
             onChangeText={searchPlaces}
             style={{

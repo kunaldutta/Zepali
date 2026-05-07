@@ -258,8 +258,19 @@ const openMapWithCurrentLocation = async () => {
     const response = await addAddress(userData); // ✅ use context
 
     if (response?.success) {
-      Alert.alert('Success', response?.message || 'Address added successfully');
-      navigation.goBack();
+
+      Alert.alert(
+        'Success',
+        response?.message || 'Address added successfully',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              navigation.pop(2);
+            },
+          },
+        ],
+      );
     } else {
       Alert.alert('Error', response?.message || 'Something went wrong');
     }

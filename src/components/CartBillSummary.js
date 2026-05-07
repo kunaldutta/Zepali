@@ -1,11 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import i18n from '../localization/i18n';
+import { globalStyles, colors } from '../styles/globalStyles';
 
-const CartBillSummary = ({ summary }) => {
+const CartBillSummary = ({ summary, total }) => {
 
   if (!summary) return null;
-
+  console.log('Summary =====', summary);
   const originalPrice = Number(summary.total_original_price || 0);
   const discount = Number(summary.total_discount || 0);
   const gst = Number(summary.total_gst_amount || 0);
@@ -14,7 +15,7 @@ const CartBillSummary = ({ summary }) => {
 
   return (
     <View style={styles.container}>
-      
+      <Text style={globalStyles.title2}>{i18n.t('BILLING_SUMMARY')}</Text>
       <View style={styles.row}>
         <Text>{i18n.t('TOTAL_ORIGINAL_PRICE')}</Text>
         <Text>₹{originalPrice.toFixed(2)}</Text>
@@ -59,6 +60,7 @@ export default CartBillSummary;
 
 const styles = StyleSheet.create({
   container: {
+    top:20,
     backgroundColor: 'white',
     padding: 15,
     borderRadius: 12,

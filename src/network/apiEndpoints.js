@@ -46,7 +46,10 @@ const API = {
   GET_USER_POINTS:"/get_user_points.php",
   GET_USER_POINTS_DETAIL: "/get_user_points_detail.php",
   GET_RECHARGE_HISTORY:"/get_recharge_history.php",
-  GET_USER_POINTS_FOR_USE:"/get_user_points_for_use.php"
+  GET_USER_POINTS_FOR_USE:"/get_user_points_for_use.php",
+  PLACE_ORDER: 'place_order.php',
+  CREATE_RAZORPAY_ORDER:'create_razorpay_order.php',
+  VERIFY_ORDER_PAYMENT:'verify_order_payment.php',
 };
 
 export default API;

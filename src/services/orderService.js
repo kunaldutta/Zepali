@@ -1,0 +1,61 @@
+import { post } from '../network/apiService';
+
+import API from '../network/apiEndpoints';
+
+import i18n from '../localization/i18n';
+
+/* =========================
+   PLACE ORDER
+========================= */
+
+export const placeOrderAPI = async data => {
+    console.log('DATA ===',data)
+  return await post(
+
+    API.PLACE_ORDER,
+
+    {
+      ...data,
+
+      lang: i18n.locale,
+    },
+  );
+};
+
+/* =========================
+   CREATE RAZORPAY ORDER
+========================= */
+
+export const createOrderRazorpayAPI =
+  async data => {
+
+    return await post(
+
+      API.CREATE_RAZORPAY_ORDER,
+
+      {
+        ...data,
+
+        lang: i18n.locale,
+      },
+    );
+};
+
+/* =========================
+   VERIFY PAYMENT
+========================= */
+
+export const verifyOrderPaymentAPI =
+  async data => {
+
+    return await post(
+
+      API.VERIFY_ORDER_PAYMENT,
+
+      {
+        ...data,
+
+        lang: i18n.locale,
+      },
+    );
+};

@@ -189,6 +189,10 @@ container2:{
     fontWeight:'600',
     color: colors.text
   },
+  boldText:{ 
+    fontWeight:'600',
+    color: colors.text
+  },
 
   activeTabText:{ 
     color:'#fff' 

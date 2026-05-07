@@ -49,23 +49,38 @@ export default function ProductDetailScreen({ route, navigation }) {
   const [zoomIndex, setZoomIndex] = useState(0);
   const [colorName, setColorName] = useState('');
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [addingCart, setAddingCart] = useState(false);
   const [wishlistId, setWishlistId] = useState(null);
   
 
   /* ---------------- FETCH PRODUCT ---------------- */
-  const existingCartItem = product && selectedColor && selectedVariant
-  ? cartItems.find(item => {
-      console.log('ITEM ===',item.color)
-      console.log('ITEM ===product',selectedColor?.color)
-      // console.log('ITEM ===Selecte',selectedColor)
-      return (
-        String(item.product_id) === String(product.id) &&
-        String(item.color).toLowerCase() === String(selectedColor?.color).toLowerCase() &&
-        String(item.size).trim() === String(selectedVariant?.measurement_value).trim()
-      );
+  const existingCartItem =
+  product &&
+  selectedColor &&
+  selectedVariant
+    ? cartItems.find(item => {
 
-    })
-  : null;
+        return (
+          String(item.product_id) === String(product.id) &&
+
+          String(item.color || '')
+            .trim()
+            .toLowerCase() ===
+          String(selectedColor?.color || '')
+            .trim()
+            .toLowerCase() &&
+
+          String(item.measurement_id || item.size || '')
+            .trim() ===
+          String(
+            selectedVariant?.measurement_id ||
+            selectedVariant?.measurement_value ||
+            ''
+          ).trim()
+        );
+
+      })
+    : null;
 
   useEffect(() => {
   if (productId) {
@@ -112,7 +127,7 @@ useEffect(() => {
       setColorName(selColor.color);
       setProduct(productData);
       setSelectedColor(selColor);
-        console.log('Selected variant ==PDS', selectedVariant);
+        console.log('Selected variant ==PDS', selColor);
       setSelectedVariant(variant);
 
       console.log('Product Detail ===', productData);
@@ -175,14 +190,22 @@ useEffect(() => {
 
     try {
 
+      // ✅ FIX
+      const validVariant = selectedVariant;
+
+      const validImag =
+        selectedColor?.images?.find(
+          v => v.measurement_value === selectedVariant?.measurement_value
+        ) || selectedColor?.images?.[0];
+
       const user = await AsyncStorage.getItem('USER_DATA');
       const parsed = JSON.parse(user);
 
       await dispatch(updateCart({
         customer_id: parsed.id,
         prod_id: product.id,
-        measurement_id:validVariant?.measurement_id,
-        image_id:validImag.image_id,
+        measurement_id: validVariant?.measurement_id,
+        image_id: validImag?.image_id || 0,
         quantity: newQty,
       })).unwrap();
 
@@ -207,14 +230,22 @@ useEffect(() => {
 
     try {
 
+      // ✅ FIX
+      const validVariant = selectedVariant;
+
+      const validImag =
+        selectedColor?.images?.find(
+          v => v.measurement_value === selectedVariant?.measurement_value
+        ) || selectedColor?.images?.[0];
+
       const user = await AsyncStorage.getItem('USER_DATA');
       const parsed = JSON.parse(user);
 
       await dispatch(updateCart({
         customer_id: parsed.id,
         prod_id: product.id,
-        measurement_id:validVariant?.measurement_id,
-        image_id:validImag.image_id,
+        measurement_id: validVariant?.measurement_id,
+        image_id: validImag?.image_id || 0,
         quantity: newQty,
       })).unwrap();
 
@@ -234,6 +265,14 @@ useEffect(() => {
   const handleAddToCart = async () => {
 
   try {
+
+    // ✅ PREVENT DOUBLE TAP
+    if (addingCart || updating) {
+      return;
+    }
+
+    setAddingCart(true);
+
     const user = await AsyncStorage.getItem('USER_DATA');
     const parsed = JSON.parse(user);
 
@@ -242,29 +281,41 @@ useEffect(() => {
       return;
     }
 
-    
-    // ✅ ALWAYS FIND VALID VARIANT FROM SELECTED COLOR
-    const validVariant = selectedColor?.variants?.find(
-      v => v.measurement_value === selectedVariant?.measurement_value
-    ) || selectedColor?.variants?.[0];
-    const validImag = selectedColor?.images?.find(
-      v => v.measurement_value === selectedVariant?.measurement_value
-    ) || selectedColor?.images?.[0];
-    console.log('Slected Item ==', validImag);
+    // ✅ SAFETY
+    if (!selectedVariant?.measurement_id) {
+      Alert.alert("Error", "Variant missing");
+      return;
+    }
+
+    // ✅ VALID IMAGE
+    const validImag =
+      selectedColor?.images?.find(
+        v => v.measurement_value === selectedVariant?.measurement_value
+      ) || selectedColor?.images?.[0];
+
     await dispatch(addToCart({
       customer_id: parsed.id,
       vendor_id: product.vendor_id,
       prod_id: product.id,
-      measurement_id:validVariant?.measurement_id,
-      image_id:validImag.image_id,
+      measurement_id: selectedVariant.measurement_id,
+      image_id: validImag?.image_id || 0,
       quantity,
     })).unwrap();
 
     Alert.alert("Success", "Added to cart");
 
   } catch (e) {
+
     console.log("AddToCart ERROR:", e);
-    Alert.alert("Error", "Failed to add to cart");
+
+    Alert.alert(
+      "Error",
+      e?.message || "Failed to add to cart"
+    );
+
+  } finally {
+
+    setAddingCart(false);
   }
 };
 
@@ -352,8 +403,8 @@ const onWishlistPress = async () => {
             }}
           >
             {images.map((img, i) => (
-              <TouchableOpacity
-            key={i}
+            <TouchableOpacity
+              key={`${img.image_id}-${i}`}
             onPress={() => {
               const imgs = images.map(item => ({
                 url: BASE_URL + item.image_url
@@ -378,9 +429,9 @@ const onWishlistPress = async () => {
 
           {/* DOTS */}
           <View style={styles.dots}>
-            {images.map((_, i) => (
-              <View
-                key={i}
+            {images.map((img, i) => (
+            <View
+              key={`dot-${img.image_id}-${i}`}
                 style={[styles.dot, activeIndex === i && styles.activeDot]}
               />
             ))}
@@ -418,7 +469,7 @@ const onWishlistPress = async () => {
 
             {selectedVariant && (
               <>
-              <Text style={[styles.price, { textDecorationLine: 'line-through' }]}>₹ {selectedVariant?.price}</Text>
+              {selectedVariant.effective_discount_percentage > 0 && (<Text style={[styles.price, { textDecorationLine: 'line-through' }]}>₹ {selectedVariant?.price}</Text>)}
               <Text style={styles.productFinalPrice}>₹ {selectedVariant?.final_price}</Text>
               </>
             )}
@@ -431,7 +482,7 @@ const onWishlistPress = async () => {
               
               {product.colors.map(c => (
                 <TouchableOpacity
-                  key={c.color}
+                  key={`${c.color}-${c.image}`}
                   onPress={() => changeColor(c)}
                   style={[
                     styles.colorImageBox,
@@ -454,9 +505,9 @@ const onWishlistPress = async () => {
             <Text style={styles.title}>{i18n.t('SIZE')}</Text>
 
             <ScrollView style={{top:10}} horizontal>
-              {selectedColor?.variants.map((v, i) => (
-                <TouchableOpacity
-                  key={i}
+              {selectedColor?.variants.map((v) => (
+              <TouchableOpacity
+                key={`${v.measurement_id}-${v.measurement_value}`}
                   onPress={() => {
                     console.log('Selected variant ==', v);
                     setSelectedVariant(v)}}
@@ -506,7 +557,14 @@ const onWishlistPress = async () => {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.cartBtn} onPress={existingCartItem ? goToCart :handleAddToCart}>
+          <TouchableOpacity
+            style={[
+              styles.cartBtn,
+              (addingCart || updating) && { opacity: 0.5 }
+            ]}
+            disabled={addingCart || updating}
+            onPress={existingCartItem ? goToCart : handleAddToCart}
+          >
             <Text style={{color:'#fff', fontSize:14, fontWeight:'bold'}}>
               {existingCartItem ? i18n.t('GO_TO_CART'): i18n.t('ADD_TO_CART')}
             </Text>

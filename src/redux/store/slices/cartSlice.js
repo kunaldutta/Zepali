@@ -8,7 +8,9 @@ import i18n from '../../../localization/i18n';
 export const addToCart = createAsyncThunk(
   'cart/addToCart',
   async (payload, { dispatch, rejectWithValue }) => {
+
     try {
+
       console.log("🔥 ADD TO CART THUNK:", payload);
 
       const res = await addToCartAPI(payload);
@@ -21,12 +23,16 @@ export const addToCart = createAsyncThunk(
       return res;
 
     } catch (error) {
+
       console.log("❌ addToCart ERROR:", error);
 
-      // ✅ FIX: return serializable error
+      // ✅ SERIALIZABLE ERROR
       if (axios.isAxiosError(error)) {
         return rejectWithValue({
-          message: error.message || 'Network Error',
+          message:
+            error?.response?.data?.message ||
+            error.message ||
+            'Network Error',
         });
       }
 

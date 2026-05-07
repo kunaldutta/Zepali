@@ -1,180 +1,849 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+
 import {
   View,
   Text,
-  FlatList,
   StyleSheet,
-  Image,
   TouchableOpacity,
-  Alert
+  Alert,
+  ScrollView,
 } from 'react-native';
 
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors } from '../../styles/globalStyles';
-import AppHeader from '../../components/AppHeader';
+import AsyncStorage
+from '@react-native-async-storage/async-storage';
+
+import RazorpayCheckout
+from 'react-native-razorpay';
+
+import { SafeAreaView }
+from 'react-native-safe-area-context';
+
+import Ionicons
+from 'react-native-vector-icons/Ionicons';
+
+import { colors }
+from '../../styles/globalStyles';
+
+import AppHeader
+from '../../components/AppHeader';
+
+import {
+
+  placeOrderAPI,
+
+  createOrderRazorpayAPI,
+
+  verifyOrderPaymentAPI,
+
+} from '../../services/orderService';
 import i18n from '../../localization/i18n';
-import { BASE_URL } from '../../network/apiClient';
-import { applyGST } from '../../services/itemBilling';
 
-export default function PurchaseReviewScreen({ route, navigation }) {
+export default function PurchaseReviewScreen({
+  route,
+  navigation,
+}) {
 
-  const { cartItems: initialCartItems, address } = route.params;
+  const {
+    address,
+    summary,
+  } = route.params;
+  console.log('Summary ====', summary)
+  const [paymentMethod, setPaymentMethod] = useState('COD');
+  const [loading, setLoading] = useState(false);
 
-  const [cartItems, setCartItems] = useState(initialCartItems || []);
-  const [totalPrice, setTotalPrice] = useState(0);
+  /* ================= PLACE ORDER ================= */
 
-  console.log('Cart ITEMS ==', initialCartItems);
+  const confirmOrder = async () => {
 
-  // ✅ CALL API ON LOAD
-  useEffect(() => {
-    loadCart();
-  }, []);
+  try {
 
-  const loadCart = async () => {
-    try {
-      const res = await applyGST({
-        cart_items: initialCartItems   // ✅ correct data
+    if (loading) return;
+
+    setLoading(true);
+
+    /* =========================
+       USER
+    ========================= */
+
+    const user =
+      await AsyncStorage.getItem(
+        'USER_DATA',
+      );
+
+    const parsedUser =
+      user ? JSON.parse(user) : null;
+
+    if (!parsedUser?.id) {
+
+      Alert.alert(
+        'Login Required',
+        'Please login again',
+      );
+
+      return;
+    }
+
+    /* =========================
+       PLACE ORDER
+    ========================= */
+
+    const response =
+  await placeOrderAPI({
+
+    customer_id:
+      parsedUser.id,
+
+    address_id:
+      address?.id,
+
+    payment_method:
+      paymentMethod,
+
+    /* =========================
+       BILLING DATA
+    ========================= */
+
+        points_used:
+      Number(
+        summary?.points_discount || 0,
+      ),
+
+    points_discount:
+      Number(
+        summary?.points_discount || 0,
+      ),
+
+    product_discount:
+      Number(
+        (summary?.total_discount - summary?.points_discount) || 0,
+      ),
+
+    total_discount:
+      Number(
+        summary?.total_discount || 0,
+      ),
+
+    total_original_price:
+      Number(
+        summary?.total_original_price || 0,
+      ),
+
+    gst_amount:
+      Number(
+        summary?.total_gst_amount || 0,
+      ),
+
+    grand_total:
+      Number(
+        summary?.grand_total || 0,
+      ),
+  });
+
+        console.log(
+          'PLACE ORDER RESPONSE:',
+          response,
+        );
+
+    /* =========================
+       API ERROR
+    ========================= */
+
+    if (
+      response?.status !== 'success'
+    ) {
+
+      Alert.alert(
+
+        'Order Failed',
+
+        response?.message ||
+          'Something went wrong',
+      );
+
+      return;
+    }
+
+    /* =========================
+       COD SUCCESS
+    ========================= */
+
+    if (paymentMethod === 'COD') {
+
+      Alert.alert(
+
+        'Order Placed',
+
+        `Your order ${response?.order_no} has been placed successfully!`,
+
+        [
+          {
+            text: 'OK',
+
+            onPress: () => {
+
+              navigation.reset({
+
+                index: 0,
+
+                routes: [
+                  {
+                    name: 'MainTabs',
+                  },
+                ],
+              });
+            },
+          },
+        ],
+      );
+
+      return;
+    }
+
+    /* =========================
+       CREATE RAZORPAY ORDER
+    ========================= */
+
+    const razorpayResponse =
+
+      await createOrderRazorpayAPI({
+
+        order_id:
+          response?.order_id,
       });
 
-      console.log("API RESPONSE:", res);
+    console.log(
+      'RAZORPAY ORDER:',
+      razorpayResponse,
+    );
 
-      if (res.status) {
-        setCartItems(res.cart_items || []);
-        setTotalPrice(res.summary.grand_total || 0);
-      }
-    } catch (error) {
-      console.log("Cart Error:", error);
+    if (
+      !razorpayResponse?.status
+    ) {
+
+      Alert.alert(
+
+        'Payment Error',
+
+        razorpayResponse?.message ||
+
+          'Unable to initiate payment',
+      );
+
+      return;
     }
-  };
 
-  const confirmOrder = () => {
-    Alert.alert("Order Placed", "Your order has been placed successfully!");
-    navigation.popToTop();
-  };
+    /* =========================
+       OPEN RAZORPAY
+    ========================= */
 
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <Image
-        source={{ uri: BASE_URL + item.image }}
-        style={styles.image}
-        resizeMode="contain"
-      />
+    const options = {
 
-      <View style={{ flex: 1 }}>
-        <Text style={styles.name}>{item.product_name}</Text>
-        <Text>Qty: {item.quantity}</Text>
-        <Text style={styles.price}>₹ {item.total_price}</Text>
-      </View>
-    </View>
-  );
+      description:
+        'Zepali Order Payment',
+
+      currency: 'INR',
+
+      key:
+        razorpayResponse?.key,
+
+      amount:
+        razorpayResponse?.amount,
+
+      order_id:
+        razorpayResponse?.razorpay_order_id,
+
+      name: 'Zepali',
+
+      prefill: {
+
+        contact:
+          address?.contact_no || '',
+
+        name:
+          address?.user_name || '',
+      },
+
+      theme: {
+        color: colors.primary,
+      },
+    };
+
+    RazorpayCheckout.open(options)
+
+      .then(async data => {
+
+        try {
+
+          console.log(
+            'PAYMENT SUCCESS:',
+            data,
+          );
+
+          /* =========================
+             VERIFY PAYMENT
+          ========================= */
+
+          const verifyResponse =
+
+            await verifyOrderPaymentAPI({
+
+              order_id:
+                response?.order_id,
+
+              razorpay_payment_id:
+                data?.razorpay_payment_id,
+
+              razorpay_order_id:
+                data?.razorpay_order_id,
+
+              razorpay_signature:
+                data?.razorpay_signature,
+            });
+
+          console.log(
+            'VERIFY RESPONSE:',
+            verifyResponse,
+          );
+
+          if (
+            !verifyResponse?.status
+          ) {
+
+            Alert.alert(
+
+              'Verification Failed',
+
+              verifyResponse?.message ||
+
+                'Payment verification failed',
+            );
+
+            return;
+          }
+
+          /* =========================
+             SUCCESS
+          ========================= */
+
+          Alert.alert(
+
+            'Payment Successful',
+
+            'Your order has been confirmed.',
+
+            [
+              {
+                text: 'OK',
+
+                onPress: () => {
+
+                  navigation.reset({
+
+                    index: 0,
+
+                    routes: [
+                      {
+                        name: 'MainTabs',
+                      },
+                    ],
+                  });
+                },
+              },
+            ],
+          );
+
+        } catch (error) {
+
+          console.log(
+            'VERIFY ERROR:',
+            error,
+          );
+
+          Alert.alert(
+
+            'Error',
+
+            'Payment done but verification failed',
+          );
+        }
+      })
+
+      .catch(error => {
+
+        console.log(
+          'RAZORPAY ERROR:',
+          error,
+        );
+
+        Alert.alert(
+
+          error?.code === 0
+            ? 'Payment Cancelled'
+            : 'Payment Failed',
+
+          error?.code === 0
+
+            ? 'Transaction cancelled'
+
+            : 'Payment failed. Try again',
+        );
+      });
+
+  } catch (error) {
+
+    console.log(
+      'PLACE ORDER ERROR:',
+      error,
+    );
+
+    Alert.alert(
+      'Error',
+      'Something went wrong',
+    );
+
+  } finally {
+
+    setLoading(false);
+  }
+};
 
   return (
     <SafeAreaView style={styles.safeArea}>
 
+      {/* HEADER */}
+
       <AppHeader
-        title={i18n.t('REVIEW_ORDER') || 'REVIEW ORDER'}
+        title={'Checkout'}
         onBackPress={() => navigation.goBack()}
         showCart={false}
       />
 
-      {/* ADDRESS */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Delivery Address</Text>
-        <Text>{address?.user_name}</Text>
-        <Text>{address?.address_1}</Text>
-        <Text>{address?.city} - {address?.zip_code}</Text>
-      </View>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          paddingBottom: 120,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
 
-      {/* ITEMS */}
-      <View style={{ flex: 1, backgroundColor: colors.background }}>
-        <FlatList
-          data={cartItems}
-          keyExtractor={(item) => item.cart_id.toString()}
-          renderItem={renderItem}
-          contentContainerStyle={{ padding: 15 }}
-        />
-      </View>
+        {/* ================= ADDRESS ================= */}
 
-      {/* FOOTER */}
+        <View style={styles.card}>
+
+          <View style={styles.rowBetween}>
+
+            <Text style={styles.sectionTitle}>
+              Delivery Address
+            </Text>
+
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+            >
+              <Text style={styles.changeText}>
+                Change
+              </Text>
+            </TouchableOpacity>
+
+          </View>
+
+          <Text style={styles.name}>
+            {address?.user_name}
+          </Text>
+
+          <Text style={styles.addressText}>
+            {address?.address_1}
+          </Text>
+
+          {!!address?.address_2 && (
+            <Text style={styles.addressText}>
+              {address?.address_2}
+            </Text>
+          )}
+
+          <Text style={styles.addressText}>
+            {address?.city}, {address?.state} - {address?.zip_code}
+          </Text>
+
+          <Text style={styles.phone}>
+            +91 {address?.contact_no}
+          </Text>
+
+        </View>
+
+        {/* ================= BILLING SUMMARY ================= */}
+
+        <View style={styles.card}>
+
+          <Text style={styles.sectionTitle}>
+            Billing Summary
+          </Text>
+
+          {/* TOTAL ORIGINAL PRICE */}
+
+          <View style={styles.billRow}>
+            <Text style={styles.billLabel}>
+              Total Original Price
+            </Text>
+
+            <Text style={styles.billValue}>
+              ₹ {Number(summary?.total_original_price || 0).toFixed(2)}
+            </Text>
+          </View>
+
+          {/* POINTS USED */}
+
+          {!!Number(summary?.points_used || 0) && (
+            <View style={styles.billRow}>
+              <Text style={styles.billLabel}>
+                Points Used {summary?.points_discount}
+              </Text>
+
+              <Text style={styles.discountText}>
+                {summarypoints_discount}
+                - ₹ {Number(summary?.points_discount || 0).toFixed(2)}
+              </Text>
+            </View>
+          )}
+
+          {/* TOTAL DISCOUNT */}
+
+          {/* PRODUCT DISCOUNT */}
+
+          {!!(
+            Number(summary?.total_discount || 0) -
+            Number(summary?.points_used || 0)
+          ) && (
+            <View style={styles.billRow}>
+              <Text style={styles.billLabel}>
+                Point Used
+              </Text>
+              
+              <Text style={styles.discountText}>
+                - ₹ {(
+                  Number(summary?.points_discount || 0) -
+                  Number(summary?.points_used || 0)
+                ).toFixed(2)}
+              </Text>
+            </View>
+          )}
+          {!!(
+            Number(summary?.total_discount || 0) -
+            Number(summary?.points_used || 0)
+          ) && (
+            <View style={styles.billRow}>
+              <Text style={styles.billLabel}>
+                Product Discount
+              </Text>
+              
+              <Text style={styles.discountText}>
+                - ₹ {(
+                  Number(summary?.total_discount || 0) -
+                  Number(summary?.points_discount || 0)
+                ).toFixed(2)}
+              </Text>
+            </View>
+          )}
+          {!!(
+            Number(summary?.total_discount || 0) -
+            Number(summary?.points_used || 0)
+          ) && (
+            <View style={styles.billRow}>
+              <Text style={styles.billLabel}>
+                Total Discount
+              </Text>
+              
+              <Text style={styles.discountText}>
+                - ₹ {(
+                  Number(summary?.total_discount || 0) 
+                ).toFixed(2)}
+              </Text>
+            </View>
+          )}
+
+          {/* GST */}
+
+          {!!Number(summary?.gst_amount || 0) && (
+            <View style={styles.billRow}>
+              <Text style={styles.billLabel}>
+                GST Amount
+              </Text>
+
+              <Text style={styles.billValue}>
+                ₹ {Number(summary?.gst_amount || 0).toFixed(2)}
+              </Text>
+            </View>
+          )}
+
+          <View style={styles.divider} />
+
+          {/* NET PAYABLE */}
+
+          <View style={styles.billRow}>
+            <Text style={styles.totalLabel}>
+              Net Payable
+            </Text>
+
+            <Text style={styles.totalValue}>
+              ₹ {Number(summary?.grand_total || 0).toFixed(2)}
+            </Text>
+          </View>
+
+        </View>
+
+        {/* ================= PAYMENT ================= */}
+
+        <View style={styles.card}>
+
+          <Text style={styles.sectionTitle}>
+            Payment Method
+          </Text>
+
+          {/* COD */}
+
+          <TouchableOpacity
+            style={styles.paymentOption}
+            onPress={() => setPaymentMethod('COD')}
+          >
+
+            <View style={styles.paymentLeft}>
+
+              <Ionicons
+                name={
+                  paymentMethod === 'COD'
+                    ? 'radio-button-on'
+                    : 'radio-button-off'
+                }
+                size={22}
+                color={colors.primary}
+              />
+
+              <Text style={styles.paymentText}>
+                Cash on Delivery
+              </Text>
+
+            </View>
+
+          </TouchableOpacity>
+
+          {/* ONLINE */}
+
+          <TouchableOpacity
+            style={styles.paymentOption}
+            onPress={() => setPaymentMethod('ONLINE')}
+          >
+
+            <View style={styles.paymentLeft}>
+
+              <Ionicons
+                name={
+                  paymentMethod === 'ONLINE'
+                    ? 'radio-button-on'
+                    : 'radio-button-off'
+                }
+                size={22}
+                color={colors.primary}
+              />
+
+              <Text style={styles.paymentText}>
+                Pay Online
+              </Text>
+
+            </View>
+
+          </TouchableOpacity>
+
+        </View>
+
+      </ScrollView>
+
+      {/* ================= FOOTER ================= */}
+
       <View style={styles.footer}>
-        <Text style={styles.total}>
-          {i18n.t('TOTAL') || 'Total'}: ₹ {totalPrice}
-        </Text>
+
+        <View>
+
+          <Text style={styles.footerLabel}>
+            Total Payable
+          </Text>
+
+          <Text style={styles.footerAmount}>
+            ₹ {Number(summary?.grand_total || 0).toFixed(2)}
+          </Text>
+
+        </View>
 
         <TouchableOpacity
-          style={styles.confirmBtn}
+          style={styles.placeOrderBtn}
           onPress={confirmOrder}
+          disabled={loading}
         >
-          <Text style={styles.confirmText}>
-            {i18n.t('CONFIRM_ORDER') || 'Confirm Order'}
-          </Text>
+
+          <Text style={styles.placeOrderText}>
+
+          {loading
+            ? 'Please Wait...'
+            : paymentMethod === 'ONLINE'
+            ? 'Proceed To Pay'
+            : 'Place Order'}
+
+        </Text>
+
         </TouchableOpacity>
+
       </View>
 
     </SafeAreaView>
   );
 }
 
+/* ================= STYLES ================= */
+
 const styles = StyleSheet.create({
+
   safeArea: {
     flex: 1,
-    backgroundColor: colors.safeAreaColor
-  },
-
-  section: {
-    padding: 15,
-    backgroundColor: colors.background
-  },
-
-  sectionTitle: {
-    fontWeight: 'bold',
-    marginBottom: 5
+    backgroundColor: colors.background,
   },
 
   card: {
-    flexDirection: 'row',
-    marginBottom: 15
+    backgroundColor: '#fff',
+    marginHorizontal: 15,
+    marginTop: 15,
+    borderRadius: 12,
+    padding: 15,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#eee',
   },
 
-  image: {
-    width: 70,
-    height: 70,
-    marginRight: 10
+  rowBetween: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginBottom: 10,
+  },
+
+  changeText: {
+    color: colors.primary,
+    fontWeight: 'bold',
   },
 
   name: {
-    fontWeight: 'bold'
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginBottom: 5,
   },
 
-  price: {
-    fontWeight: 'bold'
+  addressText: {
+    fontSize: 14,
+    color: '#555',
+    marginBottom: 3,
+  },
+
+  phone: {
+    marginTop: 5,
+    fontWeight: '600',
+    color: colors.text,
+  },
+
+  billRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 7,
+  },
+
+  billLabel: {
+    fontSize: 15,
+    color: '#555',
+  },
+
+  billValue: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.text,
+  },
+
+  discountText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: 'green',
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: '#ddd',
+    marginVertical: 12,
+  },
+
+  totalLabel: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.text,
+  },
+
+  totalValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.primary,
+  },
+
+  paymentOption: {
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderColor: '#f1f1f1',
+  },
+
+  paymentLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  paymentText: {
+    marginLeft: 12,
+    fontSize: 16,
+    color: colors.text,
+    fontWeight: '500',
   },
 
   footer: {
-    padding: 15,
+    backgroundColor: '#fff',
     borderTopWidth: 1,
+    borderColor: '#eee',
+    padding: 15,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-
-  total: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    flex: 1
-  },
-
-  confirmBtn: {
-    backgroundColor: colors.primary,
-    padding: '3%',
-    borderRadius: 10,
     alignItems: 'center',
-    width: '40%',
   },
 
-  confirmText: {
+  footerLabel: {
+    fontSize: 12,
+    color: '#777',
+  },
+
+  footerAmount: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: colors.primary,
+  },
+
+  placeOrderBtn: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 25,
+    paddingVertical: 14,
+    borderRadius: 10,
+  },
+
+  placeOrderText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 14
-  }
+    fontSize: 15,
+  },
+
 });

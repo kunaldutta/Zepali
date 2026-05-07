@@ -256,8 +256,8 @@ onPress={()=>{
 {item?.effective_discount_percentage !== 0 && (
       <View style={styles.offerBanner}>
         <Text style={styles.offerText}>
-          Offer up to{'\n'}
-          {item.effective_discount_percentage}%
+          {/* Offer up to{'\n'} */}
+          {item.offer_name}
         </Text>
       </View>
     )}
@@ -273,9 +273,9 @@ resizeMode="contain"
 <Text numberOfLines={1} style={styles.productSortDesc}>
 {item?.description}
 </Text>
-<Text style={[styles.productPrice, { textDecorationLine: 'line-through' }]}>
+{item.effective_discount_percentage > 0 && (<Text style={[styles.productPrice, { textDecorationLine: 'line-through' }]}>
 ₹ {item?.min_price}
-</Text>
+</Text>)}
 <Text style={styles.productFinalPrice}>
 ₹ {item?.final_price}
 </Text>

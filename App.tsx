@@ -72,12 +72,16 @@ const RootApp = () => {
 
   /* INITIAL LOAD */
   useEffect(() => {
-    loadApp();
-    requestUserPermission();
-    getFCMToken();
 
-    // ✅ Only background handler
-    backgroundHandler();
+        loadApp();
+
+        backgroundHandler();
+
+        // ✅ ONLY ON APP START
+        requestUserPermission();
+
+        getFCMToken();
+
   }, []);
 
   /* NOTIFICATION HANDLER (FOREGROUND) */
@@ -120,25 +124,7 @@ const RootApp = () => {
 
   }, []);
 
-  /* APP RESUME HANDLER */
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', async (nextState) => {
-      if (nextState === 'active') {
-        try {
-          const user = await AsyncStorage.getItem(STORAGE_KEYS.USER);
-          const parsed = user ? JSON.parse(user) : null;
-
-          if (parsed?.id) {
-            dispatch(fetchCart(parsed.id));
-          }
-        } catch (error) {
-          console.log('AppState error:', error);
-        }
-      }
-    });
-
-    return () => subscription.remove();
-  }, []);
+  
 
   /* LOAD APP */
   const loadApp = async () => {
