@@ -9,7 +9,6 @@ import i18n from '../localization/i18n';
 ========================= */
 
 export const placeOrderAPI = async data => {
-    console.log('DATA ===',data)
   return await post(
 
     API.PLACE_ORDER,
@@ -58,4 +57,18 @@ export const verifyOrderPaymentAPI =
         lang: i18n.locale,
       },
     );
+};
+
+export const cancelOrderItemAPI = async data => {
+  console.log('DATA ===',data);
+  return await post(
+
+    API.CANCEL_ORDER_ITEM,
+
+    {
+      ...data,
+
+      lang: i18n.locale,
+    },
+  );
 };

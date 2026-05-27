@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import { colors } from '../styles/globalStyles';
 
 const CustomAlert = ({
   visible,
@@ -84,15 +85,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     borderRadius: 8,
     marginLeft: 10,
+    backgroundColor: colors.primary,
   },
   cancelBtn: {
-    backgroundColor: '#eee',
+    backgroundColor: colors.cancelButtonColor,
   },
   okBtn: {
-    backgroundColor: '#007BFF',
+    backgroundColor: colors.primary,
   },
   cancelText: {
-    color: '#333',
+    color: '#cedfe0',
     fontWeight: '600',
   },
   okText: {

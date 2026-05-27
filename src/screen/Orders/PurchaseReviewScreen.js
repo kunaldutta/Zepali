@@ -562,14 +562,14 @@ export default function PurchaseReviewScreen({
 
           {/* GST */}
 
-          {!!Number(summary?.gst_amount || 0) && (
+          {!!Number(summary?.total_gst_amount || 0) && (
             <View style={styles.billRow}>
               <Text style={styles.billLabel}>
                 GST Amount
               </Text>
 
               <Text style={styles.billValue}>
-                ₹ {Number(summary?.gst_amount || 0).toFixed(2)}
+                ₹ {Number(summary?.total_gst_amount || 0).toFixed(2)}
               </Text>
             </View>
           )}

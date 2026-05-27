@@ -23,7 +23,6 @@ export const addToCart = createAsyncThunk(
       return res;
 
     } catch (error) {
-
       console.log("❌ addToCart ERROR:", error);
 
       // ✅ SERIALIZABLE ERROR

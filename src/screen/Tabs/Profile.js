@@ -71,13 +71,14 @@ export default function Profile({navigation}) {
   // ✅ keep menuData stable
   const menuData = [
     { id: '1', icon: 'person-outline', text: i18n.t('EDIT_PROFILE'), screen: 'EditProfile' },
-    { id: '2', icon: 'location-outline', text: i18n.t('ADDRESS'), screen: 'AddressListScreen' },
-    { id: '3', icon: 'receipt-outline', text: i18n.t('ORDER_HISTORY'), screen: 'Members' },
-    { id: '4', icon: 'language-outline', text: i18n.t('LANGUAGE'), screen: 'Language' },
-    { id: '5', icon: 'ticket-outline', text: i18n.t('TICKET_BOOKING_STATUS'), screen: 'TicketBookingStatus' },
-    { id: '6', icon: 'phone-portrait-outline', text: i18n.t('RECHARGE_HISTORY'), screen: 'RechargeStatusScreen' },
-    { id: '7', icon: 'heart-outline', text: i18n.t('WISHLIST'), screen: 'WishlistScreen' },
-    { id: '8', icon: 'log-out-outline', text: i18n.t('LOGOUT'), action: 'logout', color: 'red' }
+    { id: '2', icon: 'card-outline', text: i18n.t('MY_APPLICATIONS'), screen: 'MyApplicationsScreen' },
+    { id: '3', icon: 'location-outline', text: i18n.t('ADDRESS'), screen: 'AddressListScreen' },
+    { id: '4', icon: 'receipt-outline', text: i18n.t('MY_ORDERS'), screen: 'MyOrdersScreen' },
+    { id: '5', icon: 'language-outline', text: i18n.t('LANGUAGE'), screen: 'Language' },
+    { id: '6', icon: 'ticket-outline', text: i18n.t('TICKET_BOOKING_STATUS'), screen: 'TicketBookingStatus' },
+    { id: '7', icon: 'phone-portrait-outline', text: i18n.t('RECHARGE_HISTORY'), screen: 'RechargeStatusScreen' },
+    { id: '8', icon: 'heart-outline', text: i18n.t('WISHLIST'), screen: 'WishlistScreen' },
+    { id: '9', icon: 'log-out-outline', text: i18n.t('LOGOUT'), action: 'logout', color: 'red' }
   ];
 
   // ✅ memoized renderItem (prevents list reset)
@@ -126,8 +127,8 @@ export default function Profile({navigation}) {
           </View>
         }
       />
-
       <View style={{ backgroundColor: colors.background, height: '100%' }}>
+      <View style={{ backgroundColor: colors.background, height: '90%' }}>
         <FlatList
           ref={flatListRef}
           data={menuData}
@@ -138,6 +139,7 @@ export default function Profile({navigation}) {
           showsVerticalScrollIndicator={false}
           removeClippedSubviews={false}
         />
+      </View>
       </View>
     </SafeAreaView>
   );

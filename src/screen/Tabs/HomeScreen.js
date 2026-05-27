@@ -87,7 +87,6 @@ const loadUsserDetail = async()=>{
 
   
     if (userData) {
-      console.log('userData ====', parsedUser?.id);
 
       fetchUserPoints(parsedUser?.id); // ✅ auto load
     }
@@ -157,8 +156,14 @@ return cat ? cat.category_name : '';
 
 };
 
-
-
+const removeApplicationIDAndNavigate = async () => {
+ try {
+  await AsyncStorage.removeItem('APPLICATION_ID');
+  navigation.navigate("PrawasiCardNavigator");
+} catch (e) {
+  console.log('Error removing item', e);
+}
+}
 /* OFFERS */
 
 const renderOffer = ({item}) => (
@@ -201,8 +206,11 @@ const renderCategory = ({item}) => (
   style={styles.categoryBox}
   onPress={() =>{
     console.log("Category pressed:", item.category_name);
-    if (item.category_name_en === "Mobile Recharge") {
-      navigation.navigate("Recharge");
+    if (item?.id === "11") {
+      navigation.navigate("BillAndRechargeScreen");
+    }
+    else if (item?.id === "10") {
+      removeApplicationIDAndNavigate();
     }
     else if (item.category_name_en === "Travel") {
       navigation.navigate("BusSearchScreen");

@@ -21,6 +21,8 @@ const colors = {
   descriptioncolor:"#058484",
   blueBackgroundColor: '#2980b9',
   rowSelectBackground: '#f5e08b',
+  cancelButtonColor: '#b8736b',
+  disabledButtonColor: '#ccc',
 };
 
 const spacing = {
@@ -51,7 +53,7 @@ const typography = {
 export const globalStyles = StyleSheet.create({
  container: {
   flexGrow: 1,
-  padding: 10,
+  padding: 5,
   backgroundColor: colors.background,       // ✅ change
 },
 safeArea: { flex: 1, backgroundColor: colors.safeAreaColor },

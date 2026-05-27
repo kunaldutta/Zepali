@@ -8,7 +8,7 @@ import RechargeScreen from '../screen/Recharges/RechargeScreen';
 import TestRechargeScreen from '../screen/Recharges/TestRechargeScreen';
 import Transactions from '../screen/Tabs/Transactions';
 import Profile from '../screen/Tabs/Profile';
-
+import BillAndRechargeScreen from '../screen/NepalBillingAndRecharge/BillAndRechargeScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { colors } from '../styles/globalStyles';
 
@@ -56,7 +56,7 @@ export default function MainTabs() {
   let iconName;
 
   if (route.name === 'Home') iconName = 'home-outline';
-  else if (route.name === 'Recharge') iconName = 'phone-portrait-outline';
+  else if (route.name === 'NepalBilling') iconName = 'phone-portrait-outline';
   else if (route.name === 'Transactions') iconName = 'list-outline';
   else if (route.name === 'Profile') iconName = 'person-outline';
 
@@ -79,7 +79,7 @@ export default function MainTabs() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Recharge" component={RechargeScreen} />
+      <Tab.Screen name="NepalBilling" component={BillAndRechargeScreen} />
       <Tab.Screen name="Transactions" component={Transactions} />
       <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>

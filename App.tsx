@@ -40,6 +40,13 @@ import RechargeStatusScreen from './src/screen/Recharges/RechargeStatusScreen';
 import EditProfile from './src/screen/Profile/EditProfile';
 import {PointsProvider} from './src/components/PointsContext';
 import WalletDetails from './src/screen/Wallet/WalletDetails';
+import MyOrdersScreen from './src/screen/Orders/MyOrdersScreen';
+import OrderDetailScreen from './src/screen/Orders/OrderDetailsScreen';
+import ElectricityBillScreen from './src/screen/ElectricityBill/ElectricityBillScreen';
+import BillAndRechargeScreen from './src/screen/NepalBillingAndRecharge/BillAndRechargeScreen';
+import PrawasiCardScreen from './src/screen/PrawasiCard/PrawasiCardScreen';
+import PrawasiCardNavigator from './src/screen/PrawasiCard/PrawasiCardNavigator';
+import MyApplicationsScreen from './src/screen/PrawasiCard/MyApplicationsScreen';
 
 import {
   requestUserPermission,
@@ -203,6 +210,13 @@ const RootApp = () => {
           <Stack.Screen name="RechargeStatusScreen" component={RechargeStatusScreen} />
           <Stack.Screen name="EditProfile" component={EditProfile} />
           <Stack.Screen name="WalletDetails" component={WalletDetails} />
+          <Stack.Screen name="MyOrdersScreen" component={MyOrdersScreen} />
+          <Stack.Screen name="OrderDetailScreen" component={OrderDetailScreen} />
+          <Stack.Screen name="ElectricityBillScreen" component={ElectricityBillScreen} />
+          <Stack.Screen name="BillAndRechargeScreen" component={BillAndRechargeScreen} />
+            <Stack.Screen name="PrawasiCardScreen" component={PrawasiCardScreen} />
+            <Stack.Screen name="PrawasiCardNavigator" component={PrawasiCardNavigator} />
+            <Stack.Screen name="MyApplicationsScreen" component={MyApplicationsScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

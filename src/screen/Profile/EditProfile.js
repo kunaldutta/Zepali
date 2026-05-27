@@ -144,6 +144,8 @@ const updateProfile = async () => {
         {/* INPUTS */}
         <TextInput
           placeholder="Name"
+          placeholderTextColor={colors.placeholderTextColor}
+          EditProfile
           value={user.name}
           onChangeText={(t) => setUser({ ...user, name: t })}
           style={[globalStyles.input, { height: 45, paddingVertical: 0, textAlignVertical: 'center', top: 15 }]}
@@ -151,6 +153,7 @@ const updateProfile = async () => {
 
         <TextInput
           placeholder="Mobile"
+          placeholderTextColor={colors.placeholderTextColor}
           value={user.mobile_number}
           onChangeText={(t) => setUser({ ...user, mobile_number: t })}
           editable={false}
@@ -160,6 +163,7 @@ const updateProfile = async () => {
 
         <TextInput
           placeholder="Email"
+          placeholderTextColor={colors.placeholderTextColor}
           value={user.email_id}
           onChangeText={(t) => setUser({ ...user, email_id: t })}
           style={[globalStyles.input, { height: 45, paddingVertical: 0, textAlignVertical: 'center', top: 15 }]}

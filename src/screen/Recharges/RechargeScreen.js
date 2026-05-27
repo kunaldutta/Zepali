@@ -271,7 +271,7 @@ const RechargeScreen = ({ navigation }) => {
       {keyboardHeight === 0 && (
         <View style={styles.bottomContainer}>
           <TouchableOpacity
-            style={[globalStyles.button, { width: "90%", marginLeft: "5%" }]}
+            style={[globalStyles.button, { width: "90%", marginLeft: "5%", top: 10 }]}
             onPress={handleRecharge}
             disabled={loading}
           >
@@ -323,9 +323,9 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 15,
     backgroundColor: colors.background,
     borderTopWidth: 0.5,
     borderColor: "#ddd",
+    height: '15%',
   },
 });

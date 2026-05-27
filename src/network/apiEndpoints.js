@@ -50,6 +50,24 @@ const API = {
   PLACE_ORDER: 'place_order.php',
   CREATE_RAZORPAY_ORDER:'create_razorpay_order.php',
   VERIFY_ORDER_PAYMENT:'verify_order_payment.php',
+  CANCEL_ORDER_ITEM: '/order_cancel_return/cancel_order_item.php',
+  GET_COUNTERS:'/electricity_bill/getCounters.php',
+  GET_BILL_DETAILS:'/electricity_bill/getBillDetails.php',
+  GET_SERVICE_CHARGE:'/electricity_bill/getServiceCharge.php',
+  CREATE_ELECTRICITY_ORDER:'/electricity_bill/createElectricityOrder.php',
+  MAKE_PAYMENT:'/electricity_bill/makePayment.php',
+  GET_NEW_CONSUMER_ID: '/electricity_bill/getNewConsumerId.php',
+  MAKE_PAYMENT_V2:'/electricity_bill/makePaymentV2.php',
+  SUBMIT_PRAWASI_CARD_APPLICATION: '/submit_detail_for_prawasi_card.php', // 🔥 important
+  SAVE_PERSONAL_DETAILS: '/prawasi_card_uploads/save_personal_details.php', // 🔥 important
+  GET_PERSONAL_DETAILS: '/prawasi_card_uploads/get_personal_details.php', // 🔥 important
+  SAVE_ID_DETAILS: '/prawasi_card_uploads/save_id_details.php', // 🔥 important
+  GET_ID_DETAILS: '/prawasi_card_uploads/get_id_details.php', // 🔥 important
+  SAVE_JAMANI_DETAILS: '/prawasi_card_uploads/save_jamani_details.php', // 🔥 important
+  GET_JAMANI_DETAILS: '/prawasi_card_uploads/get_jamani_details.php', // 🔥 important
+  SAVE_APPLICATION_PAYMENT: '/prawasi_card_uploads/save_application_payment.php', // 🔥 important
+  GET_MY_APPLICATIONS: '/prawasi_card_uploads/get_my_applications.php', // 🔥 important
+  GET_PRAWASI_CARD_COST: '/prawasi_card_uploads/get_prawasi_card_cost.php', // 🔥 important
 };
 
 export default API;
