@@ -115,6 +115,14 @@ export const savePersonalDetails =
         'current_address',
         formData.address,
       );
+      console.log(
+        'Saving personal details with zipCode:',
+        formData.zipCode,
+      );
+      data.append(
+        'zip_code',
+        formData.zipCode,
+      );
 
       data.append(
         'nepal_address',
@@ -236,6 +244,18 @@ export const savePersonalDetails =
         formData.secondaryIdNumber,
       );
 
+      // INDIA ADDRESS PROOF
+
+      data.append(
+        'india_address_proof_type',
+        formData.indiaAddressProofType,
+      );
+
+      data.append(
+        'india_address_proof_number',
+        formData.indiaAddressProofNumber,
+      );
+
       // PRIMARY FRONT
 
       if (
@@ -336,6 +356,58 @@ export const savePersonalDetails =
                 .secondaryBackImage
                 .fileName ||
               'secondary_back.jpg',
+          },
+        );
+      }
+
+      // INDIA ADDRESS PROOF FRONT
+
+      if (
+        formData.indiaAddressProofFront
+      ) {
+
+        data.append(
+          'india_address_proof_front',
+          {
+            uri:
+              formData
+                .indiaAddressProofFront.uri,
+
+            type:
+              formData
+                .indiaAddressProofFront.type,
+
+            name:
+              formData
+                .indiaAddressProofFront
+                .fileName ||
+              'india_address_proof_front.jpg',
+          },
+        );
+      }
+      
+      // INDIA ADDRESS PROOF BACK 
+      
+      if (
+        formData.indiaAddressProofBack
+      ) {
+
+        data.append(
+          'india_address_proof_back',
+          {
+            uri:
+              formData
+                .indiaAddressProofBack.uri,
+
+            type:
+              formData
+                .indiaAddressProofBack.type,
+
+            name:
+              formData
+                .indiaAddressProofBack
+                .fileName ||
+              'india_address_proof_back.jpg',
           },
         );
       }

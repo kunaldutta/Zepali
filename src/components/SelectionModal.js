@@ -9,6 +9,7 @@ import {
   StyleSheet,
 } from 'react-native';
 
+
 const SelectionModal = ({
   visible,
   title,
@@ -16,6 +17,10 @@ const SelectionModal = ({
   onSelect,
   onClose,
 }) => {
+  const capitalizeFirstLetter = str => {
+  return str?.charAt(0).toUpperCase() + str?.slice(1);
+};
+
   return (
     <Modal
       visible={visible}
@@ -41,7 +46,7 @@ const SelectionModal = ({
                 onPress={() => onSelect(item)}>
 
                 <Text style={styles.optionText}>
-                  {item}
+                  {capitalizeFirstLetter(item)}
                 </Text>
 
               </TouchableOpacity>

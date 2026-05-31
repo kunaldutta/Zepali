@@ -8,7 +8,7 @@ export default {
   english: "English",
   hindi: "हिंदी",
   OFFERS: "ऑफ़र",
-  CATEGORIES: "श्रेणियाँ",
+  CATEGORIES: "हमारे उत्पाद और सेवाएं",
   MEMBER: "सदस्य",
   LANGUAGE: "भाषा",
   PRODUCTS: "उत्पाद",

@@ -21,7 +21,7 @@ from 'react-native-safe-area-context';
 import Ionicons
 from 'react-native-vector-icons/Ionicons';
 
-import { colors }
+import { colors, globalStyles }
 from '../../styles/globalStyles';
 
 import AppHeader
@@ -408,7 +408,7 @@ export default function PurchaseReviewScreen({
 };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={globalStyles.safeArea}>
 
       {/* HEADER */}
 

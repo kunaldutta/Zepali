@@ -35,6 +35,11 @@ const idTypes = [
   'Rashtriya Parichay Patra',
 ];
 
+const indiaAddressProofTypes = [
+  'Rent Agreement',
+  'Electricity Bill',
+];
+
 const PageTwo = ({
   formData,
   updateForm,
@@ -46,6 +51,8 @@ const PageTwo = ({
     useState(false);
 
   const [showSecondModal, setShowSecondModal] =
+    useState(false);
+  const [showIndiaAddressModal, setShowIndiaAddressModal] =
     useState(false);
 
   // Remove already selected primary ID
@@ -172,7 +179,51 @@ const loadSavedIds = async () => {
                   .pop(),
             }
           : null,
+        
+        // INDIA ADDRESS PROOF
 
+        indiaAddressProofType:
+          response.india_address_proof
+            ?.proof_type || '',
+
+        indiaAddressProofNumber:
+          response.india_address_proof
+            ?.proof_number || '',
+
+        indiaAddressProofFront:
+          response.india_address_proof
+            ?.front_image
+            ? {
+              uri:
+                `${BASE_URL}/${response.india_address_proof.front_image}`,
+
+              type: 'image/jpeg',
+
+              name:
+                response.india_address_proof.front_image
+                  .split('/')
+                  .pop(),
+            }
+          : null,
+
+        indiaAddressProofBack:
+          response.india_address_proof
+            ?.back_image
+            ? {
+              uri:
+                `${BASE_URL}/${response.india_address_proof.back_image}`,
+
+              type: 'image/jpeg',
+
+              name:
+                response.india_address_proof.back_image
+                  .split('/')
+                  .pop(),
+            }
+          : null,
+
+        applicationStatus:
+          response.application_status || null,
       });
 
     }
@@ -197,6 +248,7 @@ const loadSavedIds = async () => {
       return;
     }
     try {
+      setLoading(true);
 
       const response =
         await saveIdDetails(
@@ -228,6 +280,8 @@ const loadSavedIds = async () => {
       alert(
         'Something went wrong',
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -388,15 +442,90 @@ const loadSavedIds = async () => {
         }
       />
 
+      {/* INDIA ADDRESS PROOF */}
+      
+      <Text style={styles.sectionTitle}>
+        India Address Proof
+      </Text>
+
+      <Text style={styles.label}>
+        Select Address Proof Type
+      </Text>
+
+      <TouchableOpacity
+        style={styles.dropdown}
+        onPress={() =>
+          setShowIndiaAddressModal(true)
+        }>
+
+        <Text
+          style={[
+            styles.dropdownText,
+            !formData.indiaAddressProofType && {
+              color: '#999',
+            },
+          ]}>
+
+          {formData.indiaAddressProofType ||
+            'Select India Address Proof Type'}
+
+        </Text>
+
+        <Ionicons
+          name="chevron-down"
+          size={22}
+          color="#444"
+        />
+
+      </TouchableOpacity>
+      <CustomInput
+        label="India Address Proof Number"
+        value={formData.indiaAddressProofNumber || ''}
+        onChangeText={text =>
+          updateForm({
+            indiaAddressProofNumber: text,
+          })
+        }
+      />
+      <UploadBox
+        label="Upload India Address Proof Front"
+        image={formData.indiaAddressProofFront}
+        onSelect={img =>
+          updateForm({
+            indiaAddressProofFront: img,
+          })
+        }
+      />
+
+      {/* INDIA ADDRESS PROOF BACK */}
+
+
+
+      <UploadBox
+        label="Upload India Address Proof Back"
+        image={formData.indiaAddressProofBack}
+        onSelect={img =>
+          updateForm({
+            indiaAddressProofBack: img,
+          })
+        }
+      />
+      
+
       {/* CONTINUE BUTTON */}
         </View>
       <TouchableOpacity
         style={styles.button}
         onPress={saveAndNext}>
-
-        <Text style={styles.btnText}>
-          {formData.applicationStatus === 'PENDING' ? 'Next' : 'Save & Continue'}
-        </Text>
+          {loading ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text style={styles.btnText}>
+                      {formData.applicationStatus === 'PENDING'
+                        ? 'Next'
+                        : 'Save & Continue'}
+                    </Text>
+                  )}
 
       </TouchableOpacity>
 
@@ -439,6 +568,22 @@ const loadSavedIds = async () => {
         }}
         onClose={() =>
           setShowSecondModal(false)
+        }
+      />
+
+      <SelectionModal
+        visible={showIndiaAddressModal}
+        title="Select India Address Proof Type"
+        data={indiaAddressProofTypes}
+        onSelect={item => {
+          updateForm({
+            indiaAddressProofType: item,
+          });
+
+          setShowIndiaAddressModal(false);
+        }}
+        onClose={() =>
+          setShowIndiaAddressModal(false)
         }
       />
 

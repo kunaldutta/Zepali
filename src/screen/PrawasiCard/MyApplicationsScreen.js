@@ -235,7 +235,7 @@ const MyApplicationsScreen = ({
 
   return (
     <SafeAreaView style={globalStyles.safeArea}>
-      <AppHeader title="Product Detail" showCart={false} onBackPress={() => navigation.goBack()} />
+      <AppHeader title="My Applications" showCart={false} onBackPress={() => navigation.goBack()} />
     <View style={styles.container}>
 
       <FlatList

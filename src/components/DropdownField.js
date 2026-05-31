@@ -15,7 +15,9 @@ const DropdownField = ({
   placeholder,
   onPress,
 }) => {
-
+  const capitalizeFirstLetter = str => {
+  return str?.charAt(0).toUpperCase() + str?.slice(1);
+};
   return (
     <View style={styles.container}>
 
@@ -35,7 +37,7 @@ const DropdownField = ({
             },
           ]}>
 
-          {value || placeholder}
+          {capitalizeFirstLetter(value) || placeholder}
 
         </Text>
 

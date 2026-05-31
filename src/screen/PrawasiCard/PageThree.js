@@ -43,7 +43,7 @@ const relationTypes2 = [
 ];
 
 const relationTypes3 = [
-  'Security Guard',
+  'Security',
   'Hotel Owner',
   'Housewife',
 ];
@@ -55,7 +55,6 @@ const idTypes = [
   'Nepali Driving Licence',
   'Rashtriya Parichay Patra',
   'Aadhaar Card',
-  'Security Guard ID',
 ];
 
 const PageThree = ({
@@ -313,6 +312,7 @@ const loadJamaniDetails =
       return;
     }
   try {
+    setLoading(true);
 
     const response =
       await saveJamaniDetails(
@@ -343,6 +343,8 @@ const loadJamaniDetails =
     alert(
       'Something went wrong',
     );
+  } finally {
+    setLoading(false);
   }
 };
 
@@ -528,7 +530,7 @@ const loadJamaniDetails =
       {/* JAMANI 3 */}
 
       <Text style={styles.section}>
-        Jamani 3 (Security Guard/Local Reference)
+        Jamani 3 (Nepali Local Reference)
       </Text>
 
       <CustomInput
@@ -613,10 +615,12 @@ const loadJamaniDetails =
       <TouchableOpacity
         style={styles.button}
         onPress={saveAndNext}>
-
+          {loading ? (
+        <ActivityIndicator size="small" color="#fff" />
+                            ) : (
         <Text style={styles.btnText}>
           {formData.applicationStatus === 'PENDING' ? 'Next' : 'Review'}
-        </Text>
+        </Text> )}
 
       </TouchableOpacity>
 

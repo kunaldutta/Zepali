@@ -7,7 +7,7 @@ export default {
   selectLanguage: "भाषा छान्नुहोस्",
   english: "English",
   OFFERS: "अफरहरू",
-  CATEGORIES: "श्रेणिहरू",
+  CATEGORIES: "हाम्रो उत्पादन र सेवाहरू",
   PRODUCTS: "उत्पादहरू",
   MEMBER: "सदस्य",
   LANGUAGE: "भाषा",

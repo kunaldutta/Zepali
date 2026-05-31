@@ -34,6 +34,10 @@ const PrawasiCardNavigator = ({navigation}) => {
     citizenshipNumber: '',
     frontImage: null,
     backImage: null,
+    indiaAddressProofType: '',
+    indiaAddressProofFront: null,
+    indiaAddressProofBack: null,
+    zipCode: '',
 
     // Jamani 1
     jamani1Name: '',

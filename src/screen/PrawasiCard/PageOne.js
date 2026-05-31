@@ -9,9 +9,12 @@ import {
   Image,
   TextInput,
   ActivityIndicator,
+  Alert,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
 
-import {launchImageLibrary} from 'react-native-image-picker';
+import {launchImageLibrary, launchCamera} from 'react-native-image-picker';
 
 import CustomInput from '../../components/CustomInput';
 import DropdownField from '../../components/DropdownField';
@@ -24,6 +27,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from '../../network/apiClient'; 
 import { colors } from '../../styles/globalStyles';
+import CustomAlert from '../../components/CustomAlert';
 
 const genderOptions = [
   'Male',
@@ -33,8 +37,11 @@ const genderOptions = [
 
 const forWhomOptions = [
   'self',
+  'wife',
   'son',
   'daughter',
+  'father',
+  'mother',
 ];
 
 const guardianRelations = [
@@ -73,6 +80,31 @@ const PageOne = ({
   const [selectedField, setSelectedField] =
     useState('');
   const [loading, setLoading] = useState(false);
+
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [isAlertVisible, setIsAlertVisible] = useState(false);
+
+  const requestCameraPermission = async () => {
+  if (Platform.OS !== 'android') {
+    return true;
+  }
+
+  const granted =
+    await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.CAMERA,
+    );
+
+  return (
+    granted ===
+    PermissionsAndroid.RESULTS.GRANTED
+  );
+};
+   
+  useEffect(() => {
+    requestCameraPermission();
+  }, []);
+
   
   const loadSavedData = async () => {
 
@@ -133,6 +165,9 @@ const PageOne = ({
 
         address:
           data?.current_address || '',
+        
+        zipCode:
+          data?.zip || '',
 
         nepalAddress:
           data?.nepal_address || '',
@@ -173,11 +208,31 @@ const PageOne = ({
   }
 };
   
+  const openCamera = async () => {
+    setIsAlertVisible(false);
 
-  const pickProfileImage = async () => {
-    if(formData.applicationStatus === 'PENDING') {
-      return;
+    console.log('OPEN CAMERA CLICKED');
+
+    const result = await launchCamera({
+      mediaType: 'photo',
+      cameraType: 'front',
+      quality: 0.7,
+    });
+
+    console.log('CAMERA RESULT =>', result);
+
+    if (
+      !result.didCancel &&
+      result.assets?.length > 0
+    ) {
+      updateForm({
+        profilePhoto: result.assets[0],
+      });
     }
+  };
+
+  const openGallery = async () => {
+    setIsAlertVisible(false);
     const result = await launchImageLibrary({
       mediaType: 'photo',
       quality: 0.7,
@@ -187,12 +242,20 @@ const PageOne = ({
       !result.didCancel &&
       result.assets?.length > 0
     ) {
-
       updateForm({
         profilePhoto: result.assets[0],
       });
-
     }
+  };
+
+  const pickProfileImage = () => {
+    
+    if (formData.applicationStatus === 'PENDING') {
+      return;
+    }
+    setIsAlertVisible(true);
+    setAlertTitle('Select Photo');
+    setAlertMessage('Choose an option');
   };
 
   const openModal = (
@@ -243,7 +306,7 @@ const PageOne = ({
   };
 
   const saveAndNext = async () => {
-    console.log('Form Data to Save => ', formData);
+    setLoading(true);
   if( formData.applicationStatus === 'PENDING') {
     formData.applicationStatus === 'PENDING' && onNext();
     return;
@@ -277,7 +340,7 @@ const PageOne = ({
 
     } else {
 
-      alert(response.message);
+      Alert.alert(response.message);
 
     }
 
@@ -286,11 +349,16 @@ const PageOne = ({
       'STEP 1 ERROR => ',
       error,
     );
-    alert(
-      'Something went wrongg',
+    Alert.alert(
+      'Something went wrong',
+      'Please try again later.'
     );
+  } finally {
+    setLoading(false);
   }
 };
+
+
 
 
   return (
@@ -485,6 +553,18 @@ const PageOne = ({
         }
       />
 
+      <CustomInput
+        label="Zip Code"
+        value={formData.zipCode}
+        placeholder="Enter Zip Code"
+        placeholderTextColor={colors.placeholderTextColor}
+        onChangeText={text =>
+          updateForm({
+            zipCode: text,
+          })
+        }
+      />
+
       {/* NEPAL ADDRESS */}
 
       <Text style={styles.label}>
@@ -551,13 +631,31 @@ const PageOne = ({
       </View>
       <TouchableOpacity
         style={styles.button}
-        onPress={saveAndNext}>
-
-        <Text style={styles.btnText}>
-         {formData.applicationStatus === 'PENDING' ? 'Next' : 'Save & Continue'}
-        </Text>
-
+        onPress={saveAndNext}
+        disabled={loading}>
+        {loading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text style={styles.btnText}>
+            {formData.applicationStatus === 'PENDING'
+              ? 'Next'
+              : 'Save & Continue'}
+          </Text>
+        )}
       </TouchableOpacity>
+      {isAlertVisible && (
+          <CustomAlert
+            visible={isAlertVisible}   // ✅ REQUIRED
+            title={alertTitle}
+            onOkText="Camera"
+            onCancelText="Cancel"
+            onThirdOptionText="Gallery"
+            onOk={openCamera}   // ✅ FIX
+            message={alertMessage}
+            onCancel={() => setIsAlertVisible(false)}   // ✅ FIX
+            onThirdOption={() => openGallery()}   // ✅ FIX
+          />
+        )}
     </ScrollView>
   );
 };

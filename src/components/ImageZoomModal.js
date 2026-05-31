@@ -17,7 +17,7 @@ const ImageZoomModal = ({ visible, images, index = 0, onClose }) => {
           onPress={onClose}
           style={{
             position: 'absolute',
-            top: 40,
+            top: 55,
             right: 20,
             zIndex: 10,
           }}
@@ -42,7 +42,7 @@ const ImageZoomModal = ({ visible, images, index = 0, onClose }) => {
             <View
               style={{
                 position: 'absolute',
-                top: 40,
+                top: 55,
                 alignSelf: 'center',
                 backgroundColor: colors.primary,
                 paddingHorizontal: 10,

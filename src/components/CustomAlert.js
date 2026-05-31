@@ -14,6 +14,10 @@ const CustomAlert = ({
   message = "Message",
   onOk,
   onCancel,   // optional
+  onThirdOption, // optional
+  onOkText = "OK",
+  onCancelText = "Cancel",
+  onThirdOptionText = "Third Option",
 }) => {
   return (
     <Modal transparent visible={visible} animationType="fade">
@@ -26,21 +30,33 @@ const CustomAlert = ({
           <View style={styles.buttonRow}>
             
             {/* ✅ SHOW ONLY IF EXISTS */}
-            {onCancel && (
-              <TouchableOpacity
-                style={[styles.button, styles.cancelBtn]}
-                onPress={onCancel}
-              >
-                <Text style={styles.cancelText}>Cancel</Text>
-              </TouchableOpacity>
-            )}
+            
 
             <TouchableOpacity
               style={[styles.button, styles.okBtn]}
               onPress={onOk}
             >
-              <Text style={styles.okText}>OK</Text>
+              <Text style={styles.okText}>{onOkText}</Text>
             </TouchableOpacity>
+
+
+            {onThirdOption && (
+              <TouchableOpacity
+                style={[styles.button, styles.thirdOptionBtn]}
+                onPress={onThirdOption}
+              >
+                <Text style={styles.thirdOptionText}>{onThirdOptionText}</Text>
+              </TouchableOpacity>
+            )}
+
+            {onCancel && (
+              <TouchableOpacity
+                style={[styles.button, styles.cancelBtn]}
+                onPress={onCancel}
+              >
+                <Text style={styles.cancelText}>{onCancelText}</Text>
+              </TouchableOpacity>
+            )}
 
           </View>
         </View>
@@ -59,7 +75,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   container: {
-    width: '80%',
+    width: '90%',
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
@@ -98,6 +114,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   okText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  thirdOptionText: {
     color: '#fff',
     fontWeight: '600',
   },

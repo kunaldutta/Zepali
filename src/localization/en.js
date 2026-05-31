@@ -8,7 +8,7 @@ export default {
   english: "English",
   hindi: "हिन्दी",
   OFFERS: "OFFERS",
-  CATEGORIES: "CATEGORIES",
+  CATEGORIES: "Our Products and Services",
   PRODUCTS: "PRODUCTS",
   ADD_PRODUCT: "ADD PRODUCT",
   EDIT_PRODUCT: "EDIT PRODUCT",
