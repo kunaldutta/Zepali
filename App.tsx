@@ -47,6 +47,9 @@ import BillAndRechargeScreen from './src/screen/NepalBillingAndRecharge/BillAndR
 import PrawasiCardScreen from './src/screen/PrawasiCard/PrawasiCardScreen';
 import PrawasiCardNavigator from './src/screen/PrawasiCard/PrawasiCardNavigator';
 import MyApplicationsScreen from './src/screen/PrawasiCard/MyApplicationsScreen';
+import ReturnOrderScreen from './src/screen/Orders/ReturnOrderScreen';
+import ForceUpdateScreen from './src/screen/ForceUpdate/ForceUpdateScreen';
+import ServicesScreen from './src/screen/Services/ServicesScreen';
 
 import {
   requestUserPermission,
@@ -217,6 +220,9 @@ const RootApp = () => {
             <Stack.Screen name="PrawasiCardScreen" component={PrawasiCardScreen} />
             <Stack.Screen name="PrawasiCardNavigator" component={PrawasiCardNavigator} />
             <Stack.Screen name="MyApplicationsScreen" component={MyApplicationsScreen} />
+            <Stack.Screen name="ReturnOrderScreen" component={ReturnOrderScreen} />
+              <Stack.Screen name="ForceUpdateScreen" component={ForceUpdateScreen} />
+              <Stack.Screen name="ServicesScreen" component={ServicesScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
