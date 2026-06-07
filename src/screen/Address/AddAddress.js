@@ -23,11 +23,18 @@ import { useAddress } from '../../components/AddressContext';
 import DefaultValueModal from './DefaultValueModal';
 import Geolocation from '@react-native-community/geolocation';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import CityModal from '../../components/CityModal';
+import AreaModal from '../../components/AreaModal';
+import {
+  getCityPincodesAPI,
+  getCitiesAPI,
+} from '../../services/addressService';
+
 
 const AddAddress = ({ route, navigation }) => {
   const { addAddress } = useAddress();
   console.log("AddAddress Rendered with route params:", route.params);
-  const {address_1, address_2, city, latitude, longitude, state, zip_code} = route.params || {};
+  const {address_1, address_2, city, latitude, longitude, state, zip_code, area} = route.params || {};
   const [currentMapAddress, setCurrentMapAddress] = useState('')
   const [locationLoading, setLocationLoading] = useState(false);
   const [userData, setUserData] = useState({
@@ -43,13 +50,76 @@ const AddAddress = ({ route, navigation }) => {
     latitude: latitude,
     longitude: longitude,
     default_value: 'N',
+    area: area,
   });
 
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+  const [cityModalVisible, setCityModalVisible] = useState(false);
+
+  const [areaModalVisible, setAreaModalVisible] = useState(false);
+
+  const [selectedCityId, setSelectedCityId] = useState(null);
+
+  const [areas, setAreas] = useState([]);
+  const [selectedArea, setSelectedArea] = useState(area);
 
   /* ✅ LOAD USER (FIXED - moved from render) */
+  useEffect(() => {
+    if (userData.city) {
+      loadCityId();
+    }
+  }, [userData.city]);
+
+  const loadCityId = async () => {
+    try {
+
+      if (!userData?.city) {
+        return;
+      }
+
+      console.log('SEARCHING CITY:', userData.city);
+
+      const response = await getCitiesAPI();
+
+      console.log('CITY API RESPONSE:', response);
+
+      if (response?.status) {
+
+        const cityObj = response.cities.find(
+          item =>
+            item.city_name?.trim().toLowerCase() ===
+            userData.city?.trim().toLowerCase()
+        );
+
+        if (cityObj) {
+
+          console.log('CITY FOUND:', cityObj);
+
+          setSelectedCityId(cityObj.id);
+
+        } else {
+
+          console.log(
+            'CITY NOT FOUND FOR:',
+            userData.city
+          );
+
+          setSelectedCityId(null);
+        }
+      }
+
+    } catch (e) {
+
+      console.log(
+        'CITY FIND ERROR:',
+        e
+      );
+
+      setSelectedCityId(null);
+    }
+  };
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -285,7 +355,7 @@ const openMapWithCurrentLocation = async () => {
 
   /* INPUT FIELD */
   const renderInput = (field, placeholder, keyboardType = 'default') => {
-    console
+
   const isMultiline = field === 'address_2';
 
   return (
@@ -341,9 +411,101 @@ const openMapWithCurrentLocation = async () => {
           {renderInput('address_2', 'Address Line 2')}
           {renderInput('land_mark', 'Landmark')}
           {renderInput('contact_no', 'Contact Number', 'phone-pad')}
-          {renderInput('city', 'City')}
-          {renderInput('state', 'State')}
-          {renderInput('zip_code', 'Zip Code', 'numeric')}
+          <View style={styles.inputContainer}>
+              {userData.city ? (
+                <Text style={styles.label}>City</Text>
+              ) : null}
+
+              <TouchableOpacity
+                onPress={() => setCityModalVisible(true)}
+              >
+                <View
+                  style={[
+                    globalStyles.input,
+                    {
+                      justifyContent: 'center',
+                      height: 50,
+                    },
+                  ]}
+                >
+                  <Text>
+                    {userData.city || 'Select City'}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          <View style={styles.inputContainer}>
+            {userData.state ? (
+              <Text style={styles.label}>State</Text>
+            ) : null}
+
+            <TextInput
+              editable={false}
+              value={userData.state}
+              placeholder="State"
+              style={globalStyles.input}
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            {userData.zip_code ? (
+              <Text style={styles.label}>Zip Code</Text>
+            ) : null}
+
+            <TouchableOpacity
+              onPress={async () => {
+
+                if (!selectedCityId) {
+                  Alert.alert(
+                    'Select City',
+                    'Please select a city first'
+                  );
+                  return;
+                }
+
+                try {
+
+                  const response =
+                    await getCityPincodesAPI({
+                      city_id: selectedCityId,
+                    });
+
+                  if (response.status) {
+
+                    setAreas(
+                      response.pincodes || []
+                    );
+
+                    setAreaModalVisible(true);
+                  }
+
+                } catch (e) {
+                  console.log(e);
+                }
+
+              }}
+            >
+              <View
+                style={[
+                  globalStyles.input,
+                  {
+                    justifyContent: 'center',
+                    height: 50,
+                  },
+                ]}
+              >
+                <Text>
+                  {userData.zip_code || 'Select Area'}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <Text style={styles.label}>Area</Text>
+          
+                      <TextInput
+                        editable={false}
+                        value={selectedArea}
+                        style={globalStyles.input}
+                      />
+          </View>
         </ScrollView>
 
         {/* FOOTER */}
@@ -378,6 +540,64 @@ const openMapWithCurrentLocation = async () => {
           userData={userData}
         />
       </View>
+      <CityModal
+        visible={cityModalVisible}
+        onSkip={() => setCityModalVisible(false)}
+        showSkip={false} // ✅ hide skip for city selection
+        onSelect={async (item) => {
+
+          setCityModalVisible(false);
+
+          setUserData(prev => ({
+            ...prev,
+            city: item.city_name,
+            state: item.state,
+            zip_code: '',
+          }));
+
+          setSelectedCityId(item.id);
+
+          try {
+
+            const response =
+              await getCityPincodesAPI({
+                city_id: item.id,
+              });
+
+            if (response.status) {
+
+              setAreas(
+                response.pincodes || []
+              );
+
+              setAreaModalVisible(true);
+            }
+
+          } catch (e) {
+
+            console.log(
+              'PINCODE ERROR',
+              e
+            );
+          }
+        }}
+      />
+      <AreaModal
+        visible={areaModalVisible}
+        areas={areas}
+        onSkip={() =>
+          setAreaModalVisible(false)
+        }
+        onSelect={(item) => {
+
+          setAreaModalVisible(false);
+          setSelectedArea(item.area_name);
+          setUserData(prev => ({
+            ...prev,
+            zip_code: item.pincode,
+          }));
+        }}
+      />
     </View>
 
 </KeyboardAvoidingView>

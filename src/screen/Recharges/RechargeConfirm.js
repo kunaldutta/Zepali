@@ -12,6 +12,8 @@ import {
   rechargeMobile,
   buyDataPack,
 } from "../../services/RechargeService";
+import DeviceInfo from 'react-native-device-info';
+import { compareVersions } from '../../utils/versionUtils';
 
 import {
   calculateAmount,
@@ -27,6 +29,7 @@ import CustomAlert from "../../components/CustomAlert";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import RazorpayCheckout from "react-native-razorpay";
 import { BASE_URL } from "../../network/apiClient";
+import { getPaymentConfig } from "../../services/paymentService";
 
 const RechargeConfirm = ({ route, navigation }) => {
   const { payload } = route.params;
@@ -85,6 +88,43 @@ const RechargeConfirm = ({ route, navigation }) => {
     setProcessingPayment(true);
 
     try {
+      const config = await getPaymentConfig();
+      console.log("CONFIG:", config);
+      if (!config.status) {
+        showAlert("Error", "Unable to load payment configuration");
+        setProcessingPayment(false);
+        return;
+      }
+      const currentVersion = DeviceInfo.getVersion();
+      if (
+                compareVersions(
+                  currentVersion,
+                  config?.version?.minimum_version
+                ) < 0
+              ) {
+      
+                setTimeout(() => {
+                  navigation.reset({
+                    index: 0,
+                    routes: [
+                      {
+                        name: 'ForceUpdateScreen',
+                        params: {
+                          versionData: {
+                            latestVersion: config?.version?.latest_version,
+                            updateMessage: config?.version?.update_message,
+                            storeUrl: config?.version?.store_url,
+                            currentVersion,
+                          },
+                        },
+                      },
+                    ],
+                  });
+                }, 300);
+      
+                return;
+          }
+
       const user = await AsyncStorage.getItem("USER_DATA");
       const parsedUser = user ? JSON.parse(user) : null;
 
@@ -132,7 +172,7 @@ const RechargeConfirm = ({ route, navigation }) => {
       const options = {
         description: "Recharge Payment",
         currency: "INR",
-        key: "rzp_test_Sb1UJwd853g7gw",
+        key: config.razorpay_key_id,
         amount: orderRes.amount,
         order_id: orderRes.order_id,
         name: "Zepali",

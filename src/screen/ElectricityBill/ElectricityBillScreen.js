@@ -14,6 +14,7 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  InteractionManager,
 } from 'react-native';
 
 import {
@@ -32,9 +33,13 @@ import i18n from "../../localization/i18n";
 import RazorpayCheckout from 'react-native-razorpay';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BASE_URL } from '../../network/apiClient';
+import { getPaymentConfig } from '../../services/paymentService';
+import DeviceInfo from 'react-native-device-info';
+import { compareVersions } from '../../utils/versionUtils';
 
 const ElectricityBillScreen = ({navigation}) => {
 
+  const currentVersion = DeviceInfo.getVersion();
   
   const [loading, setLoading] =
     useState(false);
@@ -384,9 +389,40 @@ const ElectricityBillScreen = ({navigation}) => {
   const payNow = async () => {
 
   console.log('PAY NOW PRESSED');
-
+  
   try {
-
+    const config = await getPaymentConfig();
+  if (!config.status) {
+    Alert.alert('Unable to load payment configuration');
+    return;
+  }
+  if (
+              compareVersions(
+                currentVersion,
+                config?.version?.minimum_version
+              ) < 0
+            ) {
+        
+                navigation.reset({
+                  index: 0,
+                  routes: [
+                    {
+                      name: 'ForceUpdateScreen',
+                      params: {
+                        versionData: {
+                        latestVersion: config?.version?.latest_version,
+                        updateMessage: config?.version?.update_message,
+                        storeUrl: config?.version?.store_url,
+                        currentVersion: currentVersion,
+                      },
+                      },
+                    },
+                  ],
+                });
+        
+                return;
+      }
+  
     /* =========================
        VALIDATION
     ========================= */
@@ -474,7 +510,7 @@ const ElectricityBillScreen = ({navigation}) => {
         response?.currency,
 
       key:
-        'rzp_test_Sb1UJwd853g7gw',
+        config.razorpay_key_id,
 
       amount: response?.amount,
 

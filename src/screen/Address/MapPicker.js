@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -14,10 +14,14 @@ import MapView from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation'; // ✅ ADDED
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../../styles/globalStyles';
+import AppHeader from '../../components/AppHeader';
+import i18n from '../../localization/i18n';
+import { checkServiceableLocationAPI } from '../../services/addressService';
 
 const GOOGLE_API_KEY = "AIzaSyASeQVPcvxEogcrrLg5MExUWcXAgYuJekY";
 
 export default function MapPicker({ route, navigation }) {
+  const mapRef = useRef(null);
   console.log("MapPicker route params:", route.params);
   const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
@@ -118,7 +122,12 @@ export default function MapPicker({ route, navigation }) {
         };
 
         setRegion(newRegion);
+
+        mapRef.current?.animateToRegion(newRegion, 1000);
+
         getAddress(loc.lat, loc.lng);
+        setSearchText(data.result.formatted_address);
+        setSuggestions([]);
       }
 
     } catch (e) {
@@ -154,84 +163,161 @@ export default function MapPicker({ route, navigation }) {
   };
 
   const confirmLocation = async () => {
-    try {
-      if (!address) {
-        Alert("Please select location");
-        return;
+  try {
+
+    if (!address) {
+      Alert.alert('Error', 'Please select location');
+      return;
+    }
+
+    const res = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${region.latitude},${region.longitude}&key=${GOOGLE_API_KEY}`
+    );
+
+    const data = await res.json();
+
+    if (data.status !== 'OK' || data.results.length === 0) {
+      Alert.alert('Error', 'Unable to fetch address');
+      return;
+    }
+
+    const result = data.results[0];
+
+    const parts = result.formatted_address.split(',');
+
+    const address1 =
+      parts.length >= 2
+        ? parts.slice(0, 2).join(',')
+        : result.formatted_address;
+
+    const a1 =
+      parts.length >= 3
+        ? parts[2].trim()
+        : '';
+
+    const a2 =
+      parts.length >= 4
+        ? parts[3].trim()
+        : '';
+
+    const a3 =
+      parts.length >= 5
+        ? parts[4].trim()
+        : '';
+
+    const address2 = [a1, a2, a3]
+      .filter(Boolean)
+      .join(', ');
+
+    let city = '';
+    let state = '';
+    let zip = '';
+    let area = '';
+
+    result.address_components.forEach(comp => {
+
+      if (
+        comp.types.includes('locality')
+      ) {
+        city = comp.long_name;
       }
 
-      const res = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${region.latitude},${region.longitude}&key=${GOOGLE_API_KEY}`
+      if (
+        comp.types.includes('administrative_area_level_1')
+      ) {
+        state = comp.long_name;
+      }
+
+      if (
+        comp.types.includes('postal_code')
+      ) {
+        zip = comp.long_name;
+      }
+      if (comp.types.includes('neighborhood')) {
+        area = comp.long_name;
+      }
+    });
+
+    console.log('CITY:', city);
+    console.log('STATE:', state);
+    console.log('PINCODE:', zip);
+    /*
+     * CHECK SERVICEABILITY
+     */
+    const serviceResponse =
+      await checkServiceableLocationAPI({
+        city: city,
+        pincode: zip,
+      });
+
+    if (!serviceResponse?.status) {
+
+      Alert.alert(
+        'Delivery Not Available',
+        serviceResponse?.message ||
+        'Sorry, delivery is not available in this area.'
       );
 
-      const data = await res.json();
+      return;
+    }
 
-      if (data.status === "OK" && data.results.length > 0) {
-        const result = data.results[0];
+    console.log("Parsed address:", route.params?.address);
 
-        const parts = result.formatted_address.split(',');
+    if (route?.params?.address) {
 
-        const address1 = parts.length >= 2
-          ? parts.slice(0, 2).join(',')
-          : result.formatted_address;
-        const a1 = parts.length >= 3
-          ? parts[2].trim()
-          : '';
-        const a2 = parts.length >= 4
-          ? parts[3].trim()
-          : '';
-          const a3 = parts.length >= 5
-          ? parts[4].trim()
-          : '';
-
-        const address2 = a1 +', ' + a2 +', ' + a3
-        console.log('A-2 ====', parts)
-        let city = '', state = '', zip = '';
-
-        result.address_components.forEach(comp => {
-          if (comp.types.includes('locality')) city = comp.long_name;
-          if (comp.types.includes('administrative_area_level_1')) state = comp.long_name;
-          if (comp.types.includes('postal_code')) zip = comp.long_name;
-        });
-        console.log("Parsed address:", route.params?.address);
-        if( route?.params !== undefined ){ 
-          navigation.navigate('EditAddressScreen', {
-            address: {
-              id: route.params.address.id,
-              user_name: route.params.address.user_name,
-              usr_id: route.params.address.usr_id,
-              land_mark: route.params.address.land_mark,
-              default_value: route.params.address.default_value,
-              contact_no: route.params.address.contact_no,
-              address_1: route.params.address.address_1,
-              address_2: address1 + ', ' + address2,
-              city,
-              state,
-              zip_code: zip,
-              latitude: region.latitude,
-              longitude: region.longitude,
-            }
-          });
-        }else{
-        navigation.navigate('AddAddress', {
-          address_1: address1+', ',
-          address_2: address2,
+      navigation.navigate('EditAddressScreen', {
+        address: {
+          id: route.params.address.id,
+          user_name: route.params.address.user_name,
+          usr_id: route.params.address.usr_id,
+          land_mark: route.params.address.land_mark,
+          default_value: route.params.address.default_value,
+          contact_no: route.params.address.contact_no,
+          address_1: route.params.address.address_1,
+          address_2: address1 + ', ' + address2,
           city,
           state,
+          area,
           zip_code: zip,
           latitude: region.latitude,
           longitude: region.longitude,
-        });
-      }
-      }
+        },
+      });
 
-    } catch (e) {
-      console.log("ERROR:", e);
+    } else {
+
+      navigation.navigate('AddAddress', {
+        address_1: address1 + ', ',
+        address_2: address2,
+        city,
+        state,
+        zip_code: zip,
+        area,
+        latitude: region.latitude,
+        longitude: region.longitude,
+      });
+
     }
-  };
+
+  } catch (e) {
+
+    console.log('ERROR:', e);
+
+    Alert.alert(
+      'Error',
+      'Unable to verify delivery location'
+    );
+
+  }
+};
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.safeAreaColor }}>
+      <AppHeader
+        title={i18n.t('ADD_ADDRESS') || 'ADD ADDRESS'}
+        onBackPress={() => navigation.goBack()}
+        showCart={false}
+      />
       <View style={{ flex: 1 }}>
 
         {/* SEARCH */}
@@ -273,6 +359,7 @@ export default function MapPicker({ route, navigation }) {
         </View>
 
         <MapView
+          ref={mapRef}
           style={{ flex: 1 }}
           initialRegion={region}
           onRegionChangeComplete={onRegionChangeComplete}

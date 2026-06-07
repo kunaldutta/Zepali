@@ -31,3 +31,26 @@ export const updatePaymentStatus = async (data) => {
     return { status: false };
   }
 };
+
+export const getPaymentConfig = async () => {
+  try {
+    return await get(API.GET_PAYMENT_CONFIG);
+  } catch (err) {
+    console.log("GET PAYMENT CONFIG ERROR:", err);
+    return { status: false };
+  }
+};
+
+export const cancelOrderPaymentAPI = async (data) => {
+  console.log('API.CANCEL_ORDER', API.CANCEL_ORDER);
+  try {
+    return await post(
+      API.CANCEL_ORDER,
+      data
+    );
+  } catch (err) {
+    return {
+      status: false,
+    };
+  }
+};

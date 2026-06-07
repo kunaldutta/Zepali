@@ -1,6 +1,8 @@
 const API = {
   HOME: '/user_home.php',
   LOGIN: '/login.php',
+  SEND_OTP: '/OTP/send_otp.php',
+  VERIFY_OTP: '/OTP/verify_otp.php',
   REGISTER: '/user_register.php',
   PRODUCTS: '/products.php',
   ADD_TO_CART: '/add_to_cart.php',
@@ -51,6 +53,7 @@ const API = {
   CREATE_RAZORPAY_ORDER:'create_razorpay_order.php',
   VERIFY_ORDER_PAYMENT:'verify_order_payment.php',
   CANCEL_ORDER_ITEM: '/order_cancel_return/cancel_order_item.php',
+  REQUEST_RETURN: '/order_cancel_return/request_return.php',
   GET_COUNTERS:'/electricity_bill/getCounters.php',
   GET_BILL_DETAILS:'/electricity_bill/getBillDetails.php',
   GET_SERVICE_CHARGE:'/electricity_bill/getServiceCharge.php',
@@ -68,6 +71,12 @@ const API = {
   SAVE_APPLICATION_PAYMENT: '/prawasi_card_uploads/save_application_payment.php', // 🔥 important
   GET_MY_APPLICATIONS: '/prawasi_card_uploads/get_my_applications.php', // 🔥 important
   GET_PRAWASI_CARD_COST: '/prawasi_card_uploads/get_prawasi_card_cost.php', // 🔥 important
+  GET_PAYMENT_CONFIG: '/payment/get_payment_config.php', // 🔥 important
+  CANCEL_ORDER: '/payment/cancel_order_payment.php', // 🔥 important
+  GET_PRODUCT_CITY: '/city/get_product_city.php', // 🔥 important
+  CHECK_SERVICEABLE_LOCATION: '/city/check_serviceable_location.php', // 🔥 important
+  GET_CITY_PINCODES: '/city/get_city_pincodes.php', // 🔥 important
+  GET_SERVICES: '/services/get_services.php',
 };
 
 export default API;

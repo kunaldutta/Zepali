@@ -26,6 +26,7 @@ from '../../styles/globalStyles';
 
 import AppHeader
 from '../../components/AppHeader';
+import DeviceInfo from 'react-native-device-info';
 
 import {
 
@@ -36,6 +37,7 @@ import {
   verifyOrderPaymentAPI,
 
 } from '../../services/orderService';
+import { cancelOrderPaymentAPI } from '../../services/paymentService';
 import i18n from '../../localization/i18n';
 
 export default function PurchaseReviewScreen({
@@ -137,6 +139,7 @@ export default function PurchaseReviewScreen({
       Number(
         summary?.grand_total || 0,
       ),
+    app_version: DeviceInfo.getVersion(),
   });
 
         console.log(
@@ -147,7 +150,27 @@ export default function PurchaseReviewScreen({
     /* =========================
        API ERROR
     ========================= */
+    if (response.status === 'force_update') {
 
+        navigation.reset({
+          index: 0,
+          routes: [
+            {
+              name: 'ForceUpdateScreen',
+              params: {
+                versionData: {
+                latestVersion: response?.version?.latest_version,
+                updateMessage: response?.version?.update_message,
+                storeUrl: response?.version?.store_url,
+                currentVersion: DeviceInfo.getVersion(),
+              },
+              },
+            },
+          ],
+        });
+
+        return;
+    }
     if (
       response?.status !== 'success'
     ) {
@@ -161,7 +184,7 @@ export default function PurchaseReviewScreen({
       );
 
       return;
-    }
+    } 
 
     /* =========================
        COD SUCCESS
@@ -368,26 +391,42 @@ export default function PurchaseReviewScreen({
         }
       })
 
-      .catch(error => {
+      .catch(async error => {
+
+      console.log('RAZORPAY ERROR:', error);
+
+      try {
 
         console.log(
-          'RAZORPAY ERROR:',
-          error,
+          'cancelOrderPaymentAPI:',
+          cancelOrderPaymentAPI
         );
 
-        Alert.alert(
+        const res =
+          await cancelOrderPaymentAPI({
+            order_id: response?.order_id,
+          });
 
-          error?.code === 0
-            ? 'Payment Cancelled'
-            : 'Payment Failed',
-
-          error?.code === 0
-
-            ? 'Transaction cancelled'
-
-            : 'Payment failed. Try again',
+        console.log(
+          'CANCEL RESPONSE:',
+          res
         );
-      });
+
+      } catch (e) {
+
+        console.log(
+          'CANCEL ORDER ERROR:',
+          e
+        );
+      }
+
+      Alert.alert(
+        error?.code === 0
+          ? 'Payment Cancelled'
+          : 'Payment Failed'
+      );
+
+    });
 
   } catch (error) {
 
@@ -499,7 +538,7 @@ export default function PurchaseReviewScreen({
               </Text>
 
               <Text style={styles.discountText}>
-                {summarypoints_discount}
+                {summary?.points_discount}
                 - ₹ {Number(summary?.points_discount || 0).toFixed(2)}
               </Text>
             </View>
@@ -628,7 +667,8 @@ export default function PurchaseReviewScreen({
           {/* ONLINE */}
 
           <TouchableOpacity
-            style={styles.paymentOption}
+            style={[styles.paymentOption, { opacity: Number(summary?.grand_total || 0) <= 0 ? 0.5 : 1 }]}
+            disabled={Number(summary?.grand_total || 0) <= 0}
             onPress={() => setPaymentMethod('ONLINE')}
           >
 

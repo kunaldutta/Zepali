@@ -53,6 +53,7 @@ export default function Profile({navigation}) {
           await AsyncStorage.multiRemove([
             'USER_DATA',
             'SELECTED_ADDRESS',
+            'SELECTED_CITY',
             'TOKEN' // if you use any auth token
           ]);
 
@@ -78,7 +79,8 @@ export default function Profile({navigation}) {
     { id: '6', icon: 'ticket-outline', text: i18n.t('TICKET_BOOKING_STATUS'), screen: 'TicketBookingStatus' },
     { id: '7', icon: 'phone-portrait-outline', text: i18n.t('RECHARGE_HISTORY'), screen: 'RechargeStatusScreen' },
     { id: '8', icon: 'heart-outline', text: i18n.t('WISHLIST'), screen: 'WishlistScreen' },
-    { id: '9', icon: 'log-out-outline', text: i18n.t('LOGOUT'), action: 'logout', color: 'red' }
+    { id: '9', icon: 'contact-outline', text: i18n.t('CONTACT_US'), screen: 'ServicesScreen' },
+    { id: '10', icon: 'log-out-outline', text: i18n.t('LOGOUT'), action: 'logout', color: 'red' }
   ];
 
   // ✅ memoized renderItem (prevents list reset)

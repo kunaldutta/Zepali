@@ -21,11 +21,13 @@ import i18n from '../localization/i18n';
 import {post} from '../network/apiService';
 import API from '../network/apiEndpoints';
 import messaging from '@react-native-firebase/messaging';
+import { sendOtpApi, verifyOtpApi } from '../services/otpService';
 
 //import auth from '@react-native-firebase/auth';
 
 import RegisterModal from '../components/RegisterModal';
 import LanguageModal from '../components/LanguageModal';
+import CityModal from '../components/CityModal';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -47,6 +49,10 @@ export default function Login() {
 
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+
+  const [showCityModal, setShowCityModal] = useState(false);
+  const [cities, setCities] = useState([]);
+  const [selectedCity, setSelectedCity] = useState(null);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -115,10 +121,36 @@ export default function Login() {
     setLoading(true);
 
     try {
-      setShowOtpInput(true);
 
-    } catch {
-      Alert.alert('Error', 'OTP send failed');
+      const response = await sendOtpApi({
+        mobile_no: mobile,
+        country_code: getCountryCode(),
+      });
+
+      console.log('SEND OTP RESPONSE', response);
+
+      if (response.status) {
+
+        setShowOtpInput(true);
+
+        Alert.alert(
+          'Success',
+          'OTP sent successfully',
+        );
+
+      } else {
+
+        setError(response.message || 'Failed to send OTP');
+      }
+
+    } catch (error) {
+
+      console.log(error);
+
+      Alert.alert(
+        'Error',
+        'OTP send failed',
+      );
     }
 
     setLoading(false);
@@ -133,35 +165,66 @@ export default function Login() {
     }
 
     setLoading(true);
-    console.log('fcmToken', fcmToken);
+
     try {
+
+      const otpResponse = await verifyOtpApi({
+        mobile_no: mobile,
+        country_code: getCountryCode(),
+        otp: otp,
+      });
+
+      console.log('VERIFY OTP RESPONSE', otpResponse);
+
+      if (!otpResponse.status) {
+
+        setError(otpResponse.message || 'Invalid OTP');
+
+        setLoading(false);
+        return;
+      }
+
+      // OTP VERIFIED
       const json = await post(API.LOGIN, {
         mobile_no: mobile,
-        otp: otp,
         country_code: getCountryCode(),
         uuid: uuid,
-        fcm_token: fcmToken
+        fcm_token: fcmToken,
       });
 
       if (json?.status) {
-        console.log('json user',json.user);
-        await AsyncStorage.setItem('USER_DATA', JSON.stringify(json.user));
+
+        await AsyncStorage.setItem(
+          'USER_DATA',
+          JSON.stringify(json.user),
+        );
+
         setShowLanguageModal(true);
-      } 
-      else if (json.message?.toLowerCase().includes('not registered')) {
+
+      } else if (
+        json.message?.toLowerCase().includes('not registered')
+      ) {
+
         setShowRegisterModal(true);
-      } 
-      else {
+
+      } else {
+
         setError(json.message);
       }
 
-    } catch {
-      Alert.alert('Invalid OTP');
+    } catch (error) {
+
+      console.log(error);
+
+      Alert.alert(
+        'Error',
+        'OTP verification failed',
+      );
     }
 
     setLoading(false);
   };
-
+  
   const registerUser = async () => {
 
     if (!name) return Alert.alert('Enter name');
@@ -194,15 +257,56 @@ export default function Login() {
     setRegisterLoading(false);
   };
 
+  // const selectLanguage = async lang => {
+  //   try {
+  //     i18n.locale = lang;
+  //     await AsyncStorage.setItem('appLanguage', lang);
+  //     setShowLanguageModal(false);
+  //     globalThis.refreshApp();
+  //   } catch {
+  //     Alert.alert('Error', 'Language change failed');
+  //   }
+  // };
+
   const selectLanguage = async lang => {
     try {
+
       i18n.locale = lang;
+
       await AsyncStorage.setItem('appLanguage', lang);
+
       setShowLanguageModal(false);
-      globalThis.refreshApp();
+
+
+      setShowCityModal(true);
+
     } catch {
+
       Alert.alert('Error', 'Language change failed');
+
     }
+  };
+
+  const selectCity = async city => {
+
+    await AsyncStorage.setItem(
+      'SELECTED_CITY',
+      JSON.stringify(city)
+    );
+    console.log("Selected city:", JSON.stringify(city));
+    await AsyncStorage.setItem('selectedCity', JSON.stringify(city));
+    setSelectedCity(city);
+
+    setShowCityModal(false);
+
+    globalThis.refreshApp();
+  };
+
+  const skipCity = () => {
+
+    setShowCityModal(false);
+
+    globalThis.refreshApp();
   };
 
   return (
@@ -241,14 +345,14 @@ export default function Login() {
                   </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   style={[globalStyles.tab, region==='NP' && globalStyles.activeTab]}
                   onPress={()=>setRegion('NP')}
                 >
                   <Text style={[globalStyles.tabText, region==='NP' && globalStyles.activeTabText]}>
                     🇳🇵 Nepal
                   </Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </View>
             )}
 
@@ -317,6 +421,12 @@ export default function Login() {
       />
 
       <LanguageModal visible={showLanguageModal} onSelect={selectLanguage} />
+      <CityModal
+        visible={showCityModal}
+        cities={cities}
+        onSelect={selectCity}
+        onSkip={skipCity}
+      />
 
     </KeyboardAvoidingView>
   );

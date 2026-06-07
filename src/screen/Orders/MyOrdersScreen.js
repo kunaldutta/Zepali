@@ -13,6 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
 import { globalStyles, colors } from '../../styles/globalStyles';
 import AppHeader from "../../components/AppHeader";
+import i18n from '../../localization/i18n';
 
 
 const BASE_URL = 'https://zepali.net/IndoNep';
@@ -134,7 +135,7 @@ const MyOrdersScreen = () => {
 
   return (
     <SafeAreaView style={[globalStyles.safeArea,]}>
-      <AppHeader title="Product Detail" onBackPress={() => navigation.goBack()} />
+      <AppHeader title={i18n.t('MY_ORDERS')} onBackPress={() => navigation.goBack()} />
 
       <FlatList
         data={orders}

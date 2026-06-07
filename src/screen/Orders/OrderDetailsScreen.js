@@ -29,6 +29,7 @@ const OrderDetailsScreen = ({route, navigation}) => {
   const [isAlertVisible, setIsAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
+  const [selectedItem, setSelectedItem] = useState(null);
 
   useEffect(() => {
     fetchOrderDetails();
@@ -64,12 +65,39 @@ const OrderDetailsScreen = ({route, navigation}) => {
     }
   };
   const handleCancelAlert = item => {
-    setIsAlertVisible(true);
-    setAlertTitle('Cancel Purchase !!');
-    setAlertMessage('Are you sure you want to cancel this Purchased item?');
-    console.log('CANCEL ITEM:', item);
-    
-  }
+
+      if (item.item_status === 'DELIVERED') {
+
+        navigation.navigate(
+          'ReturnOrderScreen',
+          {
+            orderId: order.order_id,
+            orderItemId: item.id,
+            paymentMethod: order.payment_method,
+          },
+        );
+
+        return;
+      }
+
+      if (
+        item.item_status === 'PLACED' ||
+        item.item_status === 'CONFIRMED'
+      ) {
+
+        setSelectedItem(item);
+
+        setIsAlertVisible(true);
+
+        setAlertTitle(
+          'Cancel Order',
+        );
+
+        setAlertMessage(
+          'Are you sure you want to cancel this item?'
+        );
+      }
+    };
 
   const handleCancelItem = async item => {
     setIsAlertVisible(false);
@@ -194,9 +222,17 @@ const OrderDetailsScreen = ({route, navigation}) => {
         {/* RETURN BUTTON */}
 
         <TouchableOpacity
-          disabled={!item.returnable || item.item_status === 'CANCELLED'}
+          disabled={!item.returnable || item.item_status === 'CANCELLED' ||
+             item.item_status === 'RETURNED' ||
+              item.item_status === 'RETURN_REQUESTED' ||
+               item.item_status === 'RETURN_REJECTED' ||
+                item.item_status === 'RETURN_APPROVED'}
           style={[
-            styles.returnButton, {backgroundColor: !item.returnable || item.item_status === 'CANCELLED' ? colors.disabledButtonColor : colors.primary},
+            styles.returnButton, {backgroundColor: !item.returnable || item.item_status === 'CANCELLED' ||
+             item.item_status === 'RETURNED' ||
+              item.item_status === 'RETURN_REQUESTED' ||
+               item.item_status === 'RETURN_REJECTED' ||
+                item.item_status === 'RETURN_APPROVED' ? colors.disabledButtonColor : colors.primary},
             !item.returnable && styles.returnButtonDisabled,
           ]}
           onPress={() => {
@@ -211,7 +247,9 @@ const OrderDetailsScreen = ({route, navigation}) => {
             ]}>
 
             {item.returnable && item.item_status === 'DELIVERED'
-              ? 'Return'
+              ? 'Return' : item.returnable && (item.item_status === 'RETURNED' ||
+              item.item_status === 'RETURN_REQUESTED' ||
+                item.item_status === 'RETURN_APPROVED') ? 'Return Requested' : item.item_status === 'RETURN_REJECTED' ? 'Return Rejected'
               : item.item_status ==='CANCELLED' ? 'Cancelled' : 'Cancel'}
 
           </Text>
@@ -219,10 +257,14 @@ const OrderDetailsScreen = ({route, navigation}) => {
         </TouchableOpacity>
               {isAlertVisible && (
           <CustomAlert
-            visible={isAlertVisible}   // ✅ REQUIRED
+            visible={isAlertVisible}
             title={alertTitle}
             message={alertMessage}
-            onOk={() => {handleCancelItem(item)}}   // ✅ FIX
+            onOk={() => {
+              if (selectedItem) {
+                handleCancelItem(selectedItem);
+              }
+            }}
             onCancel={() => setIsAlertVisible(false)}
           />
         )}

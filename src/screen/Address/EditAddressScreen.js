@@ -24,6 +24,12 @@ import AppHeader from '../../components/AppHeader';
 import { globalStyles, colors } from '../../styles/globalStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { updateAddressAPI } from '../../services/productService'
+import CityModal from '../../components/CityModal';
+import AreaModal from '../../components/AreaModal';
+import {
+  getCityPincodesAPI,
+  getCitiesAPI,
+} from '../../services/addressService';
 
 const EditAddressScreen = ({ route, navigation }) => {
   const { address } = route.params;
@@ -43,8 +49,54 @@ const EditAddressScreen = ({ route, navigation }) => {
   const [latitude, setLatitude] = useState(address.latitude);
   const [longitude, setLongitude] = useState(address.longitude);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+  const [cityModalVisible, setCityModalVisible] = useState(false);
+  const [areaModalVisible, setAreaModalVisible] = useState(false);
 
-  
+  const [selectedCityId, setSelectedCityId] = useState(null);
+  const [areas, setAreas] = useState([]);
+  const [selectedArea, setSelectedArea] = useState(address?.area);
+
+  useEffect(() => {
+    if (city) {
+      loadCityId();
+    }
+  }, [city]);
+  const loadCityId = async () => {
+    try {
+
+      const response = await getCitiesAPI();
+
+      if (response.status) {
+
+        const cityObj =
+          response.cities.find(
+            item =>
+              item.city_name?.toLowerCase() ===
+              city?.toLowerCase()
+          );
+
+        if (cityObj) {
+
+          console.log(
+            'CITY FOUND:',
+            cityObj
+          );
+
+          setSelectedCityId(
+            cityObj.id
+          );
+        }
+      }
+
+    } catch (e) {
+
+      console.log(
+        'CITY FIND ERROR',
+        e
+      );
+
+    }
+  };
   useEffect(() => {
         const showSub = Keyboard.addListener('keyboardDidShow', () => {
           setKeyboardVisible(true);
@@ -99,8 +151,19 @@ const EditAddressScreen = ({ route, navigation }) => {
     console.log("Update response:", response);
 
     if (response?.success) {
-      Alert.alert('Success', 'Address updated successfully');
-      navigation.goBack();
+      
+      Alert.alert(
+              'Success',
+              response?.message || 'User address updated successfully',
+              [
+                {
+                  text: 'OK',
+                  onPress: () => {
+                    navigation.pop(2);
+                  },
+                },
+              ],
+            );
     } else {
       Alert.alert('Error', response?.message || 'Failed to update address');
     }
@@ -146,9 +209,90 @@ const EditAddressScreen = ({ route, navigation }) => {
           {renderInput('User Name', userName, setUserName)}
           {renderInput('Address 1', address1, setAddress1)}
           {renderInput('Address 2', address2, setAddress2)}
-          {renderInput('City', city, setCity)}
-          {renderInput('State', state, setState)}
-          {renderInput('Zip Code', zipCode, setZipCode, 'numeric')}
+          <Text style={styles.label}>City</Text>
+
+          <TouchableOpacity
+            onPress={() => setCityModalVisible(true)}
+          >
+            <View
+              style={[
+                globalStyles.input,
+                {
+                  justifyContent: 'center',
+                  height: 50,
+                },
+              ]}
+            >
+              <Text>
+                {city || 'Select City'}
+              </Text>
+            </View>
+          </TouchableOpacity>
+          <Text style={styles.label}>State</Text>
+
+            <TextInput
+              editable={false}
+              value={state}
+              style={globalStyles.input}
+            />
+          <Text style={styles.label}>Zip Code</Text>
+
+            <TouchableOpacity
+              onPress={async () => {
+
+                if (!selectedCityId) {
+                  Alert.alert(
+                    'Select City',
+                    'Please select a city first'
+                  );
+                  return;
+                }
+
+                try {
+
+                  const response =
+                    await getCityPincodesAPI({
+                      city_id: selectedCityId,
+                    });
+
+                  if (response.status) {
+
+                    setAreas(
+                      response.pincodes || []
+                    );
+
+                    setAreaModalVisible(true);
+                  }
+
+                } catch (e) {
+
+                  console.log(e);
+
+                }
+
+              }}
+            >
+              <View
+                style={[
+                  globalStyles.input,
+                  {
+                    justifyContent: 'center',
+                    height: 50,
+                  },
+                ]}
+              >
+                <Text>
+                  {zipCode || 'Select Area'}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <Text style={styles.label}>Area</Text>
+
+            <TextInput
+              editable={false}
+              value={selectedArea}
+              style={globalStyles.input}
+            />
           {renderInput('Landmark', landMark, setLandMark)}
           {renderInput('Contact No', contactNo, setContactNo, 'phone-pad')}
 
@@ -192,6 +336,61 @@ const EditAddressScreen = ({ route, navigation }) => {
         userData={{ default_value: defaultValue }}
       />
       </KeyboardAvoidingView>
+      <CityModal
+        visible={cityModalVisible}
+        onSkip={() => setCityModalVisible(false)}
+        showSkip={false}
+        onSelect={async (item) => {
+
+          setCityModalVisible(false);
+
+          setCity(item.city_name);
+          setState(item.state);
+          setZipCode('');
+
+          setSelectedCityId(item.id);
+
+          try {
+
+            const response =
+              await getCityPincodesAPI({
+                city_id: item.id,
+              });
+
+            if (response.status) {
+
+              setAreas(
+                response.pincodes || []
+              );
+
+              setAreaModalVisible(true);
+            }
+
+          } catch (e) {
+
+            console.log(
+              'PINCODE ERROR',
+              e
+            );
+          }
+        }}
+      />
+      <AreaModal
+        visible={areaModalVisible}
+        areas={areas}
+        onSkip={() =>
+          setAreaModalVisible(false)
+        }
+        onSelect={(item) => {
+
+          setAreaModalVisible(false);
+          setSelectedArea(item.area_name);
+          setZipCode(
+            item.pincode
+          );
+
+        }}
+      />
     </SafeAreaView>
   );
 };

@@ -21,6 +21,9 @@ import {
 } from '../../services/prawasiServices';
 import { BASE_URL } from '../../network/apiClient';
 import { globalStyles, colors } from '../../styles/globalStyles';
+import { getPaymentConfig } from '../../services/paymentService';
+import { compareVersions } from '../../utils/versionUtils';
+import DeviceInfo from 'react-native-device-info';
 
 const ReviewPage = ({formData, onBack}) => {
   const [cardCost,
@@ -67,7 +70,41 @@ const loadCardCost =
  const handleSubmit = async () => {
 
   try {
-
+    const config = await getPaymentConfig();
+          if (!config.status) {
+            showAlert("Error", "Unable to load payment configuration");
+            setProcessingPayment(false);
+            return;
+          }
+    const currentVersion = DeviceInfo.getVersion();
+    if (
+              compareVersions(
+                currentVersion,
+                config?.version?.minimum_version
+              ) < 0
+            ) {
+    
+              setTimeout(() => {
+                navigation.reset({
+                  index: 0,
+                  routes: [
+                    {
+                      name: 'ForceUpdateScreen',
+                      params: {
+                        versionData: {
+                          latestVersion: config?.version?.latest_version,
+                          updateMessage: config?.version?.update_message,
+                          storeUrl: config?.version?.store_url,
+                          currentVersion,
+                        },
+                      },
+                    },
+                  ],
+                });
+              }, 300);
+    
+              return;
+        }
     const applicationId =
       await AsyncStorage.getItem(
         'APPLICATION_ID',
@@ -100,7 +137,7 @@ const loadCardCost =
       currency: 'INR',
 
       key:
-        'rzp_test_Sb1UJwd853g7gw',
+        config.razorpay_key_id,
 
       amount: Number(cardCost)*100,
 
@@ -331,6 +368,11 @@ const loadCardCost =
         <ReviewItem
           label="Current Address"
           value={formData.address}
+        />
+
+        <ReviewItem
+          label="Zip Code"
+          value={formData.zipCode}
         />
 
         <ReviewItem

@@ -249,13 +249,18 @@ const PageOne = ({
   };
 
   const pickProfileImage = () => {
-    
-    if (formData.applicationStatus === 'PENDING') {
-      return;
-    }
-    setIsAlertVisible(true);
-    setAlertTitle('Select Photo');
-    setAlertMessage('Choose an option');
+
+    openCamera();
+    // setIsAlertVisible(true);
+    // setAlertTitle('Select Photo');
+    // setAlertMessage('Choose an option');
+     
+    // if (formData.applicationStatus === 'PENDING') {
+    //   return;
+    // }
+    // setIsAlertVisible(true);
+    // setAlertTitle('Select Photo');
+    // setAlertMessage('Choose an option');
   };
 
   const openModal = (

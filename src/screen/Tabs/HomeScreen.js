@@ -21,6 +21,8 @@ import { BASE_URL } from '../../network/apiClient';
 import { useFocusEffect } from '@react-navigation/native';
 import {usePoints} from  '../../components/PointsContext'
 import WalletBadge from '../../components/WalletBadge'
+import DeviceInfo from 'react-native-device-info';
+import { compareVersions } from '../../utils/versionUtils';
 
 /* IMAGE WITH LOADER */
 
@@ -68,7 +70,8 @@ const {fetchUserPoints} = usePoints();
 
 
 useEffect(()=>{
- loadHome();
+  console.log("Device Version:", DeviceInfo.getVersion());
+  loadHome();
 },[]);
 
 useFocusEffect(
@@ -118,6 +121,27 @@ const loadHome = async () => {
     setOffers(json?.offers || []);
     setCategories(json?.categories || []);
     setProducts(json?.products || []);
+     const currentVersion = DeviceInfo.getVersion();
+    if (compareVersions(currentVersion, json?.version?.minimum_version) < 0) {
+      setTimeout(() => {
+        navigation.reset({
+          index: 0,
+          routes: [
+            {
+              name: 'ForceUpdateScreen',
+              params: {
+                versionData: {
+                  latestVersion: json?.version?.latest_version,
+                  updateMessage: json?.version?.update_message,
+                  storeUrl: json?.version?.store_url,
+                  currentVersion,
+                },
+              },
+            },
+          ],
+        });
+      }, 500);
+    }
 
   } catch (error) {
 
@@ -206,13 +230,13 @@ const renderCategory = ({item}) => (
   style={styles.categoryBox}
   onPress={() =>{
     console.log("Category pressed:", item.category_name);
-    if (item?.id === "11") {
+    if (item.product_keyword === "recharge and bill") {
       navigation.navigate("BillAndRechargeScreen");
     }
-    else if (item?.id === "10") {
+    else if (item.product_keyword === "prawasi card") {
       removeApplicationIDAndNavigate();
     }
-    else if (item.category_name_en === "Travel") {
+    else if (item.product_keyword === "travel") {
       navigation.navigate("BusSearchScreen");
     }else{
     navigation.navigate("CategoryProductScreen", {

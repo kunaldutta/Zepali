@@ -388,9 +388,10 @@ const renderFooter = useMemo(() => {
           width: '100%',
         }}
       >
+        {console.log('Summary in footer:', summary)}
         <PointsSelector
           userId={loggedinUser?.id}
-          cartTotal={summary?.total_original_price}
+          cartTotal={String(Number(summary?.total_original_price) - Number(summary?.total_discount || 0) + Number(summary?.total_gst_amount || 0))}
           isPointSelected={isPointSelected}
           onChange={handlePointsChange}
         />

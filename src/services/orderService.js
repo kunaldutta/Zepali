@@ -72,3 +72,13 @@ export const cancelOrderItemAPI = async data => {
     },
   );
 };
+
+export const requestReturnAPI = async data => {
+  return await post(
+    API.REQUEST_RETURN,
+    {
+      ...data,
+      lang: i18n.locale,
+    },
+  );
+};

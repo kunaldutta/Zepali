@@ -127,4 +127,5 @@ export default {
   INFO: "जानकारी",
   PRAWASI_CARD_APPLICATION: "प्रवासी कार्ड आवेदन",
   MY_APPLICATIONS: "प्रवासी कार्ड आवेदन",
+  CONTACT_US: "संपर्क करें"
 };

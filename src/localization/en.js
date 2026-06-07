@@ -131,4 +131,5 @@ export default {
   INFO: "Info",
   PRAWASI_CARD_APPLICATION: "Prawasi Card Application",
   MY_APPLICATIONS: "Prawasi Card Applications",
+  CONTACT_US: "Contact Us",
 };

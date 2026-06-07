@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
+  InteractionManager,
 } from "react-native";
 
 import i18n from "../../localization/i18n";
@@ -20,6 +21,9 @@ import AppHeader from "../../components/AppHeader";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import RazorpayCheckout from "react-native-razorpay";
+import { getPaymentConfig } from "../../services/paymentService";
+import { compareVersions } from '../../utils/versionUtils';
+import DeviceInfo from 'react-native-device-info';
 
 import {
   createBookingOrder,
@@ -169,7 +173,40 @@ export default function BookingScreen({ route, navigation }) {
     Alert.alert("Error", "Please fill all passenger details properly");
     return;
   }
+  const config = await getPaymentConfig();
+  if (!config.status) {
+    Alert.alert('Unable to load payment configuration');
+    return;
+  }
+  const currentVersion = DeviceInfo.getVersion();
+      if (
+          compareVersions(
+            currentVersion,
+            config?.version?.minimum_version
+          ) < 0
+        ) {
 
+          setTimeout(() => {
+            navigation.reset({
+              index: 0,
+              routes: [
+                {
+                  name: 'ForceUpdateScreen',
+                  params: {
+                    versionData: {
+                      latestVersion: config?.version?.latest_version,
+                      updateMessage: config?.version?.update_message,
+                      storeUrl: config?.version?.store_url,
+                      currentVersion,
+                    },
+                  },
+                },
+              ],
+            });
+          }, 300);
+
+          return;
+        }
   try {
     const user = await AsyncStorage.getItem("USER_DATA");
     const parsedUser = user ? JSON.parse(user) : null;
@@ -214,7 +251,7 @@ export default function BookingScreen({ route, navigation }) {
     const options = {
       description: "Bus Booking",
       currency: "INR",
-      key: "rzp_test_Sb1UJwd853g7gw",
+      key: config.razorpay_key_id,
 
       amount: orderRes.amount,
       order_id: orderRes.order_id,
