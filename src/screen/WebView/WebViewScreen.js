@@ -5,17 +5,40 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   StyleSheet,
+  BackHandler
 } from "react-native";
 import { WebView } from "react-native-webview";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { globalStyles } from "../../styles/globalStyles";
 import AppHeader from "../../components/AppHeader";
 import i18n from "../../localization/i18n";
+import { useFocusEffect } from '@react-navigation/native';
 
 
 const WebViewScreen = ({ route, navigation }) => {
   const { url } = route.params || {};
   const [loading, setLoading] = useState(true);
+
+  useFocusEffect(
+  React.useCallback(() => {
+
+    const onBackPress = () => {
+
+      back(route.params?.fromScreen || null);
+
+      return true;
+    };
+
+    const subscription =
+      BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress
+      );
+
+    return () => subscription.remove();
+
+  }, [route])
+);
 
   // ✅ FIX: Always wrap text inside <Text>
   if (!url) {
@@ -25,12 +48,30 @@ const WebViewScreen = ({ route, navigation }) => {
       </View>
     );
   }
+  const back = (screen) => { 
+    if(screen === 'register') {
+      navigation.navigate('Login', {
+       reopenRegisterModal: true,
+
+        mobile: route.params?.mobile,
+        fcmToken: route.params?.fcmToken,
+        uuid: route.params?.uuid,
+
+        name: route.params?.name,
+        email: route.params?.email,
+
+        acceptedTerms: route.params?.acceptedTerms,
+  });
+    } else {
+      navigation.goBack();
+    }
+  };
 
   return (
     <SafeAreaView style={globalStyles.safeArea}>
         <AppHeader
         title={i18n.t('TERMS_AND_CONDITIONS') || 'Terms & Conditions'}
-        onBackPress={() => navigation.goBack()}
+        onBackPress={() => back(route.params?.fromScreen || null)}
         showCart={false}
       />
     <View style={styles.container}>

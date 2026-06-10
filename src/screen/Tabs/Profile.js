@@ -1,4 +1,4 @@
-import React, {useState, useCallback, useRef} from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
@@ -7,121 +7,166 @@ import {
   TouchableOpacity,
   Alert,
   Image,
-  FlatList
+  FlatList,
+  ActivityIndicator,
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import i18n from '../../localization/i18n';
+
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import AppHeader from "../../components/AppHeader";
+
+import AppHeader from '../../components/AppHeader';
 import { globalStyles, colors } from '../../styles/globalStyles';
 import { BASE_URL } from '../../network/apiClient';
 
-export default function Profile({navigation}) {
+import { getProfileMenuAPI } from '../../services/serviceApi';
+import DeviceInfo from 'react-native-device-info';
 
+export default function Profile({ navigation }) {
   const [userName, setUserName] = useState('User');
   const [user, setUser] = useState(null);
-
+  const [menuData, setMenuData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const currentVersion = DeviceInfo.getVersion();
   const flatListRef = useRef(null);
 
   useFocusEffect(
     useCallback(() => {
       loadUsser();
+      loadMenus();
     }, [])
   );
 
   const loadUsser = async () => {
-    const userData = await AsyncStorage.getItem('USER_DATA');
-    const parsedUser = userData ? JSON.parse(userData) : null;
+    try {
+      const userData = await AsyncStorage.getItem('USER_DATA');
+      const parsedUser = userData ? JSON.parse(userData) : null;
 
-    // ✅ prevent unnecessary re-render (main fix)
-    if (parsedUser?.name !== userName) {
       setUser(parsedUser);
       setUserName(parsedUser?.name || 'User');
+    } catch (error) {
+      console.log('USER LOAD ERROR:', error);
+    }
+  };
+
+  const loadMenus = async () => {
+    try {
+      setLoading(true);
+
+      const response = await getProfileMenuAPI();
+
+
+      if (response?.status) {
+        setMenuData(response.data || []);
+      } else {
+        setMenuData([]);
+      }
+    } catch (error) {
+      console.log('MENU ERROR:', error);
+      setMenuData([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleLogout = () => {
-    Alert.alert("Logout", "Are you sure you want to logout?", [
-      {text: "Cancel", style: "cancel"},
-      {
-        text: "Logout",
-        onPress: async () => {
-          const data = await AsyncStorage.getItem('USER_DATA');
-          console.log("Before delete:", data);
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          onPress: async () => {
+            try {
+              await AsyncStorage.multiRemove([
+                'USER_DATA',
+                'SELECTED_ADDRESS',
+                'SELECTED_CITY',
+                'TOKEN',
+              ]);
 
-          await AsyncStorage.multiRemove([
-            'USER_DATA',
-            'SELECTED_ADDRESS',
-            'SELECTED_CITY',
-            'TOKEN' // if you use any auth token
-          ]);
-
-          const data2 = await AsyncStorage.getItem('USER_DATA');
-          console.log("After delete:", data2);
-
-          //SELECTED_ADDRESS
-          if (globalThis.refreshApp) {
-            globalThis.refreshApp();
-          }
-        }
-      }
-    ]);
+              if (globalThis.refreshApp) {
+                globalThis.refreshApp();
+              }
+            } catch (error) {
+              console.log(error);
+            }
+          },
+        },
+      ]
+    );
   };
 
-  // ✅ keep menuData stable
-  const menuData = [
-    { id: '1', icon: 'person-outline', text: i18n.t('EDIT_PROFILE'), screen: 'EditProfile' },
-    { id: '2', icon: 'card-outline', text: i18n.t('MY_APPLICATIONS'), screen: 'MyApplicationsScreen' },
-    { id: '3', icon: 'location-outline', text: i18n.t('ADDRESS'), screen: 'AddressListScreen' },
-    { id: '4', icon: 'receipt-outline', text: i18n.t('MY_ORDERS'), screen: 'MyOrdersScreen' },
-    { id: '5', icon: 'language-outline', text: i18n.t('LANGUAGE'), screen: 'Language' },
-    { id: '6', icon: 'ticket-outline', text: i18n.t('TICKET_BOOKING_STATUS'), screen: 'TicketBookingStatus' },
-    { id: '7', icon: 'phone-portrait-outline', text: i18n.t('RECHARGE_HISTORY'), screen: 'RechargeStatusScreen' },
-    { id: '8', icon: 'heart-outline', text: i18n.t('WISHLIST'), screen: 'WishlistScreen' },
-    { id: '9', icon: 'contact-outline', text: i18n.t('CONTACT_US'), screen: 'ServicesScreen' },
-    { id: '10', icon: 'log-out-outline', text: i18n.t('LOGOUT'), action: 'logout', color: 'red' }
-  ];
+  const renderItem = useCallback(
+    ({ item }) => {
+      const onPress = () => {
+        if (item.action === 'logout') {
+          handleLogout();
+          return;
+        }
 
-  // ✅ memoized renderItem (prevents list reset)
-  const renderItem = useCallback(({item}) => {
-    const onPress = () => {
-      if (item.action === 'logout') {
-        handleLogout();
-      } else {
-        navigation.navigate(item.screen);
-      }
-    };
+        if (item.screen) {
+          navigation.navigate(item.screen);
+        }
+      };
 
-    return (
-      <TouchableOpacity style={styles.item} onPress={onPress}>
-        <View style={styles.row}>
+      return (
+        <TouchableOpacity
+          style={styles.item}
+          onPress={onPress}
+        >
+          <View style={styles.row}>
+            <Ionicons
+              name={item.icon}
+              size={22}
+              color={item.color || '#333'}
+              style={styles.icon}
+            />
+
+            <Text
+              style={[
+                styles.text,
+                { color: item.color || '#333' },
+              ]}
+            >
+              {item.text}
+            </Text>
+          </View>
+
           <Ionicons
-            name={item.icon}
-            size={22}
-            color={item.color || "#333"}
-            style={styles.icon}
+            name="chevron-forward-outline"
+            size={20}
+            color="#999"
           />
-          <Text style={[styles.text, {color: item.color || "#333"}]}>
-            {item.text}
-          </Text>
-        </View>
-        <Ionicons name="chevron-forward-outline" size={20} color="#999" />
-      </TouchableOpacity>
-    );
-  }, [navigation]);
+        </TouchableOpacity>
+      );
+    },
+    [navigation]
+  );
 
   return (
-    <SafeAreaView style={[globalStyles.safeArea, { flex: 1 }]}>
+    <SafeAreaView
+      style={[
+        globalStyles.safeArea,
+      ]}
+    >
       <AppHeader
-        title={"  " + userName}
+        title={'  ' + userName}
         showBack={false}
         leftComponent={
           <View style={styles.avatarContainer}>
             <Image
               source={
                 user?.user_image
-                  ? { uri: BASE_URL + user?.user_image }
+                  ? {
+                      uri:
+                        BASE_URL +
+                        user.user_image,
+                    }
                   : require('../../../src/Assets/LoginLogo/user.jpg')
               }
               style={styles.image}
@@ -129,35 +174,81 @@ export default function Profile({navigation}) {
           </View>
         }
       />
-      <View style={{ backgroundColor: colors.background, height: '100%' }}>
-      <View style={{ backgroundColor: colors.background, height: '90%' }}>
-        <FlatList
-          ref={flatListRef}
-          data={menuData}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
-          contentContainerStyle={styles.container}
-          ListHeaderComponent={<Text style={styles.title}>Profile</Text>}
-          showsVerticalScrollIndicator={false}
-          removeClippedSubviews={false}
-        />
+      <View
+        style={{
+          height: '100%',
+          backgroundColor: colors.background,
+          marginBottom: 20,
+        }}
+      >
+        <View
+        style={{
+          flex: 1,
+          backgroundColor:
+            colors.background,
+          height: '100%',
+        }}
+      >
+        {loading ? (
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <ActivityIndicator
+              size="large"
+            />
+          </View>
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={menuData}
+            keyExtractor={(item) =>
+              item.id.toString()
+            }
+            renderItem={renderItem}
+            contentContainerStyle={
+              styles.container
+            }
+            ListHeaderComponent={
+              <Text style={styles.title}>
+                App: {currentVersion}
+              </Text>
+            }
+            showsVerticalScrollIndicator={
+              false
+            }
+            removeClippedSubviews={
+              false
+            }
+          />
+        )}
       </View>
       </View>
+
+      
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingBottom: 40,
-    paddingHorizontal: 16,
-    backgroundColor: colors.background,
-  },
+  flexGrow: 1,
+  paddingHorizontal: 16,
+  paddingBottom: 80,
+  backgroundColor: colors.background,
+},
+
   title: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 20
+    top: 10,
+    fontSize: 15,
+    fontWeight: '400',
+    marginBottom: 20,
+    color: '#666',
   },
+
   item: {
     padding: 15,
     borderWidth: 1,
@@ -165,29 +256,36 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 12,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
     alignItems: 'center',
     backgroundColor: '#fafafa',
-    elevation: 2
+    elevation: 2,
   },
+
   row: {
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
   },
+
   icon: {
-    marginRight: 12
+    marginRight: 12,
   },
+
   text: {
     fontSize: 16,
-    fontWeight: '500'
+    fontWeight: '500',
   },
+
   avatarContainer: {
     height: 40,
     width: 40,
-    backgroundColor: '#bd9f9ffe',
+    backgroundColor:
+      '#bd9f9ffe',
     borderRadius: 20,
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
+
   image: {
     width: 40,
     height: 40,

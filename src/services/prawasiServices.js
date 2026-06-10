@@ -728,3 +728,27 @@ export const getMyApplications =
       throw error;
     }
   };
+/* =========================
+   VALIDATE USER
+========================= */
+
+export const validateUserAPI =
+  async payload => {
+
+    try {
+
+      return await post(
+        API.VALIDATE_USER,
+        payload
+      );
+
+    } catch (error) {
+
+      console.log(
+        'validateUserAPI ERROR => ',
+        error,
+      );
+
+      throw error;
+    }
+  };

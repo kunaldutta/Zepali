@@ -6,7 +6,8 @@ FlatList,
 Image,
 StyleSheet,
 ActivityIndicator,
-TouchableOpacity
+TouchableOpacity,
+Platform,
 } from 'react-native';
 
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -121,8 +122,10 @@ const loadHome = async () => {
     setOffers(json?.offers || []);
     setCategories(json?.categories || []);
     setProducts(json?.products || []);
+    
+    const pltFormVersion   = Platform.OS === 'ios' ? json?.versions?.ios : json?.versions?.android;
      const currentVersion = DeviceInfo.getVersion();
-    if (compareVersions(currentVersion, json?.version?.minimum_version) < 0) {
+    if (compareVersions(currentVersion, pltFormVersion?.minimum_version) < 0) {
       setTimeout(() => {
         navigation.reset({
           index: 0,
@@ -131,9 +134,9 @@ const loadHome = async () => {
               name: 'ForceUpdateScreen',
               params: {
                 versionData: {
-                  latestVersion: json?.version?.latest_version,
-                  updateMessage: json?.version?.update_message,
-                  storeUrl: json?.version?.store_url,
+                  latestVersion: pltFormVersion?.latest_version,
+                  updateMessage: pltFormVersion?.update_message,
+                  storeUrl: pltFormVersion?.store_url,
                   currentVersion,
                 },
               },
@@ -552,6 +555,7 @@ categoryImageContainer: {
   width: '100%',
   height: 100,
   borderRadius: 10,
+  top: 10,
   overflow: 'hidden', // 👈 important for rounded corners
 },
 
@@ -605,12 +609,13 @@ backgroundColor:colors.productColumnBackground
 productImg:{
 width:'100%',
 height:100,
+top:15,
 borderRadius:10
 },
 
 productName:{
 fontSize:15,
-marginTop:6,
+marginTop:16,
 fontWeight:"500"
 },
 productSortDesc:{

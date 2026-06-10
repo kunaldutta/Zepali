@@ -198,7 +198,7 @@ const OrderDetailsScreen = ({route, navigation}) => {
             : 'https://via.placeholder.com/150',
         }}
         style={styles.productImage}
-        resizeMode="cover"
+        resizeMode="contain"
       />
 
       <View style={styles.itemInfo}>
@@ -222,18 +222,18 @@ const OrderDetailsScreen = ({route, navigation}) => {
         {/* RETURN BUTTON */}
 
         <TouchableOpacity
-          disabled={!item.returnable || item.item_status === 'CANCELLED' ||
+          disabled={(!item.returnable && item.item_status === 'DELIVERED') || item.item_status === 'CANCELLED' ||
              item.item_status === 'RETURNED' ||
               item.item_status === 'RETURN_REQUESTED' ||
                item.item_status === 'RETURN_REJECTED' ||
                 item.item_status === 'RETURN_APPROVED'}
           style={[
-            styles.returnButton, {backgroundColor: !item.returnable || item.item_status === 'CANCELLED' ||
+            styles.returnButton, {backgroundColor:  (!item.returnable && item.item_status === 'DELIVERED') || item.item_status === 'CANCELLED' ||
              item.item_status === 'RETURNED' ||
               item.item_status === 'RETURN_REQUESTED' ||
                item.item_status === 'RETURN_REJECTED' ||
                 item.item_status === 'RETURN_APPROVED' ? colors.disabledButtonColor : colors.primary},
-            !item.returnable && styles.returnButtonDisabled,
+            (!item.returnable && item.item_status === 'DELIVERED') && styles.returnButtonDisabled,
           ]}
           onPress={() => {
             handleCancelAlert(item);
@@ -242,11 +242,11 @@ const OrderDetailsScreen = ({route, navigation}) => {
           <Text
             style={[
               styles.returnButtonText,
-              !item.returnable &&
+              (!item.returnable && item.item_status === 'DELIVERED') &&
                 styles.returnButtonTextDisabled,
             ]}>
 
-            {item.returnable && item.item_status === 'DELIVERED'
+            {(!item.returnable && item.item_status === 'DELIVERED') ? 'Not Returnable' : item.item_status === 'DELIVERED'
               ? 'Return' : item.returnable && (item.item_status === 'RETURNED' ||
               item.item_status === 'RETURN_REQUESTED' ||
                 item.item_status === 'RETURN_APPROVED') ? 'Return Requested' : item.item_status === 'RETURN_REJECTED' ? 'Return Rejected'

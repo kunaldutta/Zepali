@@ -5,6 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
+  Platform,
+  Alert,
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -14,6 +16,7 @@ import {
 } from "../../services/RechargeService";
 import DeviceInfo from 'react-native-device-info';
 import { compareVersions } from '../../utils/versionUtils';
+import { forceLogout } from '../../utils/authUtils'
 
 import {
   calculateAmount,
@@ -95,11 +98,12 @@ const RechargeConfirm = ({ route, navigation }) => {
         setProcessingPayment(false);
         return;
       }
+      const pltFormVersion   = Platform.OS === 'ios' ? config?.versions?.ios : config?.versions?.android;
       const currentVersion = DeviceInfo.getVersion();
       if (
                 compareVersions(
                   currentVersion,
-                  config?.version?.minimum_version
+                  pltFormVersion?.minimum_version
                 ) < 0
               ) {
       
@@ -111,9 +115,9 @@ const RechargeConfirm = ({ route, navigation }) => {
                         name: 'ForceUpdateScreen',
                         params: {
                           versionData: {
-                            latestVersion: config?.version?.latest_version,
-                            updateMessage: config?.version?.update_message,
-                            storeUrl: config?.version?.store_url,
+                            latestVersion: pltFormVersion?.latest_version,
+                            updateMessage: pltFormVersion?.update_message,
+                            storeUrl: pltFormVersion?.store_url,
                             currentVersion,
                           },
                         },
@@ -134,6 +138,19 @@ const RechargeConfirm = ({ route, navigation }) => {
         return;
       }
 
+      const showInvalidUserAlert = (message) => {
+        Alert.alert(
+          'Account Issue',
+          message || 'Please login again',
+          [
+            {
+              text: 'OK',
+              onPress: forceLogout,
+            },
+          ]
+        );
+      };
+
       // ✅ STEP 1: Create transaction
       const paymentRes = await createPayment({
         amount_npr: payload.amount,
@@ -147,9 +164,11 @@ const RechargeConfirm = ({ route, navigation }) => {
         // 🔥 ADD THIS LINE
         provider: payload.provider,
       });
-
+      console.log('PAYMENT RES ====',paymentRes)
       if (!paymentRes?.status) {
-        showAlert("Error", paymentRes?.message || "Payment init failed");
+        //Need logout
+        showInvalidUserAlert(paymentRes?.message)
+        //showAlert("Error", paymentRes?.message || "Payment init failed");
         setProcessingPayment(false);
         return;
       }

@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import {globalStyles,colors} from '../../src/styles/globalStyles';
 import DeviceInfo from 'react-native-device-info';
+import { BASE_URL } from '../network/apiClient';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import i18n from '../localization/i18n';
@@ -22,6 +23,7 @@ import {post} from '../network/apiService';
 import API from '../network/apiEndpoints';
 import messaging from '@react-native-firebase/messaging';
 import { sendOtpApi, verifyOtpApi } from '../services/otpService';
+import { getAppConfigAPI } from '../services/serviceApi';
 
 //import auth from '@react-native-firebase/auth';
 
@@ -31,7 +33,7 @@ import CityModal from '../components/CityModal';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 
-export default function Login() {
+export default function Login({navigation, route}) {
 
   const [mobile, setMobile] = useState('');
   const [otp, setOtp] = useState('');
@@ -49,6 +51,7 @@ export default function Login() {
 
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const [showCityModal, setShowCityModal] = useState(false);
   const [cities, setCities] = useState([]);
@@ -58,38 +61,111 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [fcmToken, setFcmToken] = useState('');
   const [uuid, setUuid] = useState('');
+  const [appConfig, setAppConfig] = useState(null);
+  const [resendLoading, setResendLoading] = useState(false);
+
+  // useEffect(() => {
+  //   loadLanguage();
+  //   loadAppConfig();
+  // }, []);
+  useEffect(() => {
+      console.log('LOGIN PARAMS', route?.params);
+      if (route?.params?.reopenRegisterModal) {
+        console.log('OPENING REGISTER MODAL');
+        setShowRegisterModal(true);
+
+        if (route?.params?.mobile) {
+          setMobile(route.params.mobile);
+        }
+
+        if (route?.params?.name) {
+          setName(route.params.name);
+        }
+
+        if (route?.params?.email) {
+          setEmail(route.params.email);
+        }
+
+        if (route?.params?.acceptedTerms) {
+          setAcceptedTerms(route.params.acceptedTerms);
+        }
+
+        if (route?.params?.fcmToken) {
+            setFcmToken(route.params.fcmToken);
+          }
+
+          if (route?.params?.uuid) {
+            setUuid(route.params.uuid);
+          }
+
+      }
+
+    }, [route?.params]);
 
   useEffect(() => {
-    loadLanguage();
-  }, []);
 
-  useEffect(() => {
   async function init() {
-    // ✅ Request permission (iOS)
-    const uniqueId = await DeviceInfo.getUniqueId();
-      
 
-    const authStatus = await messaging().requestPermission();
-    const uuid = uuidv4();
-    setUuid(uniqueId);
-    console.log('Permission granted==', uuid);
-    const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+    try {
 
-    if (enabled && Platform.OS !== 'ios') {
-      console.log('Permission granted');
+      // App Config
+      const appConfigResponse = await getAppConfigAPI();
 
-      // ✅ IMPORTANT (fix your error)
-      await messaging().registerDeviceForRemoteMessages();
+      console.log(
+        'APP CONFIG RESPONSE',
+        JSON.stringify(appConfigResponse, null, 2)
+      );
 
-      const token = await messaging().getToken();
-      setFcmToken(token);
-      console.log('FCM Token:', token);
+      if (appConfigResponse?.status) {
+
+        const config = appConfigResponse.data;
+
+        setAppConfig(config);
+
+        await AsyncStorage.setItem(
+          'APP_CONFIG',
+          JSON.stringify(config)
+        );
+
+      }
+
+      // Language
+      await loadLanguage();
+
+      // Device Info
+      const uniqueId = await DeviceInfo.getUniqueId();
+
+      setUuid(uniqueId);
+
+      // Notification Permission
+      const authStatus =
+        await messaging().requestPermission();
+
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+      if (enabled && Platform.OS !== 'ios') {
+
+        await messaging().registerDeviceForRemoteMessages();
+
+        const token = await messaging().getToken();
+
+        setFcmToken(token);
+
+        console.log('FCM Token:', token);
+      }
+
+    } catch (error) {
+
+      console.log('INIT ERROR:', error);
+
     }
+
   }
 
   init();
+
 }, []);
 
   const loadLanguage = async () => {
@@ -227,19 +303,36 @@ export default function Login() {
   
   const registerUser = async () => {
 
+    if (!acceptedTerms) {
+
+      Alert.alert(
+        'Terms Required',
+        'Please accept Terms & Conditions and Privacy Policy'
+      );
+
+      return;
+    }
+
     if (!name) return Alert.alert('Enter name');
 
     setRegisterLoading(true);
 
     try {
-
+      console.log('REGISTER DATA', {
+        mobile,
+        fcmToken,
+        uuid,
+        name,
+        email,
+      });
       const json = await post(API.REGISTER, {
         name,
         email,
         mobile_no: mobile,
         country_code: getCountryCode(),
         uuid: uuid,
-        fcm_token: fcmToken
+        fcm_token: fcmToken,
+        accepted_terms_version: appConfig?.legal_version || '1.0',
       });
 
       if (json.status) {
@@ -334,28 +427,6 @@ export default function Login() {
 
           <View style={styles.card}>
 
-            {!showOtpInput && (
-              <View style={styles.tabs}>
-                <TouchableOpacity
-                  style={[globalStyles.tab, region==='IN' && globalStyles.activeTab]}
-                  onPress={()=>setRegion('IN')}
-                >
-                  <Text style={[globalStyles.tabText, region==='IN' && globalStyles.activeTabText]}>
-                    🇮🇳 India
-                  </Text>
-                </TouchableOpacity>
-
-                {/* <TouchableOpacity
-                  style={[globalStyles.tab, region==='NP' && globalStyles.activeTab]}
-                  onPress={()=>setRegion('NP')}
-                >
-                  <Text style={[globalStyles.tabText, region==='NP' && globalStyles.activeTabText]}>
-                    🇳🇵 Nepal
-                  </Text>
-                </TouchableOpacity> */}
-              </View>
-            )}
-
             {showOtpInput && (
               <>
                 <Text style={styles.mobileText}>
@@ -377,6 +448,7 @@ export default function Login() {
                   value={mobile}
                   onChangeText={setMobile}
                   keyboardType="phone-pad"
+                  maxLength={10}
                 />
               </View>
             ) : (
@@ -387,21 +459,62 @@ export default function Login() {
                 value={otp}
                 onChangeText={setOtp}
                 keyboardType="number-pad"
+                maxLength={4}
               />
+            )}
+
+                        {showOtpInput && (
+
+              <TouchableOpacity
+                onPress={sendOtp}
+                disabled={resendLoading}
+                style={styles.resendContainer}
+              >
+
+                {resendLoading ? (
+
+                  <ActivityIndicator size="small" />
+
+                ) : (
+
+                  <Text style={styles.resendText}>
+                    Resend OTP
+                  </Text>
+
+                )}
+
+              </TouchableOpacity>
+
             )}
 
             {error ? <Text style={styles.error}>{error}</Text> : null}
 
+            
+
             <TouchableOpacity
-              style={[globalStyles.button, {top:10}]}
-              onPress={showOtpInput ? verifyOtp : sendOtp}
-              disabled={loading}
-            >
-              {loading ? <ActivityIndicator color="#fff"/> :
-                <Text style={globalStyles.buttonText}>
-                  {showOtpInput ? 'Verify OTP' : 'Send OTP'}
-                </Text>}
-            </TouchableOpacity>
+                style={[
+                  globalStyles.button,
+                  { top: 10 },
+                  (
+                    (!showOtpInput && mobile.length !== 10) ||
+                    (showOtpInput && otp.length !== 4)
+                  ) && { opacity: 0.5 }
+                ]}
+                onPress={showOtpInput ? verifyOtp : sendOtp}
+                disabled={
+                  loading ||
+                  (!showOtpInput && mobile.length !== 10) ||
+                  (showOtpInput && otp.length !== 4)
+                }
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={globalStyles.buttonText}>
+                    {showOtpInput ? 'Verify OTP' : 'Send OTP'}
+                  </Text>
+                )}
+              </TouchableOpacity>
 
           </View>
 
@@ -415,9 +528,26 @@ export default function Login() {
         email={email}
         setName={setName}
         setEmail={setEmail}
+        acceptedTerms={acceptedTerms}
+        setAcceptedTerms={setAcceptedTerms}
         onSubmit={registerUser}
-        onClose={()=>setShowRegisterModal(false)}
+        onClose={() => setShowRegisterModal(false)}
         loading={registerLoading}
+        navigation={navigation}
+        onTermsPress={() => {
+          setShowRegisterModal(false);
+          navigation.navigate('WebViewScreen', {
+            url: `${BASE_URL}/terms_condition/user_register_terms_condition_privacy.html`,
+            mobile,
+            fcmToken,
+            uuid,
+            name,
+            email,
+            acceptedTerms,
+            fromScreen: 'register',
+          });
+
+        }}
       />
 
       <LanguageModal visible={showLanguageModal} onSelect={selectLanguage} />
@@ -470,6 +600,16 @@ const styles = StyleSheet.create({
 
   mobileText:{ marginBottom:5 },
 
-  changeText:{ color:'#007BFF', marginBottom:10 }
+  changeText:{ color:'#007BFF', marginBottom:10 },
+  resendContainer:{
+  alignSelf:'flex-end',
+  marginBottom:10,
+},
+
+resendText:{
+  color:'#007BFF',
+  fontSize:14,
+  fontWeight:'600',
+}
 
 });

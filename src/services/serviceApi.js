@@ -7,3 +7,35 @@ export const getServices = async () => {
     lang: i18n.locale,
   });
 };
+
+export const getProfileMenuAPI = async () => {
+  try {
+    return await post(API.GET_SETTING_MENU, {
+      lang: i18n.locale,
+    });
+  } catch (err) {
+    console.log('PROFILE MENU ERROR:', err);
+
+    return {
+      status: false,
+      data: [],
+    };
+  }
+};
+
+export const getAppConfigAPI = async () => {
+  try {
+
+    return await post(API.GET_APP_CONFIG, {});
+
+  } catch (err) {
+
+    console.log('APP CONFIG ERROR:', err);
+
+    return {
+      status: false,
+      data: null,
+      message: 'Failed to load app configuration',
+    };
+  }
+};

@@ -95,13 +95,21 @@ export default function CartScreen({navigation}) {
     Alert.alert('Error', 'Failed to load cart');
   }
 };
+const refreshCart = async (customerId) => {
+  await dispatch(
+    fetchCart({
+      customer_id: customerId,
+      points_amount: lastPointsAmount.current || 0,
+    }),
+  ).unwrap();
+};
 
   /* ================= INCREASE ================= */
   const increaseQty = async (item) => {
 
-  if (updatingItemId === item.id) return;
+  if (updatingItemId === item.cart_id) return;
 
-  setUpdatingItemId(item.id);
+  setUpdatingItemId(item.cart_id);
   setCartLoading(true);
 
   try {
@@ -120,6 +128,9 @@ export default function CartScreen({navigation}) {
     };
 
     await dispatch(updateCart(payload)).unwrap();
+
+    await refreshCart(parsedUser.id);
+    
 
   } catch (error) {
 
@@ -143,9 +154,8 @@ export default function CartScreen({navigation}) {
   /* ================= DELETE ================= */
 const deleteItem = async (item) => {
 
-  if (updatingItemId === item.id) return;
-
-  setUpdatingItemId(item.id);
+  if (updatingItemId === item.cart_id) return;
+    setUpdatingItemId(item.cart_id);
   setCartLoading(true);
 
   try {
@@ -161,6 +171,8 @@ const deleteItem = async (item) => {
       quantity: 0,
     };
     await dispatch(updateCart(payload)).unwrap();
+
+    await refreshCart(parsedUser.id);
 
   } catch (error) {
 
@@ -206,6 +218,8 @@ const deleteItem = async (item) => {
     };
 
     await dispatch(updateCart(payload)).unwrap();
+
+    await refreshCart(parsedUser.id);
 
   } catch (error) {
 
@@ -274,7 +288,9 @@ const handlePlaceOrder = () => {
         <Text style={globalStyles.text}>
           {i18n.t('SIZE')}: {item?.size}
         </Text>
-        <Text style={[globalStyles.text,{left:15}]}>
+        </View>
+        <View style={{flexDirection:'row'}}>
+        <Text style={[globalStyles.text]}>
           {i18n.t('PRODUCT_COLOR')}: {item.color}
         </Text>
         </View>
@@ -390,8 +406,13 @@ const renderFooter = useMemo(() => {
       >
         {console.log('Summary in footer:', summary)}
         <PointsSelector
+          key={`${summary?.grand_total}-${items.length}`}
           userId={loggedinUser?.id}
-          cartTotal={String(Number(summary?.total_original_price) - Number(summary?.total_discount || 0) + Number(summary?.total_gst_amount || 0))}
+          cartTotal={String(
+            Number(summary?.total_original_price) -
+            Number(summary?.total_discount || 0) +
+            Number(summary?.total_gst_amount || 0)
+          )}
           isPointSelected={isPointSelected}
           onChange={handlePointsChange}
         />
@@ -435,6 +456,7 @@ const renderFooter = useMemo(() => {
 }, [
   uniqueCategories,
   items,
+  summary,
   loggedinUser?.id,
   isPointSelected,
   handlePointsChange,
@@ -470,6 +492,7 @@ const renderFooter = useMemo(() => {
         
         <FlatList
           data={items}
+          extraData={summary}
           keyExtractor={(item, index) =>
             `${item.cart_id || item.product_id}-${item.measurement_id}-${index}`
           }
@@ -560,7 +583,7 @@ const styles = StyleSheet.create({
     borderRadius:8
   },
 
-  name:{ fontSize:16, fontWeight:"bold" },
+  name:{ fontSize:16, fontWeight:"bold", width:'75%' },
 
   qtyContainer:{
     flexDirection:"row",

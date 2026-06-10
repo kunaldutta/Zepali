@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import AppHeader from '../../components/AppHeader';
 import i18n from '../../localization/i18n';
@@ -8,7 +8,14 @@ import PageOne from './PageOne';
 import PageTwo from './PageTwo';
 import PageThree from './PageThree';
 import ReviewPage from './ReviewPage';
-import { View } from 'react-native';
+import { View, Alert } from 'react-native';
+import AsyncStorage
+from '@react-native-async-storage/async-storage';
+import {forceLogout} from '../../utils/authUtils'
+
+import {
+  validateUserAPI,
+} from '../../services/prawasiServices';
 
 const PrawasiCardNavigator = ({navigation}) => {
   const [step, setStep] = useState(1);
@@ -74,6 +81,80 @@ const PrawasiCardNavigator = ({navigation}) => {
       ...prev,
       ...data,
     }));
+  };
+useEffect(() => {
+
+  validateUser();
+
+}, []);
+
+  const validateUser = async () => {
+
+    try {
+
+      const user =
+        await AsyncStorage.getItem(
+          'USER_DATA'
+        );
+
+      const parsedUser =
+        user
+          ? JSON.parse(user)
+          : null;
+
+      console.log(
+        'Parsed User ===',
+        parsedUser
+      );
+
+      if (!parsedUser?.id) {
+
+        Alert.alert(
+          'Logged Out',
+          'Please login again',
+          [
+            {
+              text: 'OK',
+              onPress: forceLogout,
+            },
+          ]
+        );
+
+        return;
+      }
+
+      const response =
+        await validateUserAPI({
+          user_id: parsedUser.id,
+        });
+
+      if (!response?.status) {
+
+        console.log(
+          'Error ====',
+          response
+        );
+
+        Alert.alert(
+          'Account Issue',
+          response?.message ||
+            'Please login again',
+          [
+            {
+              text: 'OK',
+              onPress: forceLogout,
+            },
+          ]
+        );
+      }
+
+    } catch (error) {
+
+      console.log(
+        'validateUser error:',
+        error
+      );
+    }
   };
   
 

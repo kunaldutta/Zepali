@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   ScrollView,
+  Platform,
 } from 'react-native';
 
 import AsyncStorage
@@ -27,6 +28,8 @@ from '../../styles/globalStyles';
 import AppHeader
 from '../../components/AppHeader';
 import DeviceInfo from 'react-native-device-info';
+import { useDispatch } from 'react-redux';
+import { clearCart } from '../../redux/store/slices/cartSlice';
 
 import {
 
@@ -50,8 +53,10 @@ export default function PurchaseReviewScreen({
     summary,
   } = route.params;
   console.log('Summary ====', summary)
-  const [paymentMethod, setPaymentMethod] = useState('COD');
+  const [paymentMethod, setPaymentMethod] = useState(summary.
+    grand_total > 0 ? 'ONLINE' : 'COD');
   const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
 
   /* ================= PLACE ORDER ================= */
 
@@ -139,6 +144,7 @@ export default function PurchaseReviewScreen({
       Number(
         summary?.grand_total || 0,
       ),
+    platform: Platform.OS === 'ios' ? 'iOS' : 'Android',
     app_version: DeviceInfo.getVersion(),
   });
 
@@ -191,7 +197,7 @@ export default function PurchaseReviewScreen({
     ========================= */
 
     if (paymentMethod === 'COD') {
-
+      dispatch(clearCart());
       Alert.alert(
 
         'Order Placed',
@@ -347,7 +353,7 @@ export default function PurchaseReviewScreen({
           /* =========================
              SUCCESS
           ========================= */
-
+          dispatch(clearCart());
           Alert.alert(
 
             'Payment Successful',
@@ -401,10 +407,14 @@ export default function PurchaseReviewScreen({
           'cancelOrderPaymentAPI:',
           cancelOrderPaymentAPI
         );
-
+        const paymentStatus =
+        error?.code === 0
+          ? 'CANCELLED'
+          : 'FAILED';
         const res =
           await cancelOrderPaymentAPI({
             order_id: response?.order_id,
+            payment_status: paymentStatus,
           });
 
         console.log(

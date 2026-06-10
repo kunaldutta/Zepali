@@ -128,4 +128,5 @@ export default {
   PRAWASI_CARD_APPLICATION: "प्रवासी कार्ड आवेदन",
   MY_APPLICATIONS: "प्रवासी कार्ड आवेदन",
   CONTACT_US: "संपर्क करें",
+  OUT_OF_STOCK: "स्टॉक समाप्त",
 };

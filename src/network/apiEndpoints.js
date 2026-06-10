@@ -77,6 +77,9 @@ const API = {
   CHECK_SERVICEABLE_LOCATION: '/city/check_serviceable_location.php', // 🔥 important
   GET_CITY_PINCODES: '/city/get_city_pincodes.php', // 🔥 important
   GET_SERVICES: '/services/get_services.php',
+  GET_SETTING_MENU: '/setting/get_setting_menu.php',
+  GET_APP_CONFIG: '/app_config.php',
+  VALIDATE_USER: '/validate_user.php',
 };
 
 export default API;

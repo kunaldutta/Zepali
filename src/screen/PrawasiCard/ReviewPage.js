@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  Platform,
 } from 'react-native';
 
 import RazorpayCheckout
@@ -76,11 +77,12 @@ const loadCardCost =
             setProcessingPayment(false);
             return;
           }
+    const pltFormVersion   = Platform.OS === 'ios' ? config?.versions?.ios : config?.versions?.android;
     const currentVersion = DeviceInfo.getVersion();
     if (
               compareVersions(
                 currentVersion,
-                config?.version?.minimum_version
+                pltFormVersion?.minimum_version
               ) < 0
             ) {
     
@@ -92,9 +94,9 @@ const loadCardCost =
                       name: 'ForceUpdateScreen',
                       params: {
                         versionData: {
-                          latestVersion: config?.version?.latest_version,
-                          updateMessage: config?.version?.update_message,
-                          storeUrl: config?.version?.store_url,
+                          latestVersion: pltFormVersion?.latest_version,
+                          updateMessage: pltFormVersion?.update_message,
+                          storeUrl: pltFormVersion?.store_url,
                           currentVersion,
                         },
                       },

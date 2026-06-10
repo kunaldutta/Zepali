@@ -251,16 +251,6 @@ const PageOne = ({
   const pickProfileImage = () => {
 
     openCamera();
-    // setIsAlertVisible(true);
-    // setAlertTitle('Select Photo');
-    // setAlertMessage('Choose an option');
-     
-    // if (formData.applicationStatus === 'PENDING') {
-    //   return;
-    // }
-    // setIsAlertVisible(true);
-    // setAlertTitle('Select Photo');
-    // setAlertMessage('Choose an option');
   };
 
   const openModal = (

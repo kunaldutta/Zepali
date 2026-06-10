@@ -132,4 +132,5 @@ export default {
   PRAWASI_CARD_APPLICATION: "Prawasi Card Application",
   MY_APPLICATIONS: "Prawasi Card Applications",
   CONTACT_US: "Contact Us",
+  OUT_OF_STOCK: "Out of Stock",
 };

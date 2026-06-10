@@ -11,6 +11,7 @@ import {
   ActivityIndicator
 } from 'react-native';
 import {globalStyles,colors} from '../../src/styles/globalStyles';
+import { BASE_URL } from '../network/apiEndpoints';
 
 export default function RegisterModal({
   visible,
@@ -18,11 +19,15 @@ export default function RegisterModal({
   email,
   setName,
   setEmail,
+  acceptedTerms,
+  setAcceptedTerms,
   onSubmit,
   onClose,
-  loading
+  loading,
+  navigation,
+  onTermsPress,
 }) {
-
+  const termsUrl = `${BASE_URL}/terms_condition/user_register_terms_condition_privacy.html`;
   return (
     <Modal
       visible={visible}
@@ -36,12 +41,6 @@ export default function RegisterModal({
 
           <View style={styles.modalBox}>
 
-            <TouchableOpacity
-              style={globalStyles.button}
-              onPress={onClose}
-            >
-              <Text style={styles.closeText}>✕</Text>
-            </TouchableOpacity>
 
             <Text style={styles.modalTitle}>Complete Profile</Text>
 
@@ -62,16 +61,60 @@ export default function RegisterModal({
               keyboardType="email-address"
             />
 
+              <TouchableOpacity
+                style={styles.checkboxContainer}
+                onPress={() => setAcceptedTerms(!acceptedTerms)}
+              >
+                <Text style={styles.checkbox}>
+                  {acceptedTerms ? '☑' : '☐'}
+                </Text>
+
+                <Text style={styles.termsText}>
+                  I agree to the{' '}
+
+                  <Text
+                    style={styles.linkText}
+                    onPress={onTermsPress}
+                  >
+                    Terms & Conditions
+                  </Text>
+
+                  {' '}and{' '}
+
+                  <Text
+                    style={styles.linkText}
+                    onPress={() =>
+                      navigation.navigate('WebViewScreen', {
+                        url: termsUrl,
+                      })
+                    }
+                  >
+                    Privacy Policy
+                  </Text>
+
+                </Text>
+              </TouchableOpacity>
+
             <TouchableOpacity
-              style={styles.button}
+              style={[
+                styles.button,
+                (!acceptedTerms || loading) && { opacity: 0.5 }
+              ]}
               onPress={onSubmit}
-              disabled={loading}
+              disabled={loading || !acceptedTerms}
             >
               {loading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
                 <Text style={styles.buttonText}>Submit</Text>
               )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: colors.secondary, marginTop: 10 }]}
+              onPress={onClose}
+            >
+              <Text style={styles.closeText}>Cancel</Text>
             </TouchableOpacity>
 
           </View>
@@ -122,7 +165,7 @@ const styles = StyleSheet.create({
   button:{
     height:50,
     width:'100%',
-    backgroundColor:'#007BFF',
+    backgroundColor:colors.primary,
     borderRadius:10,
     justifyContent:'center',
     alignItems:'center'
@@ -144,7 +187,29 @@ const styles = StyleSheet.create({
   closeText:{
     fontSize:18,
     fontWeight:'bold',
-    color:'#333'
-  }
+    color:'#40fafa'
+  },
+  checkboxContainer:{
+      flexDirection:'row',
+      alignItems:'flex-start',
+      width:'100%',
+      marginBottom:15
+    },
+
+    checkbox:{
+      fontSize:22,
+      marginRight:8
+    },
+
+    termsText:{
+      flex:1,
+      fontSize:13,
+      color:'#444'
+    },
+
+    linkText:{
+      color:'#007BFF',
+      fontWeight:'600'
+    }
 
 });

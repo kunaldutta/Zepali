@@ -12,6 +12,7 @@ import {
 
 import { post } from '../network/apiService';
 import API from '../network/apiEndpoints';
+import { colors } from '../styles/globalStyles';
 
 export default function CityModal({
   visible,
@@ -95,6 +96,7 @@ export default function CityModal({
             style={styles.searchInput}
             placeholder="Search city..."
             value={searchText}
+            placeholderTextColor={colors.placeholderTextColor}
             onChangeText={setSearchText}
             autoCorrect={false}
             autoCapitalize="none"

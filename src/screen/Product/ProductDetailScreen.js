@@ -24,6 +24,7 @@ import ImageZoomModal from '../../components/ImageZoomModal';
 import RelatedProducts from '../../components/RelatedProducts';
 import {addToWishlistAPI, checkWishlistAPI, removeFromWishlistAPI} from '../../services/wishlistService';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import CustomAlert from '../../components/CustomAlert';
 
 const { width } = Dimensions.get('window');
 
@@ -32,7 +33,7 @@ export default function ProductDetailScreen({ route, navigation }) {
   const { productId, colorCode, size } = route.params || {};
   const cartItems = useSelector(state => state.cart.items);
   const dispatch = useDispatch();
-
+  const [showCartAlert, setShowCartAlert] = useState(false);
   const [product, setProduct] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
 
@@ -286,6 +287,13 @@ useEffect(() => {
       Alert.alert("Error", "Variant missing");
       return;
     }
+    if (Number(selectedVariant?.stock || 0) <= 0) {
+      Alert.alert(
+        "Out of Stock",
+        "This product is currently out of stock"
+      );
+      return;
+    }
 
     // ✅ VALID IMAGE
     const validImag =
@@ -302,7 +310,7 @@ useEffect(() => {
       quantity,
     })).unwrap();
 
-    Alert.alert("Success", "Added to cart");
+    setShowCartAlert(true);
 
   } catch (e) {
 
@@ -405,10 +413,12 @@ const onWishlistPress = async () => {
             {images.map((img, i) => (
             <TouchableOpacity
               key={`${img.image_id}-${i}`}
-            onPress={() => {
+              style={{ flex: 1, backgroundColor: '#fff' }}
+              onPress={() => {
               const imgs = images.map(item => ({
                 url: BASE_URL + item.image_url
               }));
+              
 
               setZoomImages(imgs);
               setZoomIndex(i);
@@ -471,6 +481,9 @@ const onWishlistPress = async () => {
               <>
               {selectedVariant.effective_discount_percentage > 0 && (<Text style={[styles.price, { textDecorationLine: 'line-through' }]}>₹ {selectedVariant?.price}</Text>)}
               <Text style={styles.productFinalPrice}>₹ {selectedVariant?.final_price}</Text>
+              {product?.returnable && (
+                <Text style={[styles.productFinalPrice,{fontSize:12, top:10, color:colors.descriptioncolor}]}> {product?.return_policy}</Text>
+              )}
               </>
             )}
             
@@ -517,7 +530,7 @@ const onWishlistPress = async () => {
                   ]}
                 >
                   <Text>{v.measurement_value}</Text>
-                  <Text>Stock: {v.stock}</Text>
+                  {v.stock < 10 && <Text>Stock: {v.stock}</Text>}
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -560,13 +573,21 @@ const onWishlistPress = async () => {
           <TouchableOpacity
             style={[
               styles.cartBtn,
-              (addingCart || updating) && { opacity: 0.5 }
+              (
+                addingCart ||
+                updating ||
+                Number(selectedVariant?.stock || 0) <= 0
+              ) && { opacity: 0.5 }
             ]}
-            disabled={addingCart || updating}
+            disabled={
+              addingCart ||
+              updating ||
+              Number(selectedVariant?.stock || 0) <= 0
+            }
             onPress={existingCartItem ? goToCart : handleAddToCart}
           >
             <Text style={{color:'#fff', fontSize:14, fontWeight:'bold'}}>
-              {existingCartItem ? i18n.t('GO_TO_CART'): i18n.t('ADD_TO_CART')}
+              {existingCartItem ? i18n.t('GO_TO_CART'): Number(selectedVariant?.stock || 0) <= 0 ? i18n.t('OUT_OF_STOCK') : i18n.t('ADD_TO_CART')}
             </Text>
           </TouchableOpacity>
 
@@ -580,6 +601,20 @@ const onWishlistPress = async () => {
         images={zoomImages}
         index={zoomIndex}
         onClose={() => setVisible(false)}
+      />
+      <CustomAlert
+        visible={showCartAlert}
+        title="Success"
+        message="Product added to cart successfully"
+        onOk={() => {
+          setShowCartAlert(false);
+        }}
+        onThirdOption={() => {
+          setShowCartAlert(false);
+          navigation.navigate('CartScreen');
+        }}
+        onOkText="Continue Shopping"
+        onThirdOptionText="Go To Cart"
       />
     </SafeAreaView>
   );

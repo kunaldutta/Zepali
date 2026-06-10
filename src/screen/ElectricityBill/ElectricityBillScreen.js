@@ -14,7 +14,7 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
-  InteractionManager,
+  Platform,
 } from 'react-native';
 
 import {
@@ -36,6 +36,7 @@ import { BASE_URL } from '../../network/apiClient';
 import { getPaymentConfig } from '../../services/paymentService';
 import DeviceInfo from 'react-native-device-info';
 import { compareVersions } from '../../utils/versionUtils';
+import { forceLogout } from '../../utils/authUtils'
 
 const ElectricityBillScreen = ({navigation}) => {
 
@@ -396,10 +397,11 @@ const ElectricityBillScreen = ({navigation}) => {
     Alert.alert('Unable to load payment configuration');
     return;
   }
+  const pltFormVersion   = Platform.OS === 'ios' ? config?.versions?.ios : config?.versions?.android;
   if (
               compareVersions(
                 currentVersion,
-                config?.version?.minimum_version
+                pltFormVersion?.minimum_version
               ) < 0
             ) {
         
@@ -410,9 +412,9 @@ const ElectricityBillScreen = ({navigation}) => {
                       name: 'ForceUpdateScreen',
                       params: {
                         versionData: {
-                        latestVersion: config?.version?.latest_version,
-                        updateMessage: config?.version?.update_message,
-                        storeUrl: config?.version?.store_url,
+                        latestVersion: pltFormVersion?.latest_version,
+                        updateMessage: pltFormVersion?.update_message,
+                        storeUrl: pltFormVersion?.store_url,
                         currentVersion: currentVersion,
                       },
                       },
@@ -452,9 +454,10 @@ const ElectricityBillScreen = ({navigation}) => {
     /* =========================
        CREATE ORDER PAYLOAD
     ========================= */
-
+    const user = await AsyncStorage.getItem("USER_DATA");
+      const parsedUser = user ? JSON.parse(user) : null;
     const payload = {
-
+      user_id: parsedUser?.id,
       bill_amount:
         billData?.total_due_amount,
 
@@ -470,9 +473,22 @@ const ElectricityBillScreen = ({navigation}) => {
       payload,
     );
 
+
     /* =========================
        CREATE RAZORPAY ORDER
     ========================= */
+    const showInvalidUserAlert = (message) => {
+              Alert.alert(
+                'Account Issue',
+                message || 'Please login again',
+                [
+                  {
+                    text: 'OK',
+                    onPress: forceLogout,
+                  },
+                ]
+              );
+      };
 
     const response =
       await createElectricityOrderAPI(
@@ -485,12 +501,8 @@ const ElectricityBillScreen = ({navigation}) => {
     );
 
     if (!response?.status) {
-
-      Alert.alert(
-        'Error',
-        response?.message ||
-        'Unable to create order',
-      );
+      //need logout
+      showInvalidUserAlert(tempRes?.message)
 
       return;
     }
@@ -567,7 +579,7 @@ const ElectricityBillScreen = ({navigation}) => {
         /* =========================
            FINAL PAYMENT API
         ========================= */
-
+        
         const paymentPayload = {
 
           user_id:

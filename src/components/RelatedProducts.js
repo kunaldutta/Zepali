@@ -23,6 +23,7 @@ function RelatedProducts({ categoryId, currentProductId, navigation, cartItem })
   const [loading, setLoading] = useState(false);
   const [categoryName, setCategoryName] = useState('');
   const hasFetchedRef = useRef(false);
+  const MAX_DISPLAY = 15;
 
   /* ================= FETCH ================= */
   useEffect(() => {
@@ -141,44 +142,70 @@ function RelatedProducts({ categoryId, currentProductId, navigation, cartItem })
 
   const renderItem = ({ item }) => {
 
-    const { price, image, color, } = getLowestData(item);
+  if (item?.isSeeMore) {
     return (
       <TouchableOpacity
-        activeOpacity={0.7}
-        style={styles.card}
-        onPress={() => handlePress(item, color)}
+        style={[styles.card, styles.seeMoreCard]}
+        onPress={() =>
+          navigation.navigate('CategoryProductScreen', {
+            categoryId,
+            categoryName,
+          })
+        }
       >
-        {item?.effective_discount_percentage !== 0 && (
-                    <View style={globalStyles.offerBanner}>
-                      <Text style={globalStyles.offerText}>
-                        Offer up to{'\n'}
-                        {item.effective_discount_percentage}%
-                      </Text>
-                    </View>
-                  )}
-        <Image
-          source={{
-            uri: image
-              ? BASE_URL + image
-              : 'https://via.placeholder.com/150'
-          }}
-          style={styles.image}
-          resizeMode="contain"
-        />
-
-        <Text numberOfLines={1} style={styles.name}>
-          {item.product_name}
-        </Text>
-
-        <Text style={[styles.price, { textDecorationLine: 'line-through' }]}>
-          ₹ {price}
-        </Text>
-        <Text style={styles.finalPrice}>
-          ₹ {item.final_price}
+        <Text style={styles.seeMoreText}>
+          See More
         </Text>
       </TouchableOpacity>
     );
-  };
+  }
+
+  const { price, image, color } = getLowestData(item);
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.7}
+      style={styles.card}
+      onPress={() => handlePress(item, color)}
+    >
+      {item?.effective_discount_percentage !== 0 && (
+        <View style={globalStyles.offerBanner}>
+          <Text style={globalStyles.offerText}>
+            Offer up to{'\n'}
+            {item.effective_discount_percentage}%
+          </Text>
+        </View>
+      )}
+
+      <Image
+        source={{
+          uri: image
+            ? BASE_URL + image
+            : 'https://via.placeholder.com/150'
+        }}
+        style={styles.image}
+        resizeMode="contain"
+      />
+
+      <Text numberOfLines={1} style={styles.name}>
+        {item.product_name}
+      </Text>
+
+      <Text
+        style={[
+          styles.price,
+          { textDecorationLine: 'line-through' }
+        ]}
+      >
+        ₹ {price}
+      </Text>
+
+      <Text style={styles.finalPrice}>
+        ₹ {item.final_price}
+      </Text>
+    </TouchableOpacity>
+  );
+};
 
   /* ================= UI ================= */
 
@@ -190,6 +217,17 @@ function RelatedProducts({ categoryId, currentProductId, navigation, cartItem })
     return null;
   }
 
+  const displayProducts =
+  products.length > MAX_DISPLAY
+    ? [
+        ...products.slice(0, MAX_DISPLAY),
+        {
+          id: 'see_more',
+          isSeeMore: true,
+        },
+      ]
+    : products;
+
   return (
     <View style={styles.container}>
 
@@ -199,7 +237,7 @@ function RelatedProducts({ categoryId, currentProductId, navigation, cartItem })
       </Text>
 
       <FlatList
-        data={products}
+        data={displayProducts}
         horizontal
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
@@ -256,5 +294,24 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 4,
     color: colors.price
-  }
+  },
+  seeMoreCard: {
+  justifyContent: 'center',
+  alignItems: 'center',
+  minHeight: 220,
+  borderWidth: 1,
+  borderColor: '#ddd',
+},
+
+seeMoreText: {
+  fontSize: 16,
+  fontWeight: 'bold',
+  color: colors.price,
+},
+
+seeMoreCount: {
+  marginTop: 5,
+  fontSize: 12,
+  color: '#666',
+},
 });

@@ -12,7 +12,6 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
-  InteractionManager,
 } from "react-native";
 
 import i18n from "../../localization/i18n";
@@ -24,6 +23,7 @@ import RazorpayCheckout from "react-native-razorpay";
 import { getPaymentConfig } from "../../services/paymentService";
 import { compareVersions } from '../../utils/versionUtils';
 import DeviceInfo from 'react-native-device-info';
+import {forceLogout} from '../../utils/authUtils'
 
 import {
   createBookingOrder,
@@ -178,11 +178,12 @@ export default function BookingScreen({ route, navigation }) {
     Alert.alert('Unable to load payment configuration');
     return;
   }
+  const pltFormVersion   = Platform.OS === 'ios' ? config?.versions?.ios : config?.versions?.android;
   const currentVersion = DeviceInfo.getVersion();
       if (
           compareVersions(
             currentVersion,
-            config?.version?.minimum_version
+            pltFormVersion?.minimum_version
           ) < 0
         ) {
 
@@ -194,9 +195,9 @@ export default function BookingScreen({ route, navigation }) {
                   name: 'ForceUpdateScreen',
                   params: {
                     versionData: {
-                      latestVersion: config?.version?.latest_version,
-                      updateMessage: config?.version?.update_message,
-                      storeUrl: config?.version?.store_url,
+                      latestVersion: pltFormVersion?.latest_version,
+                      updateMessage: pltFormVersion?.update_message,
+                      storeUrl: pltFormVersion?.store_url,
                       currentVersion,
                     },
                   },
@@ -222,7 +223,7 @@ export default function BookingScreen({ route, navigation }) {
     const orderRes = await createBookingOrder({
       amount: totalAmount,
     });
-
+    console.log('RESSSS ==',orderRes?.status)
     if (!orderRes?.status || !orderRes?.order_id) {
       Alert.alert("Error", "Order creation failed");
       return;
@@ -241,7 +242,9 @@ export default function BookingScreen({ route, navigation }) {
     });
 
     if (!tempRes?.status) {
-      Alert.alert("Error", "Unable to start booking");
+      //need logout
+      showInvalidUserAlert(tempRes?.message)
+      Alert.alert("Error", tempRes?.message || "Unable to start booking");
       return;
     }
 
@@ -316,6 +319,19 @@ export default function BookingScreen({ route, navigation }) {
     Alert.alert("Error", "Something went wrong");
   }
 };
+
+  const showInvalidUserAlert = (message) => {
+          Alert.alert(
+            'Account Issue',
+            message || 'Please login again',
+            [
+              {
+                text: 'OK',
+                onPress: forceLogout,
+              },
+            ]
+          );
+  };
 
   const openGenderModal = (index) => {
     setSelectedIndex(index);
@@ -404,6 +420,7 @@ export default function BookingScreen({ route, navigation }) {
 
                   <TextInput
                       placeholder={i18n.t("NAME") || "Name"}
+                      placeholderTextColor={colors.placeholderTextColor}
                       ref={(ref) => (inputRefs.current[`${index}-name`] = ref)}
                       value={item.name}
                       onChangeText={(text) =>
@@ -418,6 +435,7 @@ export default function BookingScreen({ route, navigation }) {
 
                   <TextInput
                       placeholder={i18n.t("AGE") || "Age"}
+                      placeholderTextColor={colors.placeholderTextColor}
                       ref={(ref) => (inputRefs.current[`${index}-age`] = ref)}
                       keyboardType="numeric"
                       value={item.age}
@@ -434,6 +452,7 @@ export default function BookingScreen({ route, navigation }) {
 
                   <TextInput
                     placeholder={i18n.t("PHONE_NUMBER") || "Phone Number"}
+                    placeholderTextColor={colors.placeholderTextColor}
                     ref={(ref) => (inputRefs.current[`${index}-phone`] = ref)}
                     keyboardType="phone-pad"
                     value={item.phone}
