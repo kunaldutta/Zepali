@@ -14,7 +14,6 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   config => {
-    console.log("API REQUEST:", config.url);
     return config;
   },
   error => Promise.reject(error)
@@ -24,7 +23,6 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   response => {
-    console.log("API RESPONSE:", response.data);
     return response;
   },
   error => {

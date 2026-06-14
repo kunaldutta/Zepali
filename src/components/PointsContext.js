@@ -9,7 +9,6 @@ export const PointsProvider = ({children}) => {
 
   // 🔥 MAIN FUNCTION
   const fetchUserPoints = async (user_id) => {
-    console.log('USER_ID ==',user_id)
     try {
       const res = await getUserPointsAPI({user_id});
 

@@ -30,6 +30,8 @@ from '../../components/AppHeader';
 import DeviceInfo from 'react-native-device-info';
 import { useDispatch } from 'react-redux';
 import { clearCart } from '../../redux/store/slices/cartSlice';
+import {forceLogout} from '../../utils/authUtils'
+import {usePoints} from  '../../components/PointsContext'
 
 import {
 
@@ -47,19 +49,32 @@ export default function PurchaseReviewScreen({
   route,
   navigation,
 }) {
-
+   const {fetchUserPoints} = usePoints();
   const {
     address,
     summary,
   } = route.params;
-  console.log('Summary ====', summary)
+
   const [paymentMethod, setPaymentMethod] = useState(summary.
     grand_total > 0 ? 'ONLINE' : 'COD');
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
+ 
 
   /* ================= PLACE ORDER ================= */
 
+  const showInvalidUserAlert = (message) => {
+            Alert.alert(
+              'Account Issue',
+              message || 'Please login again',
+              [
+                {
+                  text: 'OK',
+                  onPress: forceLogout,
+                },
+              ]
+            );
+    };
   const confirmOrder = async () => {
 
   try {
@@ -148,10 +163,6 @@ export default function PurchaseReviewScreen({
     app_version: DeviceInfo.getVersion(),
   });
 
-        console.log(
-          'PLACE ORDER RESPONSE:',
-          response,
-        );
 
     /* =========================
        API ERROR
@@ -181,13 +192,7 @@ export default function PurchaseReviewScreen({
       response?.status !== 'success'
     ) {
 
-      Alert.alert(
-
-        'Order Failed',
-
-        response?.message ||
-          'Something went wrong',
-      );
+      showInvalidUserAlert(response?.message || 'Something went wrong',)
 
       return;
     } 
@@ -197,7 +202,13 @@ export default function PurchaseReviewScreen({
     ========================= */
 
     if (paymentMethod === 'COD') {
+      const userData = await AsyncStorage.getItem('USER_DATA');
+      const parsedUser = userData ? JSON.parse(userData) : null;
       dispatch(clearCart());
+      if (userData && Number(summary.points_discount) > 0) {
+
+      fetchUserPoints(parsedUser?.id); // ✅ auto load
+    }
       Alert.alert(
 
         'Order Placed',
@@ -240,10 +251,6 @@ export default function PurchaseReviewScreen({
           response?.order_id,
       });
 
-    console.log(
-      'RAZORPAY ORDER:',
-      razorpayResponse,
-    );
 
     if (
       !razorpayResponse?.status
@@ -303,11 +310,6 @@ export default function PurchaseReviewScreen({
 
         try {
 
-          console.log(
-            'PAYMENT SUCCESS:',
-            data,
-          );
-
           /* =========================
              VERIFY PAYMENT
           ========================= */
@@ -329,10 +331,6 @@ export default function PurchaseReviewScreen({
                 data?.razorpay_signature,
             });
 
-          console.log(
-            'VERIFY RESPONSE:',
-            verifyResponse,
-          );
 
           if (
             !verifyResponse?.status
@@ -354,6 +352,12 @@ export default function PurchaseReviewScreen({
              SUCCESS
           ========================= */
           dispatch(clearCart());
+          const userData = await AsyncStorage.getItem('USER_DATA');
+      const parsedUser = userData ? JSON.parse(userData) : null;
+      if (userData && Number(summary.points_discount) > 0) {
+
+      fetchUserPoints(parsedUser?.id); // ✅ auto load
+    }
           Alert.alert(
 
             'Payment Successful',
@@ -383,10 +387,6 @@ export default function PurchaseReviewScreen({
 
         } catch (error) {
 
-          console.log(
-            'VERIFY ERROR:',
-            error,
-          );
 
           Alert.alert(
 
@@ -417,10 +417,6 @@ export default function PurchaseReviewScreen({
             payment_status: paymentStatus,
           });
 
-        console.log(
-          'CANCEL RESPONSE:',
-          res
-        );
 
       } catch (e) {
 

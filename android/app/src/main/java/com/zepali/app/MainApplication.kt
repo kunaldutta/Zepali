@@ -1,4 +1,4 @@
-package com.zepali.app
+package net.zepali.app
 
 import android.app.Application
 import com.facebook.react.PackageList

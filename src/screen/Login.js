@@ -69,9 +69,9 @@ export default function Login({navigation, route}) {
   //   loadAppConfig();
   // }, []);
   useEffect(() => {
-      console.log('LOGIN PARAMS', route?.params);
+      
       if (route?.params?.reopenRegisterModal) {
-        console.log('OPENING REGISTER MODAL');
+        
         setShowRegisterModal(true);
 
         if (route?.params?.mobile) {
@@ -111,10 +111,6 @@ export default function Login({navigation, route}) {
       // App Config
       const appConfigResponse = await getAppConfigAPI();
 
-      console.log(
-        'APP CONFIG RESPONSE',
-        JSON.stringify(appConfigResponse, null, 2)
-      );
 
       if (appConfigResponse?.status) {
 
@@ -153,7 +149,6 @@ export default function Login({navigation, route}) {
 
         setFcmToken(token);
 
-        console.log('FCM Token:', token);
       }
 
     } catch (error) {
@@ -203,7 +198,6 @@ export default function Login({navigation, route}) {
         country_code: getCountryCode(),
       });
 
-      console.log('SEND OTP RESPONSE', response);
 
       if (response.status) {
 
@@ -250,7 +244,6 @@ export default function Login({navigation, route}) {
         otp: otp,
       });
 
-      console.log('VERIFY OTP RESPONSE', otpResponse);
 
       if (!otpResponse.status) {
 
@@ -318,13 +311,6 @@ export default function Login({navigation, route}) {
     setRegisterLoading(true);
 
     try {
-      console.log('REGISTER DATA', {
-        mobile,
-        fcmToken,
-        uuid,
-        name,
-        email,
-      });
       const json = await post(API.REGISTER, {
         name,
         email,
@@ -386,7 +372,6 @@ export default function Login({navigation, route}) {
       'SELECTED_CITY',
       JSON.stringify(city)
     );
-    console.log("Selected city:", JSON.stringify(city));
     await AsyncStorage.setItem('selectedCity', JSON.stringify(city));
     setSelectedCity(city);
 
@@ -556,6 +541,7 @@ export default function Login({navigation, route}) {
         cities={cities}
         onSelect={selectCity}
         onSkip={skipCity}
+        showSkip={false}
       />
 
     </KeyboardAvoidingView>

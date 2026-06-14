@@ -8,9 +8,7 @@ export const checkWishlistAPI = async ({
   selectedColor,
   selectedVariant,
 }) => {
-  console.log("checkWishlistAPI called ===1", product);
-  console.log("checkWishlistAPI called ===2", selectedColor);
-  console.log("checkWishlistAPI called ===3", selectedVariant);
+  
 
   try {
     const user = await AsyncStorage.getItem("USER_DATA");
@@ -55,11 +53,9 @@ export const checkWishlistAPI = async ({
       &measurement_id=${validVariant?.measurement_id}
       &image_id=${validImage?.image_id}`;
 
-    console.log("checkWishlistAPI URL:", url);
 
     const response = await get(url);
 
-    console.log("checkWishlistAPI response:", response);
 
     if (!response) {
       return {
@@ -87,9 +83,7 @@ export const addToWishlistAPI = async ({
   selectedColor,
   selectedVariant,
 }) => {
-  console.log("addToWishlistAPI called", product);
-  console.log("addToWishlistAPI called", selectedColor);
-  console.log("addToWishlistAPI called", selectedVariant);
+  
 
   try {
     const user = await AsyncStorage.getItem("USER_DATA");
@@ -134,12 +128,12 @@ export const addToWishlistAPI = async ({
       image_id: validImage?.image_id,
     };
 
-    console.log("addToWishlistAPI payload:", payload);
+
 
     // ✅ API CALL SAFE
     const response = await post(API.ADD_WISHLIST, payload);
 
-    console.log("addToWishlistAPI response:", response);
+    
 
     // ✅ HANDLE EMPTY RESPONSE
     if (!response) {
@@ -176,13 +170,11 @@ export const removeFromWishlistAPI = async (wishlist_id) => {
       };
     }
     
-    console.log("removeFromWishlistAPI payload:3", wishlist_id);
     const payload = {
       user_id: parsed.id,
       wishlist_id,
     };
 
-    console.log("removeFromWishlistAPI payload:", payload);
 
     const response = await post(API.REMOVE_WISHLIST, payload);
 

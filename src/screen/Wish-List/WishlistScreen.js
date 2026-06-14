@@ -41,7 +41,7 @@ const WishlistScreen = ({navigation}) => {
     if (response?.status) {
       setWishlist(response.wishlist || []);
     } else {
-      console.log("Wishlist API error:", response?.message);
+      
       setWishlist([]);
     }
 
@@ -69,7 +69,7 @@ const WishlistScreen = ({navigation}) => {
 
   // ✅ REMOVE ITEM
   const handleRemove = async (item) => {
-    console.log("Attempting to remove item:", item);
+    
     try {
       const response = await removeFromWishlistAPI(item.wishlist_id);
 
@@ -95,7 +95,7 @@ const WishlistScreen = ({navigation}) => {
     return (
       <TouchableOpacity
       onPress={()=>{
-        console.log('Selected variant ==', item);
+        
         navigation.navigate("ProductDetailScreen",{
             productId:item.product_id,
             colorCode: item.color,

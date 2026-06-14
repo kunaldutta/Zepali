@@ -12,11 +12,6 @@ export const get = async (
         params: params,
       });
 
-    console.log(
-      'GET API:',
-      url,
-      params,
-    );
 
     return response.data;
 

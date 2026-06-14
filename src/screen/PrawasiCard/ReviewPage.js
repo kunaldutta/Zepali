@@ -46,10 +46,6 @@ const loadCardCost =
       const response =
         await getPrawasiCardCost();
 
-      console.log(
-        'CARD COST => ',
-        response,
-      );
 
       if (response.status) {
 
@@ -168,10 +164,6 @@ const loadCardCost =
       },
     };
 
-    console.log(
-      'RAZORPAY OPTIONS => ',
-      options,
-    );
 
     RazorpayCheckout.open(
       options,
@@ -181,10 +173,6 @@ const loadCardCost =
 
       try {
 
-        console.log(
-          'PAYMENT SUCCESS => ',
-          applicationId,
-        );
 
         const response =
           await savePayment({
@@ -210,10 +198,6 @@ const loadCardCost =
             amount: cardCost,
           });
 
-        console.log(
-          'PAYMENT SAVE => ',
-          response,
-        );
 
         if (response.status) {
 
@@ -564,7 +548,6 @@ const loadCardCost =
           image={formData.jamani3ImageBack}
         />
         <View style={{marginTop: 10, borderTopWidth: 1, borderColor: colors.border}} >
-          {console.log('PAYMENT STATUS => ', cardCost)}
         <Text style={{marginTop: 10, fontSize: 18, color: colors.price, fontWeight: '600'}}>
           {(formData?.paymentStatus === 'PAID' ? 'Paid Amount' : 'Payment Amount')}: ₹{cardCost}
         </Text>

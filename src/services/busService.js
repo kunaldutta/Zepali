@@ -6,7 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // 🔹 SEARCH BUSES
 export const searchBuses = async ({ source, destination, date }) => {
-  console.log("searchBuses called with:", { source, destination, date });
+  
 
   // 🔥 Prevent bad API calls
   if (!source || !destination || !date) {
@@ -21,7 +21,7 @@ export const searchBuses = async ({ source, destination, date }) => {
       lang: i18n.locale,
     });
 
-    console.log("searchBuses response:", response);
+    
 
     return response;
 
@@ -37,7 +37,7 @@ export const bookBusTicket = async ({ bus_id, schedule_id, booking_date, passeng
   try {
     const user = await AsyncStorage.getItem("USER_DATA");
     const parsedUser = JSON.parse(user);
-    console.log("bookBusTicket called with:", passengers);
+    
     return await post(API.BOOK_TICKET, {
       user_id: parsedUser?.id,
       bus_id: bus_id,
@@ -66,6 +66,6 @@ export const getUserBookings = async (user_id) => {
 };
 
 export const cancelBooking = async (data) => {
-  console.log("API CALL - Cancel Booking with data:", data);
+  
   return await post(API.CANCEL_BOOKING, data);
 };

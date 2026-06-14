@@ -37,7 +37,6 @@ import { getPaymentConfig } from "../../services/paymentService";
 const RechargeConfirm = ({ route, navigation }) => {
   const { payload } = route.params;
 
-  console.log("Payload:", payload);
 
   const [loading, setLoading] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
@@ -92,7 +91,6 @@ const RechargeConfirm = ({ route, navigation }) => {
 
     try {
       const config = await getPaymentConfig();
-      console.log("CONFIG:", config);
       if (!config.status) {
         showAlert("Error", "Unable to load payment configuration");
         setProcessingPayment(false);

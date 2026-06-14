@@ -42,7 +42,6 @@ export default function CartScreen({navigation}) {
     amount: 0,
   });
   const { items, total, summary, loading } = useSelector(state => state.cart);
-  console.log('Summary = ',  total);
   const uniqueCategories = useMemo(() => {
   return items?.length
     ? [...new Set(items.map(item => item.category_id))]
@@ -81,7 +80,6 @@ export default function CartScreen({navigation}) {
 
     lastPointsAmount.current = pointsAmount;
 
-    console.log('RESTORED:', isSelected, pointsAmount);
 
     await dispatch(
       fetchCart({
@@ -91,7 +89,7 @@ export default function CartScreen({navigation}) {
     ).unwrap();
 
   } catch (error) {
-    console.log("❌ loadCart ERROR:", error);
+    
     Alert.alert('Error', 'Failed to load cart');
   }
 };
@@ -134,7 +132,6 @@ const refreshCart = async (customerId) => {
 
   } catch (error) {
 
-    console.log("❌ increaseQty ERROR:", error);
 
     const errorMessage =
       error?.message || error || 'Something went wrong';
@@ -176,7 +173,6 @@ const deleteItem = async (item) => {
 
   } catch (error) {
 
-    console.log("❌ deleteItem ERROR:", error);
 
     const errorMessage =
       error?.message || error || 'Something went wrong';
@@ -223,8 +219,6 @@ const deleteItem = async (item) => {
 
   } catch (error) {
 
-    console.log("❌ decreaseQty ERROR:", error);
-
     const errorMessage =
       error?.message || error || 'Something went wrong';
 
@@ -250,7 +244,6 @@ const handlePlaceOrder = () => {
     Alert.alert("Address Required", "Please select delivery address");
     return;
   }
-  console.log('summary ===',summary);
   navigation.navigate('PurchaseReviewScreen', {
     cartItems: items,
     totalPrice: Number(summary?.grand_total).toFixed(2),
@@ -353,7 +346,6 @@ const handlePointsChange = useCallback(
 
       // ✅ Prevent infinite API loop
       if (lastPointsAmount.current === amount) {
-        console.log('⛔ Same points amount, skipping fetchCart');
         return;
       }
 
@@ -374,7 +366,6 @@ const handlePointsChange = useCallback(
         String(amount),
       );
 
-      console.log('✅ FETCH CART WITH POINTS:', amount);
 
       dispatch(
         fetchCart({
@@ -394,7 +385,6 @@ const renderFooter = useMemo(() => {
 
   if (!items?.length) return null;
 
-  console.log('Rendering footer...');
 
   return (
     <>
@@ -404,7 +394,6 @@ const renderFooter = useMemo(() => {
           width: '100%',
         }}
       >
-        {console.log('Summary in footer:', summary)}
         <PointsSelector
           key={`${summary?.grand_total}-${items.length}`}
           userId={loggedinUser?.id}
@@ -419,25 +408,14 @@ const renderFooter = useMemo(() => {
 
         <CartBillSummary summary={summary} />
       </View>
-
-      <Text
-        style={{
-          fontSize: 16,
-          fontWeight: 'bold',
-          marginVertical: '1%',
-        }}
-      >
-        {i18n.t('YOU_MAY_ALSO_LIKE')}
-      </Text>
-
       {uniqueCategories.map(catId => {
 
         const itemForCategory = items.find(
           i => i.category_id === catId,
         );
-
+       
         return (
-          <View
+         <View
             key={catId}
             style={{marginTop: 0}}
           >
@@ -474,7 +452,6 @@ const renderFooter = useMemo(() => {
      <AddressCard
         selectedAddress={selectedAddress}
         onPress={() => {
-          console.log('Address ==', addresses);
 
           // ✅ SAFE CHECK
           if (!addresses || addresses.length === 0) {
@@ -528,7 +505,7 @@ const renderFooter = useMemo(() => {
 >
 
   {/* TOTAL */}
-  {console.log('summary ----', summary)}
+  
   <Text style={styles.totalText}>
     {i18n.t('TOTAL') || 'Total'}: ₹ {(Number(summary?.grand_total) || 0).toFixed(2)}
   </Text>

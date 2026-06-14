@@ -17,7 +17,6 @@ export default function TestRechargeScreen() {
       const res = await fetch(url);
       
       const json = await res.json();
-      console.log("Request URL:", json);
 
       setResponse(JSON.stringify(json, null, 2));
     } catch (e) {

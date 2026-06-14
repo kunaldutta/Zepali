@@ -4,7 +4,7 @@ import i18n from '../localization/i18n';
 
 export const checkServiceableLocationAPI = async data => {
   try {
-    console.log('CHECK data:', data);
+    
     return await post(
       API.CHECK_SERVICEABLE_LOCATION,
       {

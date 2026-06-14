@@ -6,7 +6,7 @@ import { globalStyles, colors } from '../styles/globalStyles';
 const CartBillSummary = ({ summary, total }) => {
 
   if (!summary) return null;
-  console.log('Summary =====', summary);
+  
   const originalPrice = Number(summary.total_original_price || 0);
   const discount = Number(summary.total_discount || 0);
   const gst = Number(summary.total_gst_amount || 0);

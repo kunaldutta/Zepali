@@ -3,7 +3,7 @@ import API from '../network/apiEndpoints';
 
 
 export const createPayment = async (data) => {
-  console.log("API CALL - Create Payment with data:", data);
+  
   return await post(API.CREATE_PAYMENT, data);
 };
 
@@ -42,7 +42,6 @@ export const getPaymentConfig = async () => {
 };
 
 export const cancelOrderPaymentAPI = async (data) => {
-  console.log('API.CANCEL_ORDER', API.CANCEL_ORDER);
   try {
     return await post(
       API.CANCEL_ORDER,

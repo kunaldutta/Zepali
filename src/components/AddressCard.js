@@ -4,7 +4,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { colors } from '../styles/globalStyles';
 
 const AddressCard = ({ selectedAddress, onPress }) => {
-    console.log('Selected Address ==')
+
   return (
     <TouchableOpacity style={styles.addressContainer} onPress={onPress}>
       

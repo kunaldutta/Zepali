@@ -22,7 +22,7 @@ const GOOGLE_API_KEY = "AIzaSyASeQVPcvxEogcrrLg5MExUWcXAgYuJekY";
 
 export default function MapPicker({ route, navigation }) {
   const mapRef = useRef(null);
-  console.log("MapPicker route params:", route.params);
+  
   const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -58,7 +58,6 @@ export default function MapPicker({ route, navigation }) {
         // GPS ON → do nothing
       },
       (error) => {
-        console.log("LOCATION CHECK ERROR:", error);
 
         // ✅ GPS OFF DETECTION
         if (
@@ -238,9 +237,6 @@ export default function MapPicker({ route, navigation }) {
       }
     });
 
-    console.log('CITY:', city);
-    console.log('STATE:', state);
-    console.log('PINCODE:', zip);
     /*
      * CHECK SERVICEABILITY
      */
@@ -260,8 +256,6 @@ export default function MapPicker({ route, navigation }) {
 
       return;
     }
-
-    console.log("Parsed address:", route.params?.address);
 
     if (route?.params?.address) {
 

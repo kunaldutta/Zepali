@@ -103,10 +103,6 @@ const loadJamaniDetails =
           applicationId,
         );
 
-      console.log(
-        'JAMANI DETAILS => ',
-        response,
-      );
 
       if (response.status) {
 
@@ -319,10 +315,6 @@ const loadJamaniDetails =
         formData,
       );
 
-    console.log(
-      'STEP 3 RESPONSE => ',
-      response,
-    );
 
     if (response.status) {
 

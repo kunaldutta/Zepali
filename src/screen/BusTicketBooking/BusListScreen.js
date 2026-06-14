@@ -36,7 +36,7 @@ export default function BusListScreen({ route, navigation }) {
       });
 
       if (res?.status) {
-        console.log("Buses found:", res.data);
+  
         setBusList(res.data || []);
       } else {
         setBusList([]);

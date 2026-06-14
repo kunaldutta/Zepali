@@ -63,10 +63,6 @@ const PointsSelector = ({
         cartTotal,
       );
 
-      console.log(
-        'POINTS API RESPONSE:',
-        json,
-      );
 
       if (json?.status) {
 
@@ -111,11 +107,6 @@ const PointsSelector = ({
 
       // ✅ STOP same amount loop
       if (lastAppliedAmount.current === finalAmount) {
-
-        console.log(
-          '⛔ SAME POINT AMOUNT - SKIP',
-        );
-
         return;
       }
 
@@ -123,10 +114,6 @@ const PointsSelector = ({
 
       lastAppliedAmount.current = finalAmount;
 
-      console.log(
-        '✅ APPLY POINTS:',
-        finalAmount,
-      );
 
       if (onChange) {
 
@@ -172,10 +159,6 @@ const PointsSelector = ({
 
       autoAppliedRef.current = true;
 
-      console.log(
-        '✅ AUTO APPLY RESTORED POINTS',
-      );
-
       applyPoints(
         maxUsablePoints,
         maxUsable,
@@ -195,10 +178,6 @@ const PointsSelector = ({
 
       const newState = !isPointSelected;
 
-      console.log(
-        'TOGGLE POINTS:',
-        newState,
-      );
 
       // ✅ prevent auto effect rerun
       autoAppliedRef.current = true;
@@ -261,16 +240,16 @@ const PointsSelector = ({
           {
             backgroundColor:
               isPointSelected
-                ? '#4CAF50'
-                : '#ccc',
+                ? '#22C55E'
+                : '#F59E0B',
           },
         ]}
         onPress={toggleUsePoints}
       >
         <Text style={styles.buttonText}>
           {isPointSelected
-            ? 'Points Applied'
-            : 'Use Max Points'}
+            ? `⭐ Useed Points (₹${Number(maxUsable).toFixed(2)})`
+            : `⭐ Use Max Points (₹${Number(maxUsable).toFixed(2)} Off)`}
         </Text>
       </TouchableOpacity>
 

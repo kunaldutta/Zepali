@@ -152,9 +152,9 @@ style={styles.productImg}
 );
 
  const finalPrice = (price, offer) =>{
-    console.log('finalPrice ===', offer)
+    
     let finalPrice = price - (price * (offer/100))
-    console.log('finalPrice ===', finalPrice)
+   
     return finalPrice; 
   }
 /* SUGGESTION ITEM */
@@ -208,7 +208,7 @@ returnKeyType="search"
 {/* PRODUCT AREA */}
 
 <View style={{flex:1, backgroundColor:colors.background}}>
-{console.log('DATA ====', filtered)}
+
 <FlatList
 data={filtered}
 renderItem={renderProduct}

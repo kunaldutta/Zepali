@@ -44,7 +44,7 @@ export default function BookingScreen({ route, navigation }) {
   const [passengers, setPassengers] = useState([
     { name: "", age: "", gender: "", phone: "" },
   ]);
-  console.log("Initial passengers state:", date);
+
   const [genderModal, setGenderModal] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(null);
 
@@ -87,7 +87,6 @@ export default function BookingScreen({ route, navigation }) {
   useEffect(() => {
     termsAndConditions({ type: "bus_booking" })
     .then((res) => {
-      console.log("Terms and conditions updated:", res);
       setTermsVersion(res?.data?.version);
       setTermsUrl(BASE_URL + res.data.content);
     })
@@ -164,7 +163,6 @@ export default function BookingScreen({ route, navigation }) {
   };
 
   const bookTicket = async () => {
-    console.log("Booking with passengers:", passengers, "Terms accepted:", termsAccepted);
     if(!termsAccepted) {
       Alert.alert("Error", "Please accept the terms and conditions");
       return;
@@ -223,7 +221,7 @@ export default function BookingScreen({ route, navigation }) {
     const orderRes = await createBookingOrder({
       amount: totalAmount,
     });
-    console.log('RESSSS ==',orderRes?.status)
+    
     if (!orderRes?.status || !orderRes?.order_id) {
       Alert.alert("Error", "Order creation failed");
       return;
@@ -244,7 +242,7 @@ export default function BookingScreen({ route, navigation }) {
     if (!tempRes?.status) {
       //need logout
       showInvalidUserAlert(tempRes?.message)
-      Alert.alert("Error", tempRes?.message || "Unable to start booking");
+
       return;
     }
 

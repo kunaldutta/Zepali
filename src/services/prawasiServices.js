@@ -39,15 +39,6 @@ export const savePersonalDetails =
 
       const data = new FormData();
 
-      console.log(
-        'Saving personal details with data:',
-        formData,
-      );
-
-      console.log(
-        'Saving personal details with data-for_whom:',
-        formData.for_whom,
-      );
 
       /* =========================
          USER
@@ -115,10 +106,7 @@ export const savePersonalDetails =
         'current_address',
         formData.address,
       );
-      console.log(
-        'Saving personal details with zipCode:',
-        formData.zipCode,
-      );
+      
       data.append(
         'zip_code',
         formData.zipCode,
@@ -659,10 +647,6 @@ export const savePersonalDetails =
         },
       );
 
-      console.log(
-        'Saving payment with data:',
-        data,
-      );
 
       return await post(
 

@@ -71,16 +71,21 @@ const {fetchUserPoints} = usePoints();
 
 
 useEffect(()=>{
-  console.log("Device Version:", DeviceInfo.getVersion());
+  
   loadHome();
 },[]);
 
-useFocusEffect(
-  useCallback(() => {
-    loadUsserDetail();
-    //loadUserPoints();
-    }, [])
-  );
+useEffect(()=>{
+  
+  loadUsserDetail();
+},[]);
+
+// useFocusEffect(
+//   useCallback(() => {
+//     loadUsserDetail();
+//     //loadUserPoints();
+//     }, [])
+//   );
 
 const loadUsserDetail = async()=>{
 
@@ -232,7 +237,7 @@ const renderCategory = ({item}) => (
 <TouchableOpacity
   style={styles.categoryBox}
   onPress={() =>{
-    console.log("Category pressed:", item.category_name);
+    
     if (item.product_keyword === "recharge and bill") {
       navigation.navigate("BillAndRechargeScreen");
     }
@@ -249,7 +254,7 @@ const renderCategory = ({item}) => (
   }
   }}
 >
-{item?.max_effective_discount_percentage !== 0 && (
+  {item?.max_effective_discount_percentage !== 0 && (
       <View style={styles.offerBanner}>
         <Text style={styles.offerText}>
           Offer up to{'\n'}
@@ -260,12 +265,12 @@ const renderCategory = ({item}) => (
   <View style={styles.categoryImageContainer}>
     <ImageWithLoader
     uri={item?.image}
-    style={styles.categoryImg}
+    style={[styles.categoryImg, {top:10}]}
     resizeMode='center'
     />
   </View>
 
-  <Text style={styles.categoryText}>
+  <Text style={[styles.categoryText, {top:8}]}>
   { item.category_name}
   </Text>
 

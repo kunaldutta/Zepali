@@ -33,7 +33,7 @@ import {
 
 const AddAddress = ({ route, navigation }) => {
   const { addAddress } = useAddress();
-  console.log("AddAddress Rendered with route params:", route.params);
+  
   const {address_1, address_2, city, latitude, longitude, state, zip_code, area} = route.params || {};
   const [currentMapAddress, setCurrentMapAddress] = useState('')
   const [locationLoading, setLocationLoading] = useState(false);
@@ -79,11 +79,10 @@ const AddAddress = ({ route, navigation }) => {
         return;
       }
 
-      console.log('SEARCHING CITY:', userData.city);
 
       const response = await getCitiesAPI();
 
-      console.log('CITY API RESPONSE:', response);
+      
 
       if (response?.status) {
 
@@ -95,16 +94,9 @@ const AddAddress = ({ route, navigation }) => {
 
         if (cityObj) {
 
-          console.log('CITY FOUND:', cityObj);
-
           setSelectedCityId(cityObj.id);
 
         } else {
-
-          console.log(
-            'CITY NOT FOUND FOR:',
-            userData.city
-          );
 
           setSelectedCityId(null);
         }
@@ -226,16 +218,13 @@ const getAddressFromCoords = async (lat, lng) => {
   try {
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_API_KEY}`;
 
-    console.log("API URL:", url);
 
     const res = await fetch(url);
     const data = await res.json();
 
-    console.log("GEOCODE RESPONSE:", data); // 👈 ADD THIS
 
     if (data.status === "OK" && data.results.length > 0) {
       const result = data.results[0];
-      console.log ('Loc Result ==',result);
       let city = '', state = '', zip = '';
 
       result.address_components.forEach(comp => {
@@ -323,7 +312,6 @@ const openMapWithCurrentLocation = async () => {
   try {
     setLoading(true);
 
-    console.log("Sending Data:", userData);
 
     const response = await addAddress(userData); // ✅ use context
 

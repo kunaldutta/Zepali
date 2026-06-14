@@ -22,10 +22,9 @@ import { BASE_URL } from '../../network/apiClient';
 /* ================= IMAGE COMPONENT ================= */
 const ImageWithLoader = ({uri, style}) => {
   const [loading,setLoading] = useState(true);
-  console.log('IMGAE ===',BASE_URL+uri)
   return (
     <View style={{justifyContent:'center',alignItems:'center'}}>
-      {console.log('LOADING ==',BASE_URL + uri)}
+      
       {loading && (
         <ActivityIndicator
           size="small"
@@ -104,7 +103,6 @@ export default function CategoryProductScreen({route, navigation}){
     <TouchableOpacity
       style={styles.productBox}
       onPress={()=>{
-        console.log('ITEM ==',item.id)
         navigation.navigate("ProductDetailScreen",{productId:item.id})}}
     >
       {item?.max_offer !== 0 && (
@@ -128,9 +126,9 @@ export default function CategoryProductScreen({route, navigation}){
         {item.description}
       </Text>
 
-      <Text style={[styles.price, { textDecorationLine: 'line-through' }]}>
+      {item.min_price > item.final_price && ( <Text style={[styles.price, { textDecorationLine: 'line-through' }]}>
         ₹ {item.min_price}
-      </Text>
+      </Text>)}
       <Text style={styles.productFinalPrice}>
         ₹ {item.final_price}
       </Text>

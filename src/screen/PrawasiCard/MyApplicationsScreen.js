@@ -66,10 +66,6 @@ const MyApplicationsScreen = ({
             parsedUser.id,
           );
 
-        console.log(
-          'APPLICATIONS => ',
-          response,
-        );
 
         if (response.status) {
 

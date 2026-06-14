@@ -74,10 +74,7 @@ const loadSavedIds = async () => {
       await AsyncStorage.getItem(
         'APPLICATION_ID',
       );
-      console.log(
-        'LOADED APPLICATION ID => P-2 ',
-        applicationId,
-      );
+      
     if (!applicationId) {
       return;
     }
@@ -87,10 +84,6 @@ const loadSavedIds = async () => {
         applicationId,
       );
 
-    console.log(
-      'ID DETAILS RESPONSE => ',
-      response,
-    );
 
     if (response.status) {
 
@@ -255,10 +248,6 @@ const loadSavedIds = async () => {
           formData,
         );
 
-      console.log(
-        'STEP 2 RESPONSE => ',
-        response,
-      );
 
       if (response.status) {
 

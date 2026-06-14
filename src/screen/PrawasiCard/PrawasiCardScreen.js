@@ -54,7 +54,6 @@ const PrawasiCardScreen = ({navigation}) => {
             selectionLimit: 1,
             });
 
-            console.log('IMAGE RESULT => ', result);
 
             if (result.didCancel) {
             return;
@@ -171,7 +170,6 @@ const PrawasiCardScreen = ({navigation}) => {
         indiaProof,
     });
 
-    console.log('API RESPONSE => ', response);
 
     if (response?.status === 'success') {
 

@@ -48,7 +48,6 @@ const OrderDetailsScreen = ({route, navigation}) => {
 
       const json = await response.json();
 
-      console.log('ORDER DETAILS RESPONSE:', json);
 
       // ✅ FIXED
       if (json.order) {
@@ -187,9 +186,6 @@ const OrderDetailsScreen = ({route, navigation}) => {
   return (
 
     <View style={styles.itemCard}>
-
-      {console.log('ITEM IMAGE:', BASE_URL)}
-      {console.log('ITEM IMAGE:', item.image)}
 
       <Image
         source={{

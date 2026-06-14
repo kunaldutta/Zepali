@@ -191,14 +191,14 @@ function RelatedProducts({ categoryId, currentProductId, navigation, cartItem })
         {item.product_name}
       </Text>
 
-      <Text
+      { item.final_price < price && (<Text
         style={[
           styles.price,
           { textDecorationLine: 'line-through' }
         ]}
       >
         ₹ {price}
-      </Text>
+      </Text>)}
 
       <Text style={styles.finalPrice}>
         ₹ {item.final_price}
@@ -232,6 +232,15 @@ function RelatedProducts({ categoryId, currentProductId, navigation, cartItem })
     <View style={styles.container}>
 
       {/* ✅ CATEGORY TITLE */}
+        <Text
+              style={{
+                fontSize: 16,
+                fontWeight: 'bold',
+                marginVertical: '2%',
+              }}
+            >
+              {i18n.t('YOU_MAY_ALSO_LIKE')}
+            </Text> 
       <Text style={styles.title}>
         {categoryName}
       </Text>

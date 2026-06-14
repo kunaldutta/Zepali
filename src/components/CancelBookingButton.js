@@ -49,7 +49,6 @@ export default function CancelBookingButton({
         Alert.alert("Error", res?.message || "Failed to cancel");
       }
     } catch (e) {
-      console.log("Cancel Error:", e);
       Alert.alert("Error", "Something went wrong");
     } finally {
       setLoading(false);

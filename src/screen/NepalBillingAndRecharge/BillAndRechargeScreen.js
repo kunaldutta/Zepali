@@ -29,7 +29,6 @@ const BillAndRechargeScreen = ({navigation}) => {
   ]);
 
   const handlePress = item => {
-    console.log('Selected:', item.title);
 
     // Navigation Example
     if (item.id === 1) {

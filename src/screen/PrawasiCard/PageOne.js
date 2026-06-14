@@ -114,14 +114,8 @@ const PageOne = ({
       await AsyncStorage.getItem(
         'APPLICATION_ID',
       );
-      console.log(
-        'Saved Application ID => P1',
-        applicationId,
-      );
+
     if (!applicationId) {
-      console.log(
-        'No saved application ID found.',
-      );
       return;
     }
 
@@ -130,10 +124,6 @@ const PageOne = ({
         applicationId,
       );
 
-    console.log(
-      'GET STEP 1 DATA => ',
-      response,
-    );
 
     if (response.status) {
 
@@ -211,7 +201,6 @@ const PageOne = ({
   const openCamera = async () => {
     setIsAlertVisible(false);
 
-    console.log('OPEN CAMERA CLICKED');
 
     const result = await launchCamera({
       mediaType: 'photo',
@@ -219,7 +208,6 @@ const PageOne = ({
       quality: 0.7,
     });
 
-    console.log('CAMERA RESULT =>', result);
 
     if (
       !result.didCancel &&
@@ -273,10 +261,7 @@ const PageOne = ({
       const userSavedData = await AsyncStorage.getItem(
         'APPLICATION_ID',
       );
-      console.log(
-        'Saved Application ID => ',
-        userSavedData,
-      );
+      
       return userSavedData;
 
     } catch (error) {
@@ -313,19 +298,7 @@ const PageOne = ({
         formData,
       );
 
-    console.log(
-      'STEP 1 RESPONSE => ',
-      response,
-    );
-    console.log(
-      'response ===',
-      response,
-    );
     if (response.status) {
-      console.log(
-        'Saving Application ID => P1 Response => ',
-        response.application_id,
-      );
       await AsyncStorage.setItem(
         'APPLICATION_ID',
         response.application_id.toString(),

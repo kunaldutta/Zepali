@@ -33,7 +33,6 @@ import {
 
 const EditAddressScreen = ({ route, navigation }) => {
   const { address } = route.params;
-  console.log("Editing address:", address);
   const [userName, setUserName] = useState(address.user_name);
   const [address1, setAddress1] = useState(address.address_1);
   const [address2, setAddress2] = useState(address.address_2);
@@ -144,11 +143,9 @@ const EditAddressScreen = ({ route, navigation }) => {
       land_mark: landMark,
     };
 
-    console.log("Update payload:", payload);
 
     const response = await updateAddressAPI(payload);
 
-    console.log("Update response:", response);
 
     if (response?.success) {
       

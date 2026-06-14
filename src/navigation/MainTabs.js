@@ -58,7 +58,7 @@ export default function MainTabs() {
   if (route.name === 'Home') iconName = 'home-outline';
   else if (route.name === 'NepalBilling') iconName = 'phone-portrait-outline';
   else if (route.name === 'Transactions') iconName = 'list-outline';
-  else if (route.name === 'Profile') iconName = 'person-outline';
+  else if (route.name === 'Setting') iconName = 'settings-outline';
 
   return (
     <View
@@ -80,8 +80,8 @@ export default function MainTabs() {
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="NepalBilling" component={BillAndRechargeScreen} />
-      <Tab.Screen name="Transactions" component={Transactions} />
-      <Tab.Screen name="Profile" component={Profile} />
+      {/* <Tab.Screen name="Transactions" component={Transactions} /> */}
+      <Tab.Screen name="Setting" component={Profile} />
     </Tab.Navigator>
   );
 }

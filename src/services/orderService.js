@@ -60,7 +60,7 @@ export const verifyOrderPaymentAPI =
 };
 
 export const cancelOrderItemAPI = async data => {
-  console.log('DATA ===',data);
+  
   return await post(
 
     API.CANCEL_ORDER_ITEM,

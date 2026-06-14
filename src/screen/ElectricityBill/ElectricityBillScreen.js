@@ -91,10 +91,6 @@ const ElectricityBillScreen = ({navigation}) => {
       const response =
         await getCountersAPI();
 
-      console.log(
-        'COUNTERS:',
-        response,
-      );
 
       if (response?.status) {
 
@@ -179,10 +175,6 @@ const ElectricityBillScreen = ({navigation}) => {
                 ?.split(':')[1],
           });
 
-        console.log(
-          'NEW CONSUMER RESPONSE:',
-          consumerResponse,
-        );
 
         if (!consumerResponse?.status) {
 
@@ -228,21 +220,11 @@ const ElectricityBillScreen = ({navigation}) => {
         };
       }
 
-      console.log(
-        'BILL PAYLOAD:',
-        payload,
-      );
 
       const response =
         await getBillDetailsAPI(
           payload,
         );
-
-      console.log(
-        'BILL RESPONSE:',
-        response,
-      );
-
      
 
         if (response?.status) {
@@ -302,20 +284,12 @@ const ElectricityBillScreen = ({navigation}) => {
                 isV2,
             };
 
-            console.log(
-            'SERVICE CHARGE PAYLOAD:',
-            payload,
-            );
 
             const response =
             await getServiceChargeAPI(
                 payload,
             );
 
-            console.log(
-            'SERVICE CHARGE RESPONSE:',
-            response,
-            );
 
             if (
             response?.status
@@ -389,8 +363,6 @@ const ElectricityBillScreen = ({navigation}) => {
 
   const payNow = async () => {
 
-  console.log('PAY NOW PRESSED');
-  
   try {
     const config = await getPaymentConfig();
   if (!config.status) {
@@ -468,10 +440,6 @@ const ElectricityBillScreen = ({navigation}) => {
         serviceChargeData?.platform_charge,
     };
 
-    console.log(
-      'CREATE ORDER PAYLOAD:',
-      payload,
-    );
 
 
     /* =========================
@@ -495,10 +463,6 @@ const ElectricityBillScreen = ({navigation}) => {
         payload,
       );
 
-    console.log(
-      'ORDER RESPONSE:',
-      response,
-    );
 
     if (!response?.status) {
       //need logout
@@ -549,11 +513,6 @@ const ElectricityBillScreen = ({navigation}) => {
       },
     };
 
-    console.log(
-      'RAZORPAY OPTIONS:',
-      options,
-    );
-
     /* =========================
        OPEN RAZORPAY
     ========================= */
@@ -569,10 +528,6 @@ const ElectricityBillScreen = ({navigation}) => {
     .then(async razorpayData => {
       const user = await AsyncStorage.getItem("USER_DATA");
     const parsedUser = user ? JSON.parse(user) : null;
-      console.log(
-        'RAZORPAY SUCCESS:',
-        razorpayData,
-      );
 
       try {
 
@@ -651,10 +606,6 @@ const ElectricityBillScreen = ({navigation}) => {
               ?.razorpay_signature,
         };
 
-        console.log(
-          'MAKE PAYMENT PAYLOAD:',
-          paymentPayload,
-        );
 
         
 
@@ -668,10 +619,6 @@ const ElectricityBillScreen = ({navigation}) => {
             paymentPayload,
           );
 
-        console.log(
-          'PAYMENT RESPONSE:',
-          paymentResponse,
-        );
 
         /* =========================
            SUCCESS

@@ -46,7 +46,6 @@ export const AddressProvider = ({ children }) => {
       const saved = await AsyncStorage.getItem("SELECTED_ADDRESS");
       if (saved) {
         const parsed = JSON.parse(saved);
-        console.log('ADDRESS ==', parsed);
         setSelectedAddressState(parsed);
       }
     } catch (err) {
@@ -65,11 +64,8 @@ export const AddressProvider = ({ children }) => {
     }
 
     if (!id) {
-      console.log("❌ No user ID found");
       return;
     }
-
-    console.log("🔥 fetchAddresses called with:", id);
 
     setAddressLoading(true);
     setError(null);
@@ -116,7 +112,6 @@ export const AddressProvider = ({ children }) => {
       }
 
     } catch (error) {
-      console.log('Address fetch error:', error?.message);
 
       if (error?.response) {
         setError(error.response?.data?.message || "Server error");

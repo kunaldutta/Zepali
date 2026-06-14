@@ -20,10 +20,6 @@ export const getCountersAPI = async () => {
 
   } catch (error) {
 
-    console.log(
-      'GET COUNTERS ERROR:',
-      error,
-    );
 
     return {
       status: false,
@@ -57,10 +53,6 @@ export const getBillDetailsAPI = async (
 
   } catch (error) {
 
-    console.log(
-      'GET BILL DETAILS ERROR:',
-      error,
-    );
 
     return {
       status: false,

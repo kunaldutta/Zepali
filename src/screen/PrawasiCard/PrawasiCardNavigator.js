@@ -102,10 +102,6 @@ useEffect(() => {
           ? JSON.parse(user)
           : null;
 
-      console.log(
-        'Parsed User ===',
-        parsedUser
-      );
 
       if (!parsedUser?.id) {
 
@@ -129,11 +125,6 @@ useEffect(() => {
         });
 
       if (!response?.status) {
-
-        console.log(
-          'Error ====',
-          response
-        );
 
         Alert.alert(
           'Account Issue',

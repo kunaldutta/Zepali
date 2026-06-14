@@ -28,7 +28,7 @@ export async function requestUserPermission() {
 ========================= */
 export async function getFCMToken() {
   const token = await messaging().getToken();
-  console.log('🔥 FCM Token:', token);
+  
   return token;
 }
 
@@ -71,14 +71,13 @@ export function notificationListener(navigation) {
 
   // ✅ Foreground (NO ALERT)
   messaging().onMessage(async remoteMessage => {
-    console.log('🔥 Foreground:', remoteMessage);
-
+   
     await showNotification(remoteMessage);
   });
 
   // ✅ Background click
   messaging().onNotificationOpenedApp(remoteMessage => {
-    console.log('👉 Opened from background:', remoteMessage);
+    
 
     const screen = remoteMessage?.data?.screen;
     if (screen && navigation) {
@@ -91,7 +90,7 @@ export function notificationListener(navigation) {
     .getInitialNotification()
     .then(remoteMessage => {
       if (remoteMessage) {
-        console.log('👉 Opened from quit state:', remoteMessage);
+        
 
         const screen = remoteMessage?.data?.screen;
         if (screen && navigation) {

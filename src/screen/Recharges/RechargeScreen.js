@@ -164,7 +164,7 @@ const RechargeScreen = ({ navigation }) => {
 
   // ✅ HANDLE PACK SELECT
   const handlePackSelect = (pack) => {
-    console.log("Selected Pack:", pack);
+    
     setSelectedPack(pack);
     setAmount(String(pack.amount)); // autofill amount
     

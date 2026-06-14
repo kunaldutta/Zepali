@@ -109,7 +109,6 @@ useEffect(() => {
 }, [existingCartItem]);
 
   const loadProduct = async (color = '') => {
-    console.log('Loading product with color:', color);
   try {
 
     const res = await getProductDetail(productId, color);
@@ -128,11 +127,10 @@ useEffect(() => {
       setColorName(selColor.color);
       setProduct(productData);
       setSelectedColor(selColor);
-        console.log('Selected variant ==PDS', selColor);
+  
       setSelectedVariant(variant);
 
-      console.log('Product Detail ===', productData);
-      console.log('Product Detail ===2', selColor, variant);
+      
 
       // ✅ ALWAYS CALL (NO BLOCKING ON VARIANT)
       
@@ -171,10 +169,9 @@ useEffect(() => {
   };
 
   const finalPrice = (price, offer) =>{
-    //console.log('finalPrice ===', offer)
-    console.log('finalPrice ===', price)
+    
     let finalPrice = price - (price * (offer/100))
-    console.log('finalPrice ===', finalPrice)
+    
     return finalPrice; 
   }
 
@@ -314,7 +311,6 @@ useEffect(() => {
 
   } catch (e) {
 
-    console.log("AddToCart ERROR:", e);
 
     Alert.alert(
       "Error",
@@ -328,7 +324,7 @@ useEffect(() => {
 };
 
 const checkWishlist = async (prod, color, variant) => {
-  console.log('Check Wishlist ===', prod?.id, color?.color, variant?.measurement_value);
+  
 
   try {
     // ✅ FIX: check ALL values
@@ -340,7 +336,6 @@ const checkWishlist = async (prod, color, variant) => {
       selectedVariant: variant,
     });
 
-    console.log("Wishlist check response:", res?.data);
 
     if (res?.status) {
       setIsWishlisted(res.is_wishlisted);
@@ -354,7 +349,7 @@ const checkWishlist = async (prod, color, variant) => {
 
 const onWishlistPress = async () => {
   try {
-    console.log("removeFromWishlistAPI payload:1", wishlistId);
+    
   const res = isWishlisted ? await removeFromWishlistAPI(
         wishlistId)
     : await addToWishlistAPI({
@@ -369,7 +364,7 @@ const onWishlistPress = async () => {
     }
 
     if (res?.status) {
-      console.log("Wishlist response:", res);
+      
       if(res.message === "Added to wishlist"){
         setIsWishlisted(true);
         setWishlistId(res.wishlist_id);
@@ -459,8 +454,33 @@ const onWishlistPress = async () => {
                   paddingBottom: 8,   // 👈 spacing from content
                 }}
               >
-                <Text style={styles.name}>{product.product_name}</Text>
+                <View style={{width:'85%'}}>
+                  <Text style={[styles.name]}>{product.product_name}</Text>
+                  {product.product_attribute.toLowerCase() !== 'na' && (<View style={{ flexDirection: 'row', alignItems: 'center', top:5 }}>
+                    {(product.product_attribute?.toLowerCase() === 'veg' || product.product_attribute?.toLowerCase() === 'non-veg') && ( <View
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: 6,
+                        backgroundColor:
+                          product.product_attribute?.toLowerCase() === 'veg'
+                            ? 'green'
+                            : 'red',
+                        marginRight: 6,
+                      }}
+                    />)}
 
+                    <Text
+                      style={[
+                        styles.name,
+                        { color: colors.secondary, fontSize: 12 },
+                      ]}>
+                      {product.product_attribute}
+                    </Text>
+                  </View>)}
+                </View>
+                
+                
                 <TouchableOpacity
                   onPress={onWishlistPress}
                   style={{
@@ -522,7 +542,7 @@ const onWishlistPress = async () => {
               <TouchableOpacity
                 key={`${v.measurement_id}-${v.measurement_value}`}
                   onPress={() => {
-                    console.log('Selected variant ==', v);
+                    
                     setSelectedVariant(v)}}
                   style={[
                     styles.sizeBtn,
@@ -637,7 +657,7 @@ const styles = StyleSheet.create({
 
   container: { padding: 15 },
 
-  name: { fontSize: 20, fontWeight: 'bold' },
+  name: { fontSize: 16, fontWeight: 'bold' },
 
   price: { fontSize: 18, color: "#c17422", marginVertical: 5, fontWeight:'bold' },
   

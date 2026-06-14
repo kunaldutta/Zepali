@@ -11,7 +11,6 @@ export const addToCart = createAsyncThunk(
 
     try {
 
-      console.log("🔥 ADD TO CART THUNK:", payload);
 
       const res = await addToCartAPI(payload);
 
@@ -49,7 +48,6 @@ export const fetchCart = createAsyncThunk(
   async (payload, { rejectWithValue }) => {
     try {
 
-      console.log("🔥 FETCH THUNK:", payload);
 
       let customerId = 0;
       let pointsAmount = 0;
@@ -88,7 +86,6 @@ export const updateCart = createAsyncThunk(
   'cart/updateCart',
   async (payload, { dispatch, rejectWithValue }) => {
     try {
-      console.log("🔥 UPDATE THUNK:", payload);
 
       const res = await updateCartAPI(payload);
 

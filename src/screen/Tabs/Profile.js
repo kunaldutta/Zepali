@@ -23,6 +23,7 @@ import { getProfileMenuAPI } from '../../services/serviceApi';
 import DeviceInfo from 'react-native-device-info';
 
 export default function Profile({ navigation }) {
+  const termsUrl = `${BASE_URL}/delete-account.html`;
   const [userName, setUserName] = useState('User');
   const [user, setUser] = useState(null);
   const [menuData, setMenuData] = useState([]);
@@ -108,8 +109,12 @@ export default function Profile({ navigation }) {
           handleLogout();
           return;
         }
-
-        if (item.screen) {
+        
+        if(item.screen === 'DeleteAccountScreen'){
+          navigation.navigate('WebViewScreen', {
+                        url: termsUrl,
+                      })
+        } else {
           navigation.navigate(item.screen);
         }
       };
