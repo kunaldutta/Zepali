@@ -19,7 +19,7 @@ const CustomInput = ({
         onChangeText={onChangeText}
         placeholder={placeholder}
         keyboardType={keyboardType}
-        placeholderTextColor={colors.placeholderTextColor}
+        placeholderTextColor={colors.placeholderTextColor || '#A1887F'}
       />
     </View>
   );

@@ -17,11 +17,12 @@ import AppHeader from "../../components/AppHeader";
 import {cancelOrderItemAPI} from '../../services/orderService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomAlert from '../../components/CustomAlert';
+import {usePoints} from  '../../components/PointsContext'
 
 const BASE_URL = 'https://zepali.net/IndoNep';
 
 const OrderDetailsScreen = ({route, navigation}) => {
-
+  const {fetchUserPoints} = usePoints();
   const {orderId} = route.params;
 
   const [order, setOrder] = useState(null);
@@ -128,7 +129,11 @@ const OrderDetailsScreen = ({route, navigation}) => {
         response.message,
       );
 
-      fetchOrderDetails();
+      await fetchOrderDetails();
+
+      if (parsedUser?.id) {
+        await fetchUserPoints(parsedUser.id);
+      }
 
     } else {
 

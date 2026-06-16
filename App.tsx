@@ -82,17 +82,17 @@ const RootApp = () => {
 
   /* INITIAL LOAD */
   useEffect(() => {
+  const init = async () => {
+    await loadApp();
 
-        loadApp();
+    await requestUserPermission();
+    await getFCMToken();
+  };
 
-        backgroundHandler();
+  init();
 
-        // ✅ ONLY ON APP START
-        requestUserPermission();
-
-        getFCMToken();
-
-  }, []);
+  backgroundHandler();
+}, []);
 
   /* NOTIFICATION HANDLER (FOREGROUND) */
   useEffect(() => {

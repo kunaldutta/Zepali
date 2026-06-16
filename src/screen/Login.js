@@ -429,7 +429,7 @@ export default function Login({navigation, route}) {
                 <TextInput
                   style={styles.input}
                   placeholder="Enter mobile number"
-                  placeholderTextColor={colors.placeholderTextColor}
+                  placeholderTextColor={colors.placeholderTextColor || '#A1887F'}
                   value={mobile}
                   onChangeText={setMobile}
                   keyboardType="phone-pad"
@@ -440,7 +440,7 @@ export default function Login({navigation, route}) {
               <TextInput
                 style={styles.input}
                 placeholder="Enter OTP"
-                placeholderTextColor={colors.placeholderTextColor}
+                placeholderTextColor={colors.placeholderTextColor || '#A1887F'}
                 value={otp}
                 onChangeText={setOtp}
                 keyboardType="number-pad"
@@ -578,7 +578,16 @@ const styles = StyleSheet.create({
 
   code:{ marginRight:10, fontWeight:'600' },
 
-  input:{ flex:1, height:48, borderWidth:1, borderColor:'#ccc', borderRadius:10, paddingHorizontal:10 },
+  input:{
+    flex:1,
+    height:48,
+    borderWidth:1,
+    borderColor:'#ccc',
+    borderRadius:10,
+    paddingHorizontal:10,
+    color:'#000',          // <-- add this
+    backgroundColor:'#fff' // <-- recommended
+  },
 
   buttonText:{ color:'#fff', fontWeight:'600' },
 

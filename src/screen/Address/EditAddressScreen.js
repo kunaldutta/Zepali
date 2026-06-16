@@ -112,6 +112,13 @@ const EditAddressScreen = ({ route, navigation }) => {
     }, []);
   /* ✅ UPDATE ADDRESS */
  const handleUpdateAddress = async () => {
+  if (!/^\d{10}$/.test(contactNo)) {
+    Alert.alert(
+      'Validation',
+      'Please enter a valid 10-digit contact number'
+    );
+    return;
+  }
   try {
     setLoading(true);
 
@@ -174,17 +181,33 @@ const EditAddressScreen = ({ route, navigation }) => {
 };
 
   /* INPUT FIELD */
-  const renderInput = (label, value, setter, keyboardType = 'default') => (
+  const renderInput = (
+  label,
+  value,
+  setter,
+  keyboardType = 'default'
+) => {
+  const isContactField = label === 'Contact No';
+
+  return (
     <>
       <Text style={styles.label}>{label}</Text>
       <TextInput
         style={globalStyles.input}
         value={value}
-        onChangeText={setter}
+        onChangeText={(text) => {
+          if (isContactField) {
+            setter(text.replace(/[^0-9]/g, ''));
+          } else {
+            setter(text);
+          }
+        }}
         keyboardType={keyboardType}
+        maxLength={isContactField ? 10 : undefined}
       />
     </>
   );
+};
 
   return (
     <SafeAreaView style={styles.container}>

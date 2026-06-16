@@ -31,6 +31,7 @@ import { BASE_URL } from '../../network/apiClient';
 import RelatedProducts  from '../../components/RelatedProducts';
 import CartBillSummary from '../../components/CartBillSummary';
 import PointsSelector from '../../components/PointsSelector';
+import CustomAlert from '../../components/CustomAlert';
 
 
 export default function CartScreen({navigation}) {
@@ -41,6 +42,10 @@ export default function CartScreen({navigation}) {
     points: 0,
     amount: 0,
   });
+  const [showCartAlert, setShowCartAlert] = useState(false);
+   const [alertTitle, setAlertTitle] = useState('');
+   const [alertMsg, setAlertMsg] = useState('');
+   const [selectedItem, setSelectedItem] = useState(null);
   const { items, total, summary, loading } = useSelector(state => state.cart);
   const uniqueCategories = useMemo(() => {
   return items?.length
@@ -189,50 +194,66 @@ const deleteItem = async (item) => {
   }
 };
 
+const confirmDeleteItem = (item) => {
+  setSelectedItem(item);
+  setAlertTitle('Delete Item');
+  setAlertMsg('Would you like to delete this item?');
+  setShowCartAlert(true);
+};
+
   /* ================= DECREASE ================= */
   const decreaseQty = async (item) => {
 
-  if (updatingItemId === item.cart_id) return;
-  if (Number(item.quantity) <= 1) return;
+    if (updatingItemId === item.cart_id) return;
 
-  setUpdatingItemId(item.cart_id);
-  setCartLoading(true);
-
-  try {
-    const newQty = Number(item.quantity) - 1;
-
-    const userData = await AsyncStorage.getItem("USER_DATA");
-    const parsedUser = userData ? JSON.parse(userData) : null;
-    if (!parsedUser?.id) return;
-
-    const payload = {
-      customer_id: parsedUser.id,
-      prod_id: item.product_id,
-      measurement_id: item.measurement_id,
-      image_id: item.image_id,
-      quantity: newQty,
-    };
-
-    await dispatch(updateCart(payload)).unwrap();
-
-    await refreshCart(parsedUser.id);
-
-  } catch (error) {
-
-    const errorMessage =
-      error?.message || error || 'Something went wrong';
-
-    if (String(errorMessage).toLowerCase().includes('network')) {
-      Alert.alert('No Internet', 'Please check your connection');
-    } else {
-      Alert.alert('Error', errorMessage);
+    // ✅ Show delete confirmation only when quantity is 1
+    if (Number(item.quantity) === 1) {
+      setSelectedItem(item);
+      setAlertTitle('Delete Item');
+      setAlertMsg('Would you like to delete this item?');
+      setShowCartAlert(true);
+      return;
     }
 
-  } finally {
-    setUpdatingItemId(null);
-    setCartLoading(false);
-  }
-};
+    setUpdatingItemId(item.cart_id);
+    setCartLoading(true);
+
+    try {
+      const newQty = Number(item.quantity) - 1;
+
+      const userData = await AsyncStorage.getItem("USER_DATA");
+      const parsedUser = userData ? JSON.parse(userData) : null;
+
+      if (!parsedUser?.id) return;
+
+      const payload = {
+        customer_id: parsedUser.id,
+        prod_id: item.product_id,
+        measurement_id: item.measurement_id,
+        image_id: item.image_id,
+        quantity: newQty,
+      };
+
+      await dispatch(updateCart(payload)).unwrap();
+
+      await refreshCart(parsedUser.id);
+
+    } catch (error) {
+
+      const errorMessage =
+        error?.message || error || 'Something went wrong';
+
+      if (String(errorMessage).toLowerCase().includes('network')) {
+        Alert.alert('No Internet', 'Please check your connection');
+      } else {
+        Alert.alert('Error', errorMessage);
+      }
+
+    } finally {
+      setUpdatingItemId(null);
+      setCartLoading(false);
+    }
+  };
 const handlePlaceOrder = () => {
  
   if (!items || items.length === 0) {
@@ -271,7 +292,7 @@ const handlePlaceOrder = () => {
           </Text>
 
           <TouchableOpacity
-            onPress={() => deleteItem(item)}
+            onPress={() => confirmDeleteItem(item)}
             disabled={isUpdating}
           >
             <Ionicons name="trash-outline" size={22} color="red" />
@@ -521,6 +542,20 @@ const renderFooter = useMemo(() => {
   </TouchableOpacity>
 
 </View>
+<CustomAlert
+        visible={showCartAlert}
+        title= {alertTitle}
+        message={alertMsg}
+        onOk={() => {
+          deleteItem(selectedItem);
+          setShowCartAlert(false);
+        }}
+        onThirdOption={() => {
+           setShowCartAlert(false);
+        }}
+        onOkText="Ok"
+        onThirdOptionText="Cancel"
+      />
     </SafeAreaView>
   );
 }

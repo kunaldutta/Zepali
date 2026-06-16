@@ -211,6 +211,9 @@ const RechargeScreen = ({ navigation }) => {
 
           {/* Inputs */}
           <TextInput
+            style={[globalStyles.input, {height: 40,               // ✅ FIXED HEIGHT (IMPORTANT)
+                  paddingVertical: 0,       // ✅ prevents jump
+                  textAlignVertical: 'center',} ]}
             placeholder= {mode !== "topup" ? i18n.t("ENTER_MOBILE") || "Enter Mobile No." : i18n.t("ENTER_MOBILE_KHALTI") || "Enter Mobile No./ Khalti ID"}
             placeholderTextColor={colors.placeholderTextColor}
             value={number}
@@ -221,9 +224,6 @@ const RechargeScreen = ({ navigation }) => {
             }}
             keyboardType="numeric"
             maxLength={10}
-              style={[globalStyles.input, {height: 40,               // ✅ FIXED HEIGHT (IMPORTANT)
-                  paddingVertical: 0,       // ✅ prevents jump
-                  textAlignVertical: 'center',} ]}
             scrollEnabled={false}
           />
           {(failureReason?.number) && (
@@ -232,6 +232,9 @@ const RechargeScreen = ({ navigation }) => {
             </Text>
           )}
           <TextInput
+            style={[globalStyles.input, {height: 40,               // ✅ FIXED HEIGHT (IMPORTANT)
+                paddingVertical: 0,       // ✅ prevents jump
+                textAlignVertical: 'center',marginBottom: 5} ]}
             placeholder={mode === "topup" ? i18n.t("ENTER_AMOUNT") || "Enter Amount (20 - 25000)" : i18n.t("SELECT_PACK") || "Select Recharge Pack"}
             placeholderTextColor={colors.placeholderTextColor}
             value={amount}
@@ -241,9 +244,6 @@ const RechargeScreen = ({ navigation }) => {
             }}
             keyboardType="numeric"
             editable={mode === "topup"}
-            style={[globalStyles.input, {height: 40,               // ✅ FIXED HEIGHT (IMPORTANT)
-                paddingVertical: 0,       // ✅ prevents jump
-                textAlignVertical: 'center',marginBottom: 5} ]}
             scrollEnabled={false}
           />
           {(failureReason?.amount) && (

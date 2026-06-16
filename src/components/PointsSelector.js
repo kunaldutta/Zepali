@@ -248,7 +248,7 @@ const PointsSelector = ({
       >
         <Text style={styles.buttonText}>
           {isPointSelected
-            ? `⭐ Useed Points (₹${Number(maxUsable).toFixed(2)})`
+            ? `⭐ Used Points (₹${Number(maxUsable).toFixed(2)})`
             : `⭐ Use Max Points (₹${Number(maxUsable).toFixed(2)} Off)`}
         </Text>
       </TouchableOpacity>

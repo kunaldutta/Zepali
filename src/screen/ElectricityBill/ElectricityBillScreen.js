@@ -743,28 +743,28 @@ const ElectricityBillScreen = ({navigation}) => {
       {/* SC NUMBER */}
 
       <TextInput
+        style={[globalStyles.input,{top: 15}]}
         placeholder="SC Number"
-        placeholderTextColor={colors.placeholderTextColor}
+        placeholderTextColor={colors.placeholderTextColor || '#A1887F'}
         value={scNo}
         onChangeText={setScNo}
-        style={[globalStyles.input,{top: 15}]}
       />
 
       {/* CONSUMER ID */}
 
       <TextInput
+        style={[globalStyles.input,{top: 15}]}
         placeholder={
           isV2
             ? 'Old Consumer ID'
             : 'Consumer ID'
         }
-        placeholderTextColor={colors.placeholderTextColor}
+        placeholderTextColor={colors.placeholderTextColor || '#A1887F'}
         value={consumerId}
         onChangeText={
           setConsumerId
         }
         keyboardType="numeric"
-        style={[globalStyles.input,{top: 15}]}
       />
 
       {/* FETCH BUTTON */}
@@ -968,11 +968,11 @@ const ElectricityBillScreen = ({navigation}) => {
             {/* SEARCH */}
 
             <TextInput
+              style={styles.searchInput}
               placeholder="Search Counter"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.placeholderTextColor || '#A1887F'}
               value={search}
               onChangeText={setSearch}
-              style={styles.searchInput}
             />
 
             {/* LIST */}

@@ -18,10 +18,14 @@ import AppHeader from '../../components/AppHeader';
 import i18n from '../../localization/i18n';
 import { checkServiceableLocationAPI } from '../../services/addressService';
 
-const GOOGLE_API_KEY = "AIzaSyASeQVPcvxEogcrrLg5MExUWcXAgYuJekY";
+const GOOGLE_API_KEY = "AIzaSyCMvQFX2ZYppcK_z0jC_Nr5sFO8dB1lPQo";
 
 export default function MapPicker({ route, navigation }) {
   const mapRef = useRef(null);
+  const debounceRef = useRef(null);
+  const isFetchingAddress = useRef(false);
+  const isInitialRegionLoaded = useRef(false);
+  const lastLatLng = useRef('');
   
   const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
@@ -39,7 +43,24 @@ export default function MapPicker({ route, navigation }) {
   // ✅ LOCATION CHECK ON LOAD
   useEffect(() => {
     checkLocationEnabled();
+
+    return () => {
+
+        if (debounceRef.current) {
+          clearTimeout(debounceRef.current);
+        }
+
+    };
   }, []);
+
+  useEffect(() => {
+
+      getAddress(
+        region.latitude,
+        region.longitude
+      );
+
+    }, []);
 
   const checkLocationEnabled = async () => {
     if (Platform.OS === 'android') {
@@ -80,85 +101,168 @@ export default function MapPicker({ route, navigation }) {
 
   // 🔍 SEARCH API
   const searchPlaces = async (text) => {
-    setSearchText(text);
+  setSearchText(text);
 
-    if (text.length < 2) {
-      setSuggestions([]);
-      return;
-    }
+  if (text.length < 2) {
+    setSuggestions([]);
+    return;
+  }
 
-    try {
-      const res = await fetch(
-        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${text}&key=${GOOGLE_API_KEY}`
-      );
+  try {
+    const response = await fetch(
+      'https://places.googleapis.com/v1/places:autocomplete',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': GOOGLE_API_KEY,
+        },
+        body: JSON.stringify({
+          input: text,
+        }),
+      }
+    );
 
-      const data = await res.json();
-      setSuggestions(data.predictions || []);
-    } catch (e) {
-      console.log("Search error:", e);
-    }
-  };
+    const data = await response.json();
+
+    const results =
+      data?.suggestions?.map(item => ({
+        place_id: item.placePrediction?.placeId,
+        description:
+          item.placePrediction?.text?.text,
+      })) || [];
+
+    setSuggestions(results);
+
+  } catch (e) {
+    console.log('Search error:', e);
+  }
+};
 
   // 🔍 SELECT PLACE
   const selectPlace = async (placeId) => {
-    try {
-      setSuggestions([]);
+  try {
+    setSuggestions([]);
 
-      const res = await fetch(
-        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${GOOGLE_API_KEY}`
+    const response = await fetch(
+      `https://places.googleapis.com/v1/places/${placeId}`,
+      {
+        headers: {
+          'X-Goog-Api-Key': GOOGLE_API_KEY,
+          'X-Goog-FieldMask':
+            'location,formattedAddress',
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (data.location) {
+
+      const newRegion = {
+        latitude: data.location.latitude,
+        longitude: data.location.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      };
+
+      setRegion(newRegion);
+
+      mapRef.current?.animateToRegion(
+        newRegion,
+        1000
       );
 
-      const data = await res.json();
+      getAddress(
+        data.location.latitude,
+        data.location.longitude
+      );
 
-      if (data.result) {
-        const loc = data.result.geometry.location;
-
-        const newRegion = {
-          latitude: loc.lat,
-          longitude: loc.lng,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        };
-
-        setRegion(newRegion);
-
-        mapRef.current?.animateToRegion(newRegion, 1000);
-
-        getAddress(loc.lat, loc.lng);
-        setSearchText(data.result.formatted_address);
-        setSuggestions([]);
-      }
-
-    } catch (e) {
-      console.log("Place error:", e);
+      setSearchText(
+        data.formattedAddress || ''
+      );
     }
-  };
+
+  } catch (e) {
+    console.log('Place error:', e);
+  }
+};
 
   // 🔥 FETCH ADDRESS
   const getAddress = async (lat, lng) => {
-    try {
-      setLoading(true);
-
-      const res = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_API_KEY}`
-      );
-
-      const data = await res.json();
-
-      if (data.status === "OK" && data.results.length > 0) {
-        setAddress(data.results[0].formatted_address);
-      }
-
-    } catch (e) {
-      console.log("ERROR:", e);
-    } finally {
-      setLoading(false);
+  try {
+    console.log(
+      'Geocode Request:',
+      lat.toFixed(6),
+      lng.toFixed(6)
+    );
+    if (isFetchingAddress.current) {
+      return;
     }
-  };
+
+    isFetchingAddress.current = true;
+    setLoading(true);
+
+    const res = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_API_KEY}`
+    );
+
+    const data = await res.json();
+
+    console.log('GEOCODE STATUS:', data?.status);
+
+    if (
+      data.status === 'OK' &&
+      data.results &&
+      data.results.length > 0
+    ) {
+      const newAddress = data.results[0].formatted_address;
+
+      setAddress(prev => {
+        if (prev === newAddress) {
+          return prev;
+        }
+        return newAddress;
+      });
+    }
+
+  } catch (e) {
+
+    console.log('ADDRESS ERROR:', e);
+
+  } finally {
+
+    isFetchingAddress.current = false;
+    setLoading(false);
+  }
+};
 
   const onRegionChangeComplete = (reg) => {
-    setRegion(reg);
-    getAddress(reg.latitude, reg.longitude);
+
+  setRegion(reg);
+
+  // Ignore first auto callback from MapView
+  if (!isInitialRegionLoaded.current) {
+    isInitialRegionLoaded.current = true;
+    return;
+  }
+
+  const currentLatLng =
+      `${reg.latitude.toFixed(5)},${reg.longitude.toFixed(5)}`;
+
+    if (lastLatLng.current === currentLatLng) {
+      return;
+    }
+
+    lastLatLng.current = currentLatLng;
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    debounceRef.current = setTimeout(() => {
+      getAddress(reg.latitude, reg.longitude);
+    }, 700);
   };
 
   const confirmLocation = async () => {
@@ -324,14 +428,15 @@ export default function MapPicker({ route, navigation }) {
         }}>
           <TextInput
             placeholder="Search location..."
-            placeholderTextColor={colors.placeholderTextColor}
             value={searchText}
             onChangeText={searchPlaces}
             style={{
-              backgroundColor: 'white',
+              backgroundColor: colors.white || '#fff',
+              color: colors.text || '#000',   // important
               padding: 10,
               borderRadius: 8,
             }}
+            placeholderTextColor={colors.placeholderTextColor || '#A1887F'}
           />
 
           {suggestions.length > 0 && (
@@ -354,9 +459,17 @@ export default function MapPicker({ route, navigation }) {
 
         <MapView
           ref={mapRef}
-          style={{ flex: 1 }}
+          onMapReady={() => console.log('MAP READY')}
+          style={{
+            flex: 1,
+            width: '100%',
+            height: '100%',
+          }}
           initialRegion={region}
           onRegionChangeComplete={onRegionChangeComplete}
+          showsUserLocation={true}
+          showsMyLocationButton={true}
+          loadingEnabled={true}
         />
 
         {/* PIN */}

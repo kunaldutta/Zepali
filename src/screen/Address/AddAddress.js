@@ -309,6 +309,10 @@ const openMapWithCurrentLocation = async () => {
 };
   /* ✅ ADD ADDRESS API */
   const sendDataToServer = async () => {
+    if (!/^\d{10}$/.test(userData.contact_no)) {
+    Alert.alert('Validation', 'Please enter a valid 10-digit contact number');
+    return;
+  }
   try {
     setLoading(true);
 
@@ -351,20 +355,32 @@ const openMapWithCurrentLocation = async () => {
       {userData[field] ? <Text style={styles.label}>{placeholder}</Text> : null}
 
       <TextInput
-        placeholder={placeholder}
-        value={userData[field]}
-        placeholderTextColor={colors.placeholderTextColor}
-        onChangeText={(text) =>
-          setUserData({ ...userData, [field]: text })
-        }
         style={[
           globalStyles.input,
-          isMultiline && styles.multilineInput
+          isMultiline && styles.multilineInput,
         ]}
+        placeholder={placeholder}
+        value={userData[field]}
+        placeholderTextColor={colors.placeholderTextColor || '#A1887F'}
+        onChangeText={(text) => {
+          if (field === 'contact_no') {
+            const numericText = text.replace(/[^0-9]/g, ''); // only digits
+            setUserData({
+              ...userData,
+              [field]: numericText,
+            });
+          } else {
+            setUserData({
+              ...userData,
+              [field]: text,
+            });
+          }
+        }}
         keyboardType={keyboardType}
+        maxLength={field === 'contact_no' ? 10 : undefined}
         multiline={isMultiline}
         numberOfLines={isMultiline ? 4 : 1}
-        textAlignVertical={isMultiline ? 'top' : 'center'} // ✅ FIX
+        textAlignVertical={isMultiline ? 'top' : 'center'}
       />
     </View>
   );

@@ -76,16 +76,46 @@ useEffect(()=>{
 },[]);
 
 useEffect(()=>{
-  
   loadUsserDetail();
 },[]);
 
-// useFocusEffect(
-//   useCallback(() => {
-//     loadUsserDetail();
-//     //loadUserPoints();
-//     }, [])
-//   );
+useFocusEffect(
+  useCallback(() => {
+    const checkUpdate = async () => {
+      const needUpdate = await AsyncStorage.getItem(
+        'HOME_UPDATE_REQUIRED'
+      );
+
+      if (needUpdate === 'YES') {
+        Promise.all([
+          loadUsserDetail(),
+          loadHome(),
+        ])
+          .then(() =>
+            AsyncStorage.removeItem('HOME_UPDATE_REQUIRED')
+          )
+          .catch(error => {
+            console.log(error);
+          });
+      }
+    };
+
+    checkUpdate();
+  }, [])
+);
+
+const onRefresh = async () => {
+  setRefreshing(true);
+
+  try {
+    await loadUsserDetail();
+    await loadHome();
+  } catch (e) {
+    console.log(e);
+  } finally {
+    setRefreshing(false);
+  }
+};
 
 const loadUsserDetail = async()=>{
 
@@ -97,7 +127,11 @@ const loadUsserDetail = async()=>{
   
     if (userData) {
 
-      fetchUserPoints(parsedUser?.id); // ✅ auto load
+      const updatedUser = await fetchUserPoints(parsedUser?.id);
+      if (updatedUser) {
+      setUser(updatedUser);
+      setUserName(updatedUser?.name || '');
+  }
     }
 };
 /* LOAD API */
@@ -360,7 +394,7 @@ showsHorizontalScrollIndicator={false}
   columnWrapperStyle={{justifyContent:'space-between', paddingHorizontal:10}}
   scrollEnabled={false} // IMPORTANT (inside main FlatList)
   refreshing={refreshing}
-  onRefresh={loadHome}
+  onRefresh={onRefresh}
  />
 
 
@@ -451,7 +485,7 @@ return(
         contentContainerStyle={{paddingBottom:5}}
         showsVerticalScrollIndicator={false}
         refreshing={refreshing}
-          onRefresh={loadHome}
+          onRefresh={onRefresh}
         />
 
     )}

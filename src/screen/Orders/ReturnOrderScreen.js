@@ -215,7 +215,7 @@ const isOnlinePayment =
           <TextInput
             style={styles.textArea}
             placeholder="Enter reason"
-            placeholderTextColor={colors.placeholderTextColor}
+            placeholderTextColor={colors.placeholderTextColor  || '#A1887F' }
             multiline
             value={reason}
             onChangeText={setReason}
@@ -342,7 +342,7 @@ const isOnlinePayment =
                 setUpiId
               }
               placeholder="example@ybl"
-              placeholderTextColor={colors.placeholderTextColor}
+              placeholderTextColor={colors.placeholderTextColor || '#A1887F' }
             />
 
           </View>
@@ -361,7 +361,7 @@ const isOnlinePayment =
                 styles.input
               }
               placeholder="Account Holder Name"
-              placeholderTextColor={colors.placeholderTextColor}
+              placeholderTextColor={colors.placeholderTextColor || '#A1887F' }
               value={
                 accountHolderName
               }
@@ -375,7 +375,7 @@ const isOnlinePayment =
                 styles.input
               }
               placeholder="Bank Name"
-              placeholderTextColor={colors.placeholderTextColor}
+              placeholderTextColor={colors.placeholderTextColor || '#A1887F' }
               value={bankName}
               onChangeText={
                 setBankName
@@ -387,7 +387,7 @@ const isOnlinePayment =
                 styles.input
               }
               placeholder="Account Number"
-              placeholderTextColor={colors.placeholderTextColor}
+              placeholderTextColor={colors.placeholderTextColor || '#A1887F' }
               keyboardType="number-pad"
               value={
                 accountNumber
@@ -403,7 +403,7 @@ const isOnlinePayment =
               }
               placeholder="IFSC Code"
               autoCapitalize="characters"
-              placeholderTextColor={colors.placeholderTextColor}
+              placeholderTextColor={colors.placeholderTextColor || '#A1887F' }
               value={ifscCode}
               onChangeText={
                 setIfscCode

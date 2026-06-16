@@ -89,6 +89,10 @@ const updateProfile = async () => {
         'USER_DATA',
         JSON.stringify(updatedUser)
       );
+      await AsyncStorage.setItem(
+        'HOME_UPDATE_REQUIRED',
+        'YES'
+      );
 
       setUser(updatedUser);
       setImage(null);
@@ -143,12 +147,12 @@ const updateProfile = async () => {
 
         {/* INPUTS */}
         <TextInput
+          style={[globalStyles.input, { height: 45, paddingVertical: 0, textAlignVertical: 'center', top: 15 }]}
           placeholder="Name"
           placeholderTextColor={colors.placeholderTextColor}
           EditProfile
           value={user.name}
           onChangeText={(t) => setUser({ ...user, name: t })}
-          style={[globalStyles.input, { height: 45, paddingVertical: 0, textAlignVertical: 'center', top: 15 }]}
         />
 
         <TextInput

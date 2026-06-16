@@ -193,10 +193,10 @@ return(
 </TouchableOpacity>
 
 <TextInput
+style={styles.searchInput}
 ref={inputRef}
 placeholder="Search product or category..."
 placeholderTextColor={colors.placeholderTextColor}
-style={styles.searchInput}
 value={search}
 onChangeText={handleSearch}
 returnKeyType="search"

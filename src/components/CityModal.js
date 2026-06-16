@@ -96,7 +96,7 @@ export default function CityModal({
             style={styles.searchInput}
             placeholder="Search city..."
             value={searchText}
-            placeholderTextColor={colors.placeholderTextColor}
+            placeholderTextColor={colors.placeholderTextColor || '#A1887F'}
             onChangeText={setSearchText}
             autoCorrect={false}
             autoCapitalize="none"

@@ -6,20 +6,23 @@ import notifee, { AndroidImportance } from '@notifee/react-native';
    REQUEST PERMISSION
 ========================= */
 export async function requestUserPermission() {
-  if (Platform.OS === 'android') {
-    await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-    );
-  }
+  try {
+    console.log('Requesting permission...');
 
-  const authStatus = await messaging().requestPermission();
+    if (Platform.OS === 'android') {
+      const result = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+      );
 
-  const enabled =
-    authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-    authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+      console.log('Permission result:', result);
+    }
 
-  if (enabled) {
-    console.log('✅ Notification permission granted');
+    const authStatus = await messaging().requestPermission();
+
+    console.log('Auth status:', authStatus);
+
+  } catch (e) {
+    console.log('Permission error:', e);
   }
 }
 

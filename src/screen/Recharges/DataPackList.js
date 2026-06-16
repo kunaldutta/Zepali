@@ -65,7 +65,7 @@ const DataPackList = ({ provider, number, onSelect }) => {
           value={search}
           onChangeText={setSearch}
           style={styles.searchInput}
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.placeholderTextColor || "#999"}
         />
 
         {/* 🔍 Search Icon (RIGHT SIDE) */}

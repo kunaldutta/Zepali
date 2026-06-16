@@ -417,8 +417,9 @@ export default function BookingScreen({ route, navigation }) {
                   <Text>Passenger {index + 1}</Text>
 
                   <TextInput
+                      style={[globalStyles.input, { height: 45, paddingVertical: 0, textAlignVertical: 'center', top: 15 }]}
                       placeholder={i18n.t("NAME") || "Name"}
-                      placeholderTextColor={colors.placeholderTextColor}
+                      placeholderTextColor={colors.placeholderTextColor || '#A1887F'}
                       ref={(ref) => (inputRefs.current[`${index}-name`] = ref)}
                       value={item.name}
                       onChangeText={(text) =>
@@ -428,12 +429,12 @@ export default function BookingScreen({ route, navigation }) {
                       onSubmitEditing={() => {
                         inputRefs.current[`${index}-age`]?.focus();
                       }}
-                      style={[globalStyles.input, { height: 45, paddingVertical: 0, textAlignVertical: 'center', top: 15 }]}
                     />
 
                   <TextInput
+                      style={[globalStyles.input, { height: 45, paddingVertical: 0, textAlignVertical: 'center', top: 12 }]}
                       placeholder={i18n.t("AGE") || "Age"}
-                      placeholderTextColor={colors.placeholderTextColor}
+                      placeholderTextColor={colors.placeholderTextColor || '#A1887F'}
                       ref={(ref) => (inputRefs.current[`${index}-age`] = ref)}
                       keyboardType="numeric"
                       value={item.age}
@@ -444,13 +445,12 @@ export default function BookingScreen({ route, navigation }) {
                       onSubmitEditing={() => {
                         inputRefs.current[`${index}-phone`]?.focus();
                       }}
-
-                      style={[globalStyles.input, { height: 45, paddingVertical: 0, textAlignVertical: 'center', top: 12 }]}
                     />
 
                   <TextInput
+                    style={[globalStyles.input, { height: 45, paddingVertical: 0, textAlignVertical: 'center', top: 10 }]}
                     placeholder={i18n.t("PHONE_NUMBER") || "Phone Number"}
-                    placeholderTextColor={colors.placeholderTextColor}
+                    placeholderTextColor={colors.placeholderTextColor || '#A1887F'}
                     ref={(ref) => (inputRefs.current[`${index}-phone`] = ref)}
                     keyboardType="phone-pad"
                     value={item.phone}
@@ -467,8 +467,6 @@ export default function BookingScreen({ route, navigation }) {
                         Keyboard.dismiss();
                       }
                     }}
-
-                    style={[globalStyles.input, { height: 45, paddingVertical: 0, textAlignVertical: 'center', top: 10 }]}
                   />
 
                   {/* ✅ Checkbox only on first passenger */}
