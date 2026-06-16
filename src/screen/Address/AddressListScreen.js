@@ -23,7 +23,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AddressListScreen = ({ route, navigation }) => {
 
-  const { cartItems, totalPrice } = route.params || {};
+  const { cartItems, totalPrice, summary } = route.params || {};
 
   const [defaultModalVisible, setDefaultModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -164,6 +164,7 @@ const AddressListScreen = ({ route, navigation }) => {
       cartItems,
       totalPrice,
       address: selectedAddress,
+      summary: summary,
     });
   };
 
@@ -181,7 +182,7 @@ const AddressListScreen = ({ route, navigation }) => {
         </View>
       )}
 
-      <View style={{height:'72%', backgroundColor:colors.background}}>
+      <View style={{height: summary ? '72%' : '80%', backgroundColor:colors.background}}>
         <FlatList
           data={addresses}
           keyExtractor={(item) => item.id.toString()}
@@ -242,10 +243,9 @@ const AddressListScreen = ({ route, navigation }) => {
       <TouchableOpacity style={styles.placeOrderButton} onPress={addNewAddress}>
         <Text style={styles.buttonText}>Add New Address</Text>
       </TouchableOpacity>
-
-      <TouchableOpacity style={styles.placeOrderButton} onPress={continuePlaceOrder}>
+      {summary && (<TouchableOpacity style={styles.placeOrderButton} onPress={continuePlaceOrder}>
         <Text style={styles.buttonText}>Continue</Text>
-      </TouchableOpacity>
+      </TouchableOpacity>)}
 
       <DefaultValueModal
         modalVisible={defaultModalVisible}

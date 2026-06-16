@@ -483,6 +483,7 @@ const renderFooter = useMemo(() => {
           navigation.navigate('AddressListScreen', {
             cartItems: items,
             totalPrice: total,
+            summary: summary,
           });
         }}
       />

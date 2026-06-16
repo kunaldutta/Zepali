@@ -339,7 +339,9 @@ const checkWishlist = async (prod, color, variant) => {
 
     if (res?.status) {
       setIsWishlisted(res.is_wishlisted);
-      setWishlistId(res?.data.id || null);
+      if(res?.data?.id){
+        setWishlistId(res?.data.id || null);
+      }
     }
 
   } catch (e) {
