@@ -14,7 +14,9 @@
     android:maxSdkVersion="32" />
 
     <!-- IMPORTANT -->
-    <uses-feature android:name="android.hardware.location.gps" />
+    <uses-feature
+    android:name="android.hardware.location.gps"
+    android:required="false" />
     <uses-permission android:name="android.permission.CAMERA" />
 
     <uses-feature
