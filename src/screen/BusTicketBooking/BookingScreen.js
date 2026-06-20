@@ -239,7 +239,7 @@ export default function BookingScreen({ route, navigation }) {
       terms_condition_version: termsVersion, // 🔥 send version or identifier of T&C
     });
 
-    if (!tempRes?.status) {
+    if (!tempRes?.status && tempRes?.reason === 'Invalid User') {
       //need logout
       showInvalidUserAlert(tempRes?.message)
 

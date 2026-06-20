@@ -78,12 +78,7 @@ const OrderDetailsScreen = ({route, navigation}) => {
         );
 
         return;
-      }
-
-      if (
-        item.item_status === 'PLACED' ||
-        item.item_status === 'CONFIRMED'
-      ) {
+      } else {
 
         setSelectedItem(item);
 

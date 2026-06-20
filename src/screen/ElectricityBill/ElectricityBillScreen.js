@@ -464,7 +464,7 @@ const ElectricityBillScreen = ({navigation}) => {
       );
 
 
-    if (!response?.status) {
+    if (!response?.status && response?.reason === 'Invalid User') {
       //need logout
       showInvalidUserAlert(tempRes?.message)
 

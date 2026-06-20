@@ -75,6 +75,17 @@ export default function PurchaseReviewScreen({
               ]
             );
     };
+  const showUserAlert = (title, message) => {
+            Alert.alert(
+              title,
+              message || 'Please login again',
+              [
+                {
+                  text: 'OK',
+                },
+              ]
+            );
+    };
   const confirmOrder = async () => {
 
   try {
@@ -189,10 +200,18 @@ export default function PurchaseReviewScreen({
         return;
     }
     if (
-      response?.status !== 'success'
+      response?.status !== 'success' && response?.reason === 'Invalid User'
     ) {
 
-      showInvalidUserAlert(response?.message || 'Something went wrong',)
+      showInvalidUserAlert( response?.message || 'Something went wrong',)
+
+      return;
+    } 
+    if (
+      response?.status !== 'success' && response?.reason === 'Insufficient stock'
+    ) {
+
+      showUserAlert(response?.reason, response?.message || 'Error','Something went wrong',)
 
       return;
     } 

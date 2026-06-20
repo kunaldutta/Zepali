@@ -163,7 +163,7 @@ const RechargeConfirm = ({ route, navigation }) => {
         provider: payload.provider,
       });
       console.log('PAYMENT RES ====',paymentRes)
-      if (!paymentRes?.status) {
+      if (!paymentRes?.status && paymentRes?.reason === 'Invalid User') {
         //Need logout
         showInvalidUserAlert(paymentRes?.message)
         //showAlert("Error", paymentRes?.message || "Payment init failed");
