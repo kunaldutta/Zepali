@@ -2460,6 +2460,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@notifee/react-native@npm:^9.1.8":
+  version: 9.1.8
+  resolution: "@notifee/react-native@npm:9.1.8"
+  peerDependencies:
+    react-native: "*"
+  checksum: a144f7c5aa54a7e774c95b3a91341653865dfa4c8540b34ead3f281edd733830975c4f86bdfe422467d18ae97879b75be09ca25bb1818ba2ecfc56808cb570b1
+  languageName: node
+  linkType: hard
+
 "@npmcli/agent@npm:^4.0.0":
   version: 4.0.0
   resolution: "@npmcli/agent@npm:4.0.0"
@@ -2780,7 +2789,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-firebase/app@npm:^24.0.0":
+"@react-native-firebase/app@npm:24.0.0":
   version: 24.0.0
   resolution: "@react-native-firebase/app@npm:24.0.0"
   dependencies:
@@ -2796,7 +2805,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-firebase/messaging@npm:^24.0.0":
+"@react-native-firebase/messaging@npm:24.0.0":
   version: 24.0.0
   resolution: "@react-native-firebase/messaging@npm:24.0.0"
   peerDependencies:
@@ -3538,6 +3547,87 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@typescript/native-preview-darwin-arm64@npm:7.0.0-dev.20260620.1":
+  version: 7.0.0-dev.20260620.1
+  resolution: "@typescript/native-preview-darwin-arm64@npm:7.0.0-dev.20260620.1"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@typescript/native-preview-darwin-x64@npm:7.0.0-dev.20260620.1":
+  version: 7.0.0-dev.20260620.1
+  resolution: "@typescript/native-preview-darwin-x64@npm:7.0.0-dev.20260620.1"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@typescript/native-preview-linux-arm64@npm:7.0.0-dev.20260620.1":
+  version: 7.0.0-dev.20260620.1
+  resolution: "@typescript/native-preview-linux-arm64@npm:7.0.0-dev.20260620.1"
+  conditions: os=linux & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@typescript/native-preview-linux-arm@npm:7.0.0-dev.20260620.1":
+  version: 7.0.0-dev.20260620.1
+  resolution: "@typescript/native-preview-linux-arm@npm:7.0.0-dev.20260620.1"
+  conditions: os=linux & cpu=arm
+  languageName: node
+  linkType: hard
+
+"@typescript/native-preview-linux-x64@npm:7.0.0-dev.20260620.1":
+  version: 7.0.0-dev.20260620.1
+  resolution: "@typescript/native-preview-linux-x64@npm:7.0.0-dev.20260620.1"
+  conditions: os=linux & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@typescript/native-preview-win32-arm64@npm:7.0.0-dev.20260620.1":
+  version: 7.0.0-dev.20260620.1
+  resolution: "@typescript/native-preview-win32-arm64@npm:7.0.0-dev.20260620.1"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@typescript/native-preview-win32-x64@npm:7.0.0-dev.20260620.1":
+  version: 7.0.0-dev.20260620.1
+  resolution: "@typescript/native-preview-win32-x64@npm:7.0.0-dev.20260620.1"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@typescript/native-preview@npm:^7.0.0-dev.20260301.1":
+  version: 7.0.0-dev.20260620.1
+  resolution: "@typescript/native-preview@npm:7.0.0-dev.20260620.1"
+  dependencies:
+    "@typescript/native-preview-darwin-arm64": 7.0.0-dev.20260620.1
+    "@typescript/native-preview-darwin-x64": 7.0.0-dev.20260620.1
+    "@typescript/native-preview-linux-arm": 7.0.0-dev.20260620.1
+    "@typescript/native-preview-linux-arm64": 7.0.0-dev.20260620.1
+    "@typescript/native-preview-linux-x64": 7.0.0-dev.20260620.1
+    "@typescript/native-preview-win32-arm64": 7.0.0-dev.20260620.1
+    "@typescript/native-preview-win32-x64": 7.0.0-dev.20260620.1
+  dependenciesMeta:
+    "@typescript/native-preview-darwin-arm64":
+      optional: true
+    "@typescript/native-preview-darwin-x64":
+      optional: true
+    "@typescript/native-preview-linux-arm":
+      optional: true
+    "@typescript/native-preview-linux-arm64":
+      optional: true
+    "@typescript/native-preview-linux-x64":
+      optional: true
+    "@typescript/native-preview-win32-arm64":
+      optional: true
+    "@typescript/native-preview-win32-x64":
+      optional: true
+  bin:
+    tsgo: bin/tsgo.js
+  checksum: e84bfe63305c1d053f2925f35395b39ab4671fa64cdcfa252da34fd2c0c49dcc606883c667967ce467445ccf502b285d7c26da355ae3a58cbc7d440c57a24a64
+  languageName: node
+  linkType: hard
+
 "@ungap/structured-clone@npm:^1.2.0":
   version: 1.3.0
   resolution: "@ungap/structured-clone@npm:1.3.0"
@@ -3559,14 +3649,15 @@ __metadata:
     "@babel/core": ^7.25.2
     "@babel/preset-env": ^7.25.3
     "@babel/runtime": ^7.25.0
+    "@notifee/react-native": ^9.1.8
     "@react-native-async-storage/async-storage": ^1.23.1
     "@react-native-community/cli": 20.1.0
     "@react-native-community/cli-platform-android": 20.1.0
     "@react-native-community/cli-platform-ios": 20.1.0
     "@react-native-community/datetimepicker": ^9.1.0
     "@react-native-community/geolocation": ^3.4.0
-    "@react-native-firebase/app": ^24.0.0
-    "@react-native-firebase/messaging": ^24.0.0
+    "@react-native-firebase/app": 24.0.0
+    "@react-native-firebase/messaging": 24.0.0
     "@react-native-picker/picker": ^2.11.4
     "@react-native/babel-preset": 0.84.1
     "@react-native/eslint-config": 0.84.1
@@ -3593,11 +3684,13 @@ __metadata:
     react-native-image-picker: ^8.2.1
     react-native-image-zoom-viewer: ^3.0.1
     react-native-maps: ^1.27.2
+    react-native-razorpay: ^2.3.1
     react-native-restart: ^0.0.27
     react-native-safe-area-context: ^5.5.2
     react-native-screens: ^4.24.0
     react-native-system-navigation-bar: ^2.8.0
     react-native-vector-icons: ^10.3.0
+    react-native-webview: ^13.16.1
     react-native-wheel-color-picker: ^1.3.1
     react-redux: ^9.2.0
     react-test-renderer: 19.2.3
@@ -6239,7 +6332,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"invariant@npm:^2.2.4":
+"invariant@npm:2.2.4, invariant@npm:^2.2.4":
   version: 2.2.4
   resolution: "invariant@npm:2.2.4"
   dependencies:
@@ -8674,6 +8767,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-razorpay@npm:^2.3.1":
+  version: 2.3.1
+  resolution: "react-native-razorpay@npm:2.3.1"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-native: ">=0.66.0"
+  checksum: c0f2b31996d151d595814a1ecd5b306f04ef5652d6a54fc6a19e1c4676a729938cc3604fc87fe8d50efefa8dbbe7553acd1b66df8f461661cae1418b68a35fa3
+  languageName: node
+  linkType: hard
+
 "react-native-restart@npm:^0.0.27":
   version: 0.0.27
   resolution: "react-native-restart@npm:0.0.27"
@@ -8729,6 +8832,20 @@ __metadata:
     fa6-upgrade: bin/fa6-upgrade.sh
     generate-icon: bin/generate-icon.js
   checksum: 5c431fd9a8e6efd355e34ed28ca7fa7eed30e89362280cbd1e474e6d16148c6c37f5c950a525ec0b428c79dc74b9fb7a61171fc509b6ab253e111456f3e49b71
+  languageName: node
+  linkType: hard
+
+"react-native-webview@npm:^13.16.1":
+  version: 13.17.0
+  resolution: "react-native-webview@npm:13.17.0"
+  dependencies:
+    "@typescript/native-preview": ^7.0.0-dev.20260301.1
+    escape-string-regexp: ^4.0.0
+    invariant: 2.2.4
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: b189e32cb5d646fbe8878c5a416ab6b30ca2982199be346bb3a50987993fe7dd7b1cb194797c920ca1fbf7669cc7181049b968f0a9d69aa15e2a44cfc585fd3e
   languageName: node
   linkType: hard
 
