@@ -59,6 +59,8 @@ export default function CartScreen({navigation}) {
   const [loggedinUser, setloggedinUser] = useState(null);
   const [isPointSelected, setIsPointSelected] = useState(false);
   const lastPointsAmount = useRef(null);
+  const [showStockPopup, setShowStockPopup] = useState(false);
+  const [stockMessage, setStockMessage] = useState('');
   /* ================= LOAD CART ================= */
   useEffect(() => {
     loadCart();
@@ -109,7 +111,11 @@ const refreshCart = async (customerId) => {
 
   /* ================= INCREASE ================= */
   const increaseQty = async (item) => {
-
+   if(Number(item.quantity) >= Number(item.stock)){
+    Alert.alert('Insufficiant Stock', 'We have only '+item.stock+ ' item(s) in stock');
+    return;
+   }
+    console.log('Add')
   if (updatingItemId === item.cart_id) return;
 
   setUpdatingItemId(item.cart_id);
@@ -255,22 +261,96 @@ const confirmDeleteItem = (item) => {
     }
   };
 const handlePlaceOrder = () => {
- 
+
   if (!items || items.length === 0) {
     Alert.alert("Cart Empty", "Please add items to cart");
     return;
   }
 
   if (!selectedAddress) {
-    Alert.alert("Address Required", "Please select delivery address");
+    Alert.alert(
+      "Address Required",
+      "Please select delivery address"
+    );
     return;
   }
-  navigation.navigate('PurchaseReviewScreen', {
-    cartItems: items,
-    totalPrice: Number(summary?.grand_total).toFixed(2),
-    address: selectedAddress,
-    summary: summary, // ✅ ADD THIS
-  });
+
+  const stockIssues = items.filter(
+    item =>
+      item.is_out_of_stock ||
+      item.is_stock_insufficient
+  );
+
+  if (stockIssues.length > 0) {
+
+    let message =
+      "The following items have stock issues:\n\n";
+
+    stockIssues.forEach(item => {
+
+      if (item.is_out_of_stock) {
+
+        message +=
+          `• ${item.product_name} (${item.size})\n` +
+          `→ Out of stock (will not be ordered)\n\n`;
+
+      } else if (item.is_stock_insufficient) {
+
+        message +=
+          `• ${item.product_name} (${item.size})\n` +
+          `→ Requested: ${item.requested_quantity || item.quantity}\n` +
+          `→ Available: ${item.stock}\n` +
+          `→ Order will proceed with quantity ${item.stock}\n\n`;
+      }
+    });
+
+    // Alert.alert(
+    //   "Stock Availability",
+    //   message,
+    //   [
+    //     {
+    //       text: "Cancel",
+    //       style: "cancel",
+    //     },
+    //     {
+    //       text: "Continue",
+    //       onPress: () => {
+
+    //         navigation.navigate(
+    //           'PurchaseReviewScreen',
+    //           {
+    //             cartItems: items,
+    //             totalPrice: Number(
+    //               summary?.grand_total
+    //             ).toFixed(2),
+    //             address: selectedAddress,
+    //             summary,
+    //           }
+    //         );
+
+    //       },
+    //     },
+    //   ]
+    // );
+    setStockMessage(message);
+    setShowStockPopup(true);
+
+    return;
+  }
+  const validItems = items.filter(
+  item => !item.is_out_of_stock
+);
+  navigation.navigate(
+    'PurchaseReviewScreen',
+    {
+      cartItems: validItems,
+      totalPrice: Number(
+        summary?.grand_total
+      ).toFixed(2),
+      address: selectedAddress,
+      summary,
+    }
+  );
 };
 
   /* ================= ITEM ================= */
@@ -310,7 +390,7 @@ const handlePlaceOrder = () => {
         </View>
 
         {/* QTY */}
-        <View style={styles.qtyContainer}>
+        {!item.is_out_of_stock && (<View style={styles.qtyContainer}>
 
           <TouchableOpacity
             style={styles.qtyBtn}
@@ -340,7 +420,18 @@ const handlePlaceOrder = () => {
             )}
           </TouchableOpacity>
 
-        </View>
+        </View>)}
+        {item.is_out_of_stock && (
+          <Text style={{color: 'red', fontWeight: 'bold', marginTop: 5}}>
+            {item.stock_message}
+          </Text>
+        )}
+
+        {item.is_stock_insufficient && (
+          <Text style={{color: 'orange', fontWeight: 'bold', marginTop: 5}}>
+            {item.stock_message}
+          </Text>
+        )}
          {item.product_offer > 0 &&(<Text style={[styles.price, { textDecorationLine: 'line-through' }]}>
           ₹ {(item.price)*(item.quantity)}
         </Text>)}
@@ -415,7 +506,7 @@ const renderFooter = useMemo(() => {
           width: '100%',
         }}
       >
-        <PointsSelector
+        {Number(summary?.total_original_price) > 0 && (<PointsSelector
           key={`${summary?.grand_total}-${items.length}`}
           userId={loggedinUser?.id}
           cartTotal={String(
@@ -425,7 +516,7 @@ const renderFooter = useMemo(() => {
           )}
           isPointSelected={isPointSelected}
           onChange={handlePointsChange}
-        />
+        />)}
 
         <CartBillSummary summary={summary} />
       </View>
@@ -535,6 +626,7 @@ const renderFooter = useMemo(() => {
   {/* BUTTON */}
   <TouchableOpacity
     style={styles.placeOrderBtn}
+    disabled ={(Number(summary?.total_original_price)) === 0}
     onPress={handlePlaceOrder}
   >
     <Text style={styles.placeOrderText}>
@@ -557,6 +649,30 @@ const renderFooter = useMemo(() => {
         onOkText="Ok"
         onThirdOptionText="Cancel"
       />
+  <CustomAlert
+      visible={showStockPopup}
+      title="Stock Availability"
+      message={stockMessage}
+      onOk={() => {
+
+        setShowStockPopup(false);
+
+        navigation.navigate(
+          'PurchaseReviewScreen',
+          {
+            cartItems: items,
+            totalPrice: Number(summary?.grand_total).toFixed(2),
+            address: selectedAddress,
+            summary,
+          }
+        );
+      }}
+      onThirdOption={() => {
+        setShowStockPopup(false);
+      }}
+      onOkText="Continue"
+      onThirdOptionText="Cancel"
+    />
     </SafeAreaView>
   );
 }
