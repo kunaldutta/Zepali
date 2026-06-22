@@ -560,6 +560,7 @@ const onWishlistPress = async () => {
 
             {/* DESCRIPTION */}
             <View style={{top:10}}>
+              {console.log('DESC ==', product.selected_color.description)}
             <Text style={styles.title}>{i18n.t('PRODUCTS_DECRIPTION')}</Text>
             <Text style = {{color:colors.descriptioncolor}}>{product.selected_color.description}</Text>
               </View>

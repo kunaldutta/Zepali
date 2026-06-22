@@ -113,12 +113,15 @@ const CategoryCard = memo(({item, onPress}) => (
     <View style={styles.categoryImageContainer}>
       <ImageWithLoader
         uri={item?.image}
-        style={[styles.categoryImg, {top: 10}]}
-        resizeMode="center"
+        style={styles.categoryImg}
+        resizeMode="contain"
       />
     </View>
 
-    <Text style={[styles.categoryText, {top: 8}]} numberOfLines={2}>
+    <Text
+      style={styles.categoryText}
+      numberOfLines={2}
+    >
       {item.category_name}
     </Text>
   </TouchableOpacity>
@@ -562,22 +565,30 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   categoryColumnWrapper: {
-    justifyContent: 'space-between',
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
   },
   categoryBox: {
-    alignItems: 'center',
+    flex: 1,
     margin: 5,
-    backgroundColor: colors.productColumnBackground,
-    borderRadius: 10,
-    padding: 10,
-    width: '30%',
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: {width: 0, height: 2},
   },
   categoryImageContainer: {
-    width: '100%',
+    width: 100,
     height: 100,
     borderRadius: 10,
-    top: 10,
+    top:4,
+    marginBottom: 8,
     overflow: 'hidden',
   },
   categoryImg: {
@@ -633,7 +644,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginTop: 16,
     fontWeight: '500',
-    minHeight: 38,
   },
   productSortDesc: {
     fontSize: 12,
@@ -643,14 +653,14 @@ const styles = StyleSheet.create({
   },
   productPrice: {
     fontSize: 14,
-    marginTop: 2,
+    marginTop: 10,
     fontWeight: 'bold',
     color: '#c17422',
     textDecorationLine: 'line-through',
   },
   productFinalPrice: {
     fontSize: 14,
-    marginTop: 2,
+    marginTop: 5,
     fontWeight: 'bold',
     color: colors.price,
   },
