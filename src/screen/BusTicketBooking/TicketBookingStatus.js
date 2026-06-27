@@ -34,7 +34,7 @@ export default function TicketBookingStatus() {
     const parsedUser = userData ? JSON.parse(userData) : null;
 
     try {
-      const res = await getUserBookings(parsedUser?.id);
+      const res = await getUserBookings();
 
       if (res?.status) {
         setBookings(res.data || []);

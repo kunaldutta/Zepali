@@ -14,6 +14,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import i18n from '../../localization/i18n';
 
 import { getUserPointsDetailAPI } from '../../services/userCreditPointsServices';
+import DeviceInfo from 'react-native-device-info';
+import {Platform} from 'react-native';
 
 const WalletDetails = ({navigation}) => {
   const [data, setData] = useState([]);
@@ -35,7 +37,8 @@ const WalletDetails = ({navigation}) => {
 
 
       const res = await getUserPointsDetailAPI({
-        user_id: parsedUser?.id,
+        app_version: DeviceInfo.getVersion(),
+        platform: Platform.OS,
       });
 
       if (res?.status) {

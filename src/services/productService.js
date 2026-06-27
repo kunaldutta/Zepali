@@ -14,10 +14,10 @@ export const fetchProducts = async () => {
   }
 };
 
-export const fetchCartAPI = async (customerId, pointsAmount = 0) => {
+export const fetchCartAPI = async ( pointsAmount = 0) => {
   try {
 
-    const url = `${API.GET_CART}?customer_id=${customerId}&points_amount=${pointsAmount}&lang=${i18n.locale}`;
+    const url = `${API.GET_CART}?points_amount=${pointsAmount}&lang=${i18n.locale}`;
 
     
 

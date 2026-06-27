@@ -2,6 +2,8 @@ import React from "react";
 import { TouchableOpacity, Text, Alert, ActivityIndicator } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { cancelBooking } from "../services/busService";
+import DeviceInfo from 'react-native-device-info';
+import {Platform} from 'react-native';
 
 export default function CancelBookingButton({
   bookingId,
@@ -31,11 +33,12 @@ export default function CancelBookingButton({
       setLoading(true);
 
       const userData = await AsyncStorage.getItem("USER_DATA");
-      const parsedUser = userData ? JSON.parse(userData) : null;
+
 
       const res = await cancelBooking({
         booking_id: bookingId,
-        user_id: parsedUser?.id
+        app_version: DeviceInfo.getVersion(),
+        platform: Platform.OS,
       });
 
       if (res?.status) {

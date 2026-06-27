@@ -59,7 +59,6 @@ const PointsSelector = ({
       setLoading(true);
 
       const json = await fetchUserPointsAPI(
-        userId,
         cartTotal,
       );
 

@@ -44,10 +44,6 @@ export const savePersonalDetails =
          USER
       ========================= */
 
-      data.append(
-        'user_id',
-        parsedUser.id,
-      );
 
       // ✅ FOR UPDATE DRAFT
 
@@ -679,7 +675,7 @@ export const getMyApplications =
     try {
 
       return await get(
-        `${API.GET_MY_APPLICATIONS}?user_id=${user_id}`
+        `${API.GET_MY_APPLICATIONS}`
       );
 
     } catch (error) {

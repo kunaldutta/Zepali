@@ -62,9 +62,7 @@ const MyApplicationsScreen = ({
           JSON.parse(user);
 
         const response =
-          await getMyApplications(
-            parsedUser.id,
-          );
+          await getMyApplications();
 
 
         if (response.status) {

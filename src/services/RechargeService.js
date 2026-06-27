@@ -13,7 +13,7 @@ export const buyDataPack = async (data) => {
   return await post(API.BUY_DATA_PACK, data);
 };
 
-export const getRechargeHistory = async (data) => {
+export const getRechargeHistory = async () => {
   
-  return await post(API.GET_RECHARGE_HISTORY, data);
+  return await post(API.GET_RECHARGE_HISTORY);
 };

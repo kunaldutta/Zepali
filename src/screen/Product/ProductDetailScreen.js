@@ -25,6 +25,8 @@ import RelatedProducts from '../../components/RelatedProducts';
 import {addToWishlistAPI, checkWishlistAPI, removeFromWishlistAPI} from '../../services/wishlistService';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import CustomAlert from '../../components/CustomAlert';
+import DeviceInfo from 'react-native-device-info';
+import {Platform} from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -52,6 +54,7 @@ export default function ProductDetailScreen({ route, navigation }) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [addingCart, setAddingCart] = useState(false);
   const [wishlistId, setWishlistId] = useState(null);
+  const [selectedVariantRating, setSelectedVariantRating] = useState(0)
   
 
   /* ---------------- FETCH PRODUCT ---------------- */
@@ -130,7 +133,10 @@ useEffect(() => {
   
       setSelectedVariant(variant);
 
-      
+      setSelectedVariantRating({
+        average_rating: variant?.average_rating || 0,
+        total_reviews: variant?.total_reviews || 0,
+      });
 
       // ✅ ALWAYS CALL (NO BLOCKING ON VARIANT)
       
@@ -299,12 +305,13 @@ useEffect(() => {
       ) || selectedColor?.images?.[0];
 
     await dispatch(addToCart({
-      customer_id: parsed.id,
       vendor_id: product.vendor_id,
       prod_id: product.id,
       measurement_id: selectedVariant.measurement_id,
       image_id: validImag?.image_id || 0,
       quantity,
+      app_version: DeviceInfo.getVersion(),
+      platform: Platform.OS,
     })).unwrap();
 
     setShowCartAlert(true);
@@ -479,7 +486,24 @@ const onWishlistPress = async () => {
                       ]}>
                       {product.product_attribute}
                     </Text>
+                    
                   </View>)}
+                  {selectedVariantRating?.average_rating > 0 && (
+                            <View style={[styles.starContainer,{height:50}]}>
+                              {[1,2,3,4,5].map(star => (
+                                <Text
+                                  key={star}
+                                  style={[
+                                    styles.star,
+                                    star <= Math.round(product?.average_rating)
+                                      ? styles.selectedStar
+                                      : null,
+                                  ]}>
+                                  ★
+                                </Text>
+                              ))}
+                            </View>
+                          )}
                 </View>
                 
                 
@@ -545,7 +569,12 @@ const onWishlistPress = async () => {
                 key={`${v.measurement_id}-${v.measurement_value}`}
                   onPress={() => {
                     
-                    setSelectedVariant(v)}}
+                    setSelectedVariant(v)
+                  setSelectedVariantRating({
+                    average_rating: v.average_rating || 0,
+                    total_reviews: v.total_reviews || 0,
+                  });
+                }}
                   style={[
                     styles.sizeBtn,
                     selectedVariant?.measurement_value === v.measurement_value && styles.selectedSize
@@ -714,4 +743,21 @@ colorImage: {
   width: '100%',
   height: '100%'
 },
+starContainer: {
+    top: 20,
+    flexDirection: 'row',
+    justifyContent: 'left',
+  },
+
+  star: {
+   
+    fontSize: 20,
+    color: '#D3D3D3',
+    marginHorizontal: 2,
+  },
+
+  selectedStar: {
+    
+    color: '#bca108',
+  },
 });

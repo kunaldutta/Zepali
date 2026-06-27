@@ -24,6 +24,7 @@ import {usePoints} from '../../components/PointsContext';
 import WalletBadge from '../../components/WalletBadge';
 import DeviceInfo from 'react-native-device-info';
 import {compareVersions} from '../../utils/versionUtils';
+import * as Keychain from 'react-native-keychain';
 
 const MAX_PRODUCTS_PER_SECTION = 15;
 const PRODUCT_CARD_WIDTH = 150;
@@ -32,6 +33,7 @@ const SEE_MORE_WIDTH = 120;
 
 const ImageWithLoader = memo(({uri, style, resizeMode}) => {
   const [loading, setLoading] = useState(true);
+  
   const imageUri = uri ? BASE_URL + uri : null;
 
   if (!imageUri) {
@@ -88,7 +90,25 @@ const ProductCard = memo(({item, onPress}) => (
       <Text style={styles.productPrice}>₹ {item?.min_price}</Text>
     )}
 
+    
     <Text style={styles.productFinalPrice}>₹ {item?.final_price}</Text>
+
+    {item?.average_rating > 0 && (
+    <View style={styles.starContainer}>
+      {[1, 2, 3, 4, 5].map(star => (
+        <Text
+          key={star}
+          style={[
+            styles.star,
+            star <= Math.round(item?.average_rating || 0)
+              ? styles.selectedStar
+              : null,
+          ]}>
+          ★
+        </Text>
+      ))}
+    </View>
+    )}
   </TouchableOpacity>
 ));
 
@@ -144,6 +164,8 @@ const ProductSection = memo(({section, navigation}) => {
 
     return visibleProducts;
   }, [section]);
+
+  
 
   const renderHorizontalItem = useCallback(
     ({item}) => {
@@ -221,6 +243,7 @@ export default function HomeScreen({navigation}) {
   const [userName, setUserName] = useState('');
   const [user, setUser] = useState(null);
   const {fetchUserPoints} = usePoints();
+  const [showReferral, setShowReferral] = useState(false);
 
   useEffect(() => {
     loadHome();
@@ -290,12 +313,13 @@ export default function HomeScreen({navigation}) {
   const loadUsserDetail = async () => {
     const userData = await AsyncStorage.getItem('USER_DATA');
     const parsedUser = userData ? JSON.parse(userData) : null;
+    const credentials = await Keychain.getGenericPassword();
 
     setUser(parsedUser);
     setUserName(parsedUser?.name || '');
 
     if (userData) {
-      const updatedUser = await fetchUserPoints(parsedUser?.id);
+      const updatedUser = await fetchUserPoints();
       if (updatedUser) {
         setUser(updatedUser);
         setUserName(updatedUser?.name || '');
@@ -334,6 +358,7 @@ export default function HomeScreen({navigation}) {
       setCategories(apiCategories);
       setProducts(apiProducts);
       setProductSections(sections);
+      setShowReferral(json?.referral?.show_referral ?? false);
 
       const platformVersion =
         Platform.OS === 'ios' ? json?.versions?.ios : json?.versions?.android;
@@ -423,6 +448,21 @@ export default function HomeScreen({navigation}) {
   const ListHeader = useMemo(
     () => (
       <View>
+        {showReferral && (
+          <TouchableOpacity
+            style={styles.referralButton}
+            onPress={() => navigation.navigate('AddReferralCodeScreen')}>
+            <Ionicons
+              name="gift-outline"
+              size={22}
+              color="#fff"
+            />
+
+            <Text style={styles.referralButtonText}>
+              Have a Referral Code? Enter Here
+            </Text>
+          </TouchableOpacity>
+        )}
         {categories?.length > 0 && (
           <Text style={globalStyles.title}>{i18n.t('CATEGORIES')}</Text>
         )}
@@ -721,4 +761,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f1f1f1',
   },
+   starContainer: {
+    flexDirection: 'row',
+    justifyContent: 'left',
+    top: 5,
+  },
+
+  star: {
+    fontSize: 20,
+    color: '#D3D3D3',
+    marginHorizontal: 2,
+  },
+
+  selectedStar: {
+    color: '#bca108',
+  },
+  referralButton: {
+  marginHorizontal: 12,
+  marginTop: 10,
+  marginBottom: 10,
+  backgroundColor: '#087b92',
+  borderRadius: 12,
+  paddingVertical: 14,
+  paddingHorizontal: 16,
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+referralButtonText: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: '700',
+  marginLeft: 8,
+},
 });

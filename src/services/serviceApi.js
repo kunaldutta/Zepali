@@ -1,6 +1,7 @@
 import API from '../network/apiEndpoints';
 import { post } from '../network/apiService';
 import i18n from '../localization/i18n';
+import { Platform } from 'react-native';
 
 export const getServices = async () => {
   return await post(API.GET_SERVICES, {
@@ -25,8 +26,8 @@ export const getProfileMenuAPI = async () => {
 
 export const getAppConfigAPI = async () => {
   try {
-
-    return await post(API.GET_APP_CONFIG, {});
+    const platform = Platform.OS
+    return await post(API.GET_APP_CONFIG, {platform});
 
   } catch (err) {
 

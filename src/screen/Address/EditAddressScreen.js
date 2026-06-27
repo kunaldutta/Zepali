@@ -136,7 +136,6 @@ const EditAddressScreen = ({ route, navigation }) => {
 
     const payload = {
       address_id: address.id, // verify this key
-      user_id: userId,
       user_name: userName,
       address_1: address1,
       address_2: address2,

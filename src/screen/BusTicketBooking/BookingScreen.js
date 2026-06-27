@@ -35,11 +35,14 @@ import {
 import { BASE_URL } from "../../network/apiClient";
 import TermsCheckbox from "../../components/TermsCheckbox";
 
+
 export default function BookingScreen({ route, navigation }) {
   const { bus, date } = route.params;
   const inputRefs = useRef([]);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [termsVersion, setTermsVersion] = useState(null);
+  const [onlinePaymentAndroid, setOnlinePaymentAndroid] = useState(0)
+  const [onlinePaymentiOS, setOnlinePaymentiOS] = useState(0)
 
   const [passengers, setPassengers] = useState([
     { name: "", age: "", gender: "", phone: "" },
@@ -88,6 +91,8 @@ export default function BookingScreen({ route, navigation }) {
     termsAndConditions({ type: "bus_booking" })
     .then((res) => {
       setTermsVersion(res?.data?.version);
+      setOnlinePaymentAndroid(res?.online_payment.android);
+      setOnlinePaymentiOS(res?.online_payment.ios);
       setTermsUrl(BASE_URL + res.data.content);
     })
     .catch((e) => console.log(e));
@@ -177,6 +182,7 @@ export default function BookingScreen({ route, navigation }) {
     return;
   }
   const pltFormVersion   = Platform.OS === 'ios' ? config?.versions?.ios : config?.versions?.android;
+
   const currentVersion = DeviceInfo.getVersion();
       if (
           compareVersions(
@@ -229,7 +235,6 @@ export default function BookingScreen({ route, navigation }) {
 
     // STEP 2: CREATE TEMP BOOKING
     const tempRes = await createTempBooking({
-      user_id: parsedUser.id,
       bus_id: bus.bus_id,
       schedule_id: bus.schedule_id,
       booking_date: date,
@@ -237,6 +242,8 @@ export default function BookingScreen({ route, navigation }) {
       total_amount: totalAmount,
       razorpay_order_id: orderRes.order_id,
       terms_condition_version: termsVersion, // 🔥 send version or identifier of T&C
+      app_version: DeviceInfo.getVersion(),
+      platform: Platform.OS,
     });
 
     if (!tempRes?.status && tempRes?.reason === 'Invalid User') {
@@ -550,6 +557,7 @@ export default function BookingScreen({ route, navigation }) {
                         <TouchableOpacity
                         style={[globalStyles.button, { height: 40, padding:6, width: '100%' }]}
                           onPress={bookTicket}
+                          disabled = {Platform.OS === 'android' ? onlinePaymentAndroid === 0 : onlinePaymentiOS === 0 }
                         >
                           <Text style={globalStyles.buttonText}>{i18n.t("BOOK_NOW")}</Text>
                         </TouchableOpacity>

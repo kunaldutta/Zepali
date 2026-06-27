@@ -50,6 +50,7 @@ const API = {
   GET_RECHARGE_HISTORY:"/get_recharge_history.php",
   GET_USER_POINTS_FOR_USE:"/get_user_points_for_use.php",
   PLACE_ORDER: 'place_order.php',
+  GET_ORDERS: '/get_orders.php',
   CREATE_RAZORPAY_ORDER:'create_razorpay_order.php',
   VERIFY_ORDER_PAYMENT:'verify_order_payment.php',
   CANCEL_ORDER_ITEM: '/order_cancel_return/cancel_order_item.php',
@@ -80,6 +81,10 @@ const API = {
   GET_SETTING_MENU: '/setting/get_setting_menu.php',
   GET_APP_CONFIG: '/app_config.php',
   VALIDATE_USER: '/validate_user.php',
+  SUBMIT_FEEDBACK: '/feedback/submit_feedback.php',
+  REFRESH_TOKEN: '/refresh_token.php',
+  GET_REFERRAL_CODE: '/get_referral_code.php',
+  APPLY_REFERRAL_CODE: '/apply_referral_code.php',
 };
 
 export default API;

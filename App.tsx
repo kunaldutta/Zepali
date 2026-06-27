@@ -50,6 +50,9 @@ import MyApplicationsScreen from './src/screen/PrawasiCard/MyApplicationsScreen'
 import ReturnOrderScreen from './src/screen/Orders/ReturnOrderScreen';
 import ForceUpdateScreen from './src/screen/ForceUpdate/ForceUpdateScreen';
 import ServicesScreen from './src/screen/Services/ServicesScreen';
+import FeedbackScreen from './src/screen/Orders/FeedbackScreen';
+import ReferFriendScreen from './src/screen/ReferalScreen/ReferFriendScreen';
+import AddReferralCodeScreen from './src/screen/ReferalScreen/AddReferralCodeScreen';
 
 import {
   requestUserPermission,
@@ -153,7 +156,7 @@ const RootApp = () => {
 
       if (parsedUser?.id) {
         setIsLoggedIn(true);
-        dispatch(fetchCart(parsedUser.id));
+        dispatch(fetchCart());
       } else {
         setIsLoggedIn(false);
         dispatch({ type: 'cart/clearCart' });
@@ -223,6 +226,10 @@ const RootApp = () => {
             <Stack.Screen name="ReturnOrderScreen" component={ReturnOrderScreen} />
               <Stack.Screen name="ForceUpdateScreen" component={ForceUpdateScreen} />
               <Stack.Screen name="ServicesScreen" component={ServicesScreen} />
+              <Stack.Screen name="FeedbackScreen" component={FeedbackScreen} />
+              <Stack.Screen name="ReferFriendScreen" component={ReferFriendScreen}/>
+              <Stack.Screen name="AddReferralCodeScreen" component={AddReferralCodeScreen}/>
+              
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

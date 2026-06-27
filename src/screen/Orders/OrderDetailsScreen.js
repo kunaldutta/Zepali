@@ -18,6 +18,8 @@ import {cancelOrderItemAPI} from '../../services/orderService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomAlert from '../../components/CustomAlert';
 import {usePoints} from  '../../components/PointsContext'
+import DeviceInfo from 'react-native-device-info';
+import {Platform} from 'react-native';
 
 const BASE_URL = 'https://zepali.net/IndoNep';
 
@@ -111,10 +113,10 @@ const OrderDetailsScreen = ({route, navigation}) => {
 
         order_item_id: item.id,
 
-        customer_id: parsedUser.id,
-
         reason:
           'Customer changed mind',
+        app_version: DeviceInfo.getVersion(),
+        platform: Platform.OS,
       });
 
     if (response?.status) {
@@ -127,7 +129,7 @@ const OrderDetailsScreen = ({route, navigation}) => {
       await fetchOrderDetails();
 
       if (parsedUser?.id) {
-        await fetchUserPoints(parsedUser.id);
+        await fetchUserPoints();
       }
 
     } else {
@@ -251,6 +253,26 @@ const OrderDetailsScreen = ({route, navigation}) => {
           </Text>
 
         </TouchableOpacity>
+        {
+          item.item_status === 'DELIVERED' && (
+            <TouchableOpacity
+                style={styles.feedbackButton}
+                onPress={() =>
+                  navigation.navigate(
+                    'FeedbackScreen',
+                    {
+                      product: item
+                    }
+                  )
+                }>
+
+                <Text style={styles.feedbackText}>
+                  Rate Product
+                </Text>
+
+            </TouchableOpacity>
+          )
+          }
               {isAlertVisible && (
           <CustomAlert
             visible={isAlertVisible}
@@ -613,4 +635,16 @@ returnButtonText: {
 returnButtonTextDisabled: {
   color: '#666666',
 },
+feedbackButton:{
+  marginTop:18,
+  backgroundColor:'#FF9800',
+  paddingVertical:8,
+  borderRadius:8,
+  alignItems:'center'
+},
+
+feedbackText:{
+  color:'#fff',
+  fontWeight:'600'
+}
 });

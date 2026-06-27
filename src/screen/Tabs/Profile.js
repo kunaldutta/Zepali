@@ -21,6 +21,8 @@ import { BASE_URL } from '../../network/apiClient';
 
 import { getProfileMenuAPI } from '../../services/serviceApi';
 import DeviceInfo from 'react-native-device-info';
+import * as Keychain from 'react-native-keychain';
+import {forceLogout} from '../../utils/authUtils';
 
 export default function Profile({ navigation }) {
   const termsUrl = `${BASE_URL}/delete-account.html`;
@@ -83,16 +85,7 @@ export default function Profile({ navigation }) {
           text: 'Logout',
           onPress: async () => {
             try {
-              await AsyncStorage.multiRemove([
-                'USER_DATA',
-                'SELECTED_ADDRESS',
-                'SELECTED_CITY',
-                'TOKEN',
-              ]);
-
-              if (globalThis.refreshApp) {
-                globalThis.refreshApp();
-              }
+              await forceLogout();
             } catch (error) {
               console.log(error);
             }

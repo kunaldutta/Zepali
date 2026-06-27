@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import {
   View,
@@ -32,6 +32,7 @@ import { useDispatch } from 'react-redux';
 import { clearCart } from '../../redux/store/slices/cartSlice';
 import {forceLogout} from '../../utils/authUtils'
 import {usePoints} from  '../../components/PointsContext'
+import {getAppConfigAPI} from '../../services/serviceApi'
 
 import {
 
@@ -54,12 +55,49 @@ export default function PurchaseReviewScreen({
     address,
     summary,
   } = route.params;
-
+  const [onlinePaymentEnabled, setOnlinePaymentEnabled] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState(summary.
     grand_total > 0 ? 'ONLINE' : 'COD');
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
  
+  useEffect(() => {
+  loadAppConfig();
+}, []);
+
+const loadAppConfig = async () => {
+
+  try {
+
+    const response = await getAppConfigAPI();
+
+    console.log('APP CONFIG:', response);
+
+    if (response?.status) {
+
+      const onlinePaymentStatus = Number(
+        response?.data?.online_payment_status
+      );
+
+      setOnlinePaymentEnabled(
+        onlinePaymentStatus === 1
+      );
+
+      if (
+        onlinePaymentStatus === 0 &&
+        paymentMethod === 'ONLINE'
+      ) {
+        setPaymentMethod('COD');
+      }
+    }
+
+  } catch (e) {
+
+    console.log('APP CONFIG ERROR:', e);
+
+  }
+
+};
 
   /* ================= PLACE ORDER ================= */
 
@@ -87,7 +125,16 @@ export default function PurchaseReviewScreen({
             );
     };
   const confirmOrder = async () => {
-
+    if (
+  paymentMethod === 'ONLINE' &&
+  !onlinePaymentEnabled
+) {
+  Alert.alert(
+    'Online Payment',
+    'Online payment is currently unavailable.'
+  );
+  return;
+}
   try {
 
     if (loading) return;
@@ -122,9 +169,6 @@ export default function PurchaseReviewScreen({
 
     const response =
   await placeOrderAPI({
-
-    customer_id:
-      parsedUser.id,
 
     address_id:
       address?.id,
@@ -226,7 +270,7 @@ export default function PurchaseReviewScreen({
       dispatch(clearCart());
       if (userData && Number(summary.points_discount) > 0) {
 
-      fetchUserPoints(parsedUser?.id); // ✅ auto load
+      fetchUserPoints(); // ✅ auto load
     }
       Alert.alert(
 
@@ -375,7 +419,7 @@ export default function PurchaseReviewScreen({
       const parsedUser = userData ? JSON.parse(userData) : null;
       if (userData && Number(summary.points_discount) > 0) {
 
-      fetchUserPoints(parsedUser?.id); // ✅ auto load
+      fetchUserPoints(); // ✅ auto load
     }
           Alert.alert(
 
@@ -692,8 +736,20 @@ export default function PurchaseReviewScreen({
           {/* ONLINE */}
 
           <TouchableOpacity
-            style={[styles.paymentOption, { opacity: Number(summary?.grand_total || 0) <= 0 ? 0.5 : 1 }]}
-            disabled={Number(summary?.grand_total || 0) <= 0}
+            style={[
+              styles.paymentOption,
+              {
+                opacity:
+                  (!onlinePaymentEnabled ||
+                    Number(summary?.grand_total || 0) <= 0)
+                    ? 0.5
+                    : 1,
+              },
+            ]}
+            disabled={
+              !onlinePaymentEnabled ||
+              Number(summary?.grand_total || 0) <= 0
+            }
             onPress={() => setPaymentMethod('ONLINE')}
           >
 
@@ -709,9 +765,22 @@ export default function PurchaseReviewScreen({
                 color={colors.primary}
               />
 
-              <Text style={styles.paymentText}>
-                Pay Online
-              </Text>
+              <View>
+                  <Text style={styles.paymentText}>
+                    Pay Online
+                  </Text>
+
+                  {!onlinePaymentEnabled && (
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        color: 'red',
+                        marginLeft: 10,
+                      }}>
+                      Currently unavailable
+                    </Text>
+                  )}
+                </View>
 
             </View>
 

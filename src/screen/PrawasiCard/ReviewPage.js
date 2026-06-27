@@ -180,9 +180,6 @@ const loadCardCost =
             application_id:
               applicationId,
 
-            user_id:
-              parsedUser.id,
-
             payment_id:
               paymentData
                 .razorpay_payment_id,

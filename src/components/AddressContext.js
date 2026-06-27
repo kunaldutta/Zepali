@@ -32,7 +32,7 @@ export const AddressProvider = ({ children }) => {
         setUserId(parsedUser.id);
 
         // ✅ FIX: call immediately (no timing issue)
-        fetchAddresses(parsedUser.id);
+        fetchAddresses();
       }
     } catch (err) {
       console.log("User load error:", err);
@@ -71,7 +71,7 @@ export const AddressProvider = ({ children }) => {
     setError(null);
 
     try {
-      const response = await fetchAddressesAPI(id);
+      const response = await fetchAddressesAPI();
 
       if (response?.success) {
         const addressList = response.addresses || [];

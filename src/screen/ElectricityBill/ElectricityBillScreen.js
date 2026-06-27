@@ -429,7 +429,7 @@ const ElectricityBillScreen = ({navigation}) => {
     const user = await AsyncStorage.getItem("USER_DATA");
       const parsedUser = user ? JSON.parse(user) : null;
     const payload = {
-      user_id: parsedUser?.id,
+      
       bill_amount:
         billData?.total_due_amount,
 
@@ -537,8 +537,6 @@ const ElectricityBillScreen = ({navigation}) => {
         
         const paymentPayload = {
 
-          user_id:
-            parsedUser?.id,
 
           consumer_name:
             billData?.consumer_name,
@@ -632,6 +630,7 @@ const ElectricityBillScreen = ({navigation}) => {
             'Success',
             'Electricity bill paid successfully',
           );
+          navigation.goBack();
 
         } else {
 
