@@ -90,7 +90,6 @@ export default function CartScreen({navigation}) {
 
     await dispatch(
       fetchCart({
-        customer_id: parsedUser.id,
         points_amount: pointsAmount,
       }),
     ).unwrap();
@@ -100,10 +99,9 @@ export default function CartScreen({navigation}) {
     Alert.alert('Error', 'Failed to load cart');
   }
 };
-const refreshCart = async (customerId) => {
+const refreshCart = async () => {
   await dispatch(
     fetchCart({
-      customer_id: customerId,
       points_amount: lastPointsAmount.current || 0,
     }),
   ).unwrap();
@@ -129,7 +127,6 @@ const refreshCart = async (customerId) => {
     if (!parsedUser?.id) return;
 
     const payload = {
-      customer_id: parsedUser.id,
       prod_id: item.product_id,
       measurement_id: item.measurement_id,
       image_id: item.image_id,
@@ -138,7 +135,7 @@ const refreshCart = async (customerId) => {
 
     await dispatch(updateCart(payload)).unwrap();
 
-    await refreshCart(parsedUser.id);
+    await refreshCart();
     
 
   } catch (error) {
@@ -172,7 +169,6 @@ const deleteItem = async (item) => {
     if (!parsedUser?.id) return;
 
     const payload = {
-      customer_id: parsedUser.id,
       prod_id: item.product_id,
       measurement_id: item.measurement_id,
       image_id: item.image_id,
@@ -180,7 +176,7 @@ const deleteItem = async (item) => {
     };
     await dispatch(updateCart(payload)).unwrap();
 
-    await refreshCart(parsedUser.id);
+    await refreshCart();
 
   } catch (error) {
 
@@ -233,7 +229,6 @@ const confirmDeleteItem = (item) => {
       if (!parsedUser?.id) return;
 
       const payload = {
-        customer_id: parsedUser.id,
         prod_id: item.product_id,
         measurement_id: item.measurement_id,
         image_id: item.image_id,
@@ -242,7 +237,7 @@ const confirmDeleteItem = (item) => {
 
       await dispatch(updateCart(payload)).unwrap();
 
-      await refreshCart(parsedUser.id);
+      await refreshCart();
 
     } catch (error) {
 

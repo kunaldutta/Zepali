@@ -14,6 +14,7 @@ import {useNavigation} from '@react-navigation/native';
 import { globalStyles, colors } from '../../styles/globalStyles';
 import AppHeader from "../../components/AppHeader";
 import i18n from '../../localization/i18n';
+import {getOrdersAPI} from '../../services/orderService';
 
 
 const BASE_URL = 'https://zepali.net/IndoNep';
@@ -31,27 +32,27 @@ const MyOrdersScreen = () => {
 
   const fetchOrders = async () => {
     try {
-      const user = await AsyncStorage.getItem('USER_DATA');
-      const parsedUser = user ? JSON.parse(user) : null;
+      console.log('Call')
+      const json = await getOrdersAPI();
 
-      if (!parsedUser?.id) {
-        return;
+      if (json?.status === 'success') {
+
+        setOrders(json.orders || []);
+
       }
 
-      const response = await fetch(
-        `${BASE_URL}/get_orders.php?customer_id=${parsedUser.id}`,
+    } catch (error) {
+
+      console.log(
+        'fetchOrders ERROR:',
+        error,
       );
 
-      const json = await response.json();
-
-      if (json.status === 'success') {
-        setOrders(json.orders || []);
-      }
-    } catch (error) {
-      console.log('fetchOrders ERROR:', error);
     } finally {
+
       setLoading(false);
       setRefreshing(false);
+
     }
   };
 

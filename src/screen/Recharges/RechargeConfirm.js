@@ -152,7 +152,6 @@ const RechargeConfirm = ({ route, navigation }) => {
       // ✅ STEP 1: Create transaction
       const paymentRes = await createPayment({
         amount_npr: payload.amount,
-        user_id: parsedUser.id,
         recharge_type: payload.type,
         number: payload.number,
 
@@ -225,6 +224,7 @@ const RechargeConfirm = ({ route, navigation }) => {
               "Payment Successful",
               "Your payment is successful. Recharge is being processed."
             );
+            navigation.goBack();
 
           } catch (err) {
             showAlert(

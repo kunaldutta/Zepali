@@ -24,6 +24,7 @@ import API from '../network/apiEndpoints';
 import messaging from '@react-native-firebase/messaging';
 import { sendOtpApi, verifyOtpApi } from '../services/otpService';
 import { getAppConfigAPI } from '../services/serviceApi';
+import * as Keychain from 'react-native-keychain';
 
 //import auth from '@react-native-firebase/auth';
 
@@ -260,12 +261,21 @@ export default function Login({navigation, route}) {
         uuid: uuid,
         fcm_token: fcmToken,
       });
-
+      console.log("LOGIN RESPONSE =", json);
       if (json?.status) {
 
         await AsyncStorage.setItem(
           'USER_DATA',
           JSON.stringify(json.user),
+        );
+
+        await Keychain.setGenericPassword(
+          'zepali',
+          JSON.stringify({
+            access_token: json.access_token,
+            refresh_token: json.refresh_token,
+            expires_in: json.expires_in,
+          })
         );
 
         setShowLanguageModal(true);

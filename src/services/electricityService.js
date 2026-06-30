@@ -1,7 +1,4 @@
-import axios from 'axios';
-
-import {BASE_URL} from '../network/apiClient';
-
+import apiClient from '../network/apiClient';
 import API from '../network/apiEndpoints';
 
 /* =========================
@@ -9,17 +6,15 @@ import API from '../network/apiEndpoints';
 ========================= */
 
 export const getCountersAPI = async () => {
-
   try {
 
-    const response = await axios.get(
-      `${BASE_URL}${API.GET_COUNTERS}`,
+    const response = await apiClient.get(
+      API.GET_COUNTERS,
     );
 
     return response.data;
 
   } catch (error) {
-
 
     return {
       status: false,
@@ -32,27 +27,17 @@ export const getCountersAPI = async () => {
    GET BILL DETAILS
 ========================= */
 
-export const getBillDetailsAPI = async (
-  data,
-) => {
-
+export const getBillDetailsAPI = async data => {
   try {
 
-    const response = await axios.post(
-      `${BASE_URL}${API.GET_BILL_DETAILS}`,
+    const response = await apiClient.post(
+      API.GET_BILL_DETAILS,
       data,
-      {
-        headers: {
-          'Content-Type':
-            'application/json',
-        },
-      },
     );
 
     return response.data;
 
   } catch (error) {
-
 
     return {
       status: false,
@@ -65,24 +50,12 @@ export const getBillDetailsAPI = async (
    GET SERVICE CHARGE
 ========================= */
 
-export const getServiceChargeAPI =
-async data => {
-
+export const getServiceChargeAPI = async data => {
   try {
 
-    const response =
-      await axios.post(
-
-      `${BASE_URL}${API.GET_SERVICE_CHARGE}`,
-
+    const response = await apiClient.post(
+      API.GET_SERVICE_CHARGE,
       data,
-
-      {
-        headers: {
-          'Content-Type':
-            'application/json',
-        },
-      },
     );
 
     return response.data;
@@ -100,28 +73,17 @@ async data => {
     };
   }
 };
+
 /* =========================
    CREATE RAZORPAY ORDER
 ========================= */
 
-export const createElectricityOrderAPI =
-async data => {
-
+export const createElectricityOrderAPI = async data => {
   try {
 
-    const response =
-      await axios.post(
-
-      `${BASE_URL}${API.CREATE_ELECTRICITY_ORDER}`,
-
+    const response = await apiClient.post(
+      API.CREATE_ELECTRICITY_ORDER,
       data,
-
-      {
-        headers: {
-          'Content-Type':
-            'application/json',
-        },
-      },
     );
 
     return response.data;
@@ -144,24 +106,14 @@ async data => {
    MAKE PAYMENT
 ========================= */
 
-export const makePaymentAPI =
-async data => {
-
+export const makePaymentAPI = async data => {
   try {
 
-    const response =
-      await axios.post(
+    console.log('DATA ==', data);
 
-      `${BASE_URL}${API.MAKE_PAYMENT}`,
-
+    const response = await apiClient.post(
+      API.MAKE_PAYMENT,
       data,
-
-      {
-        headers: {
-          'Content-Type':
-            'application/json',
-        },
-      },
     );
 
     return response.data;
@@ -174,37 +126,25 @@ async data => {
     );
 
     return {
-
       status: false,
-
       message:
+        error?.response?.data?.message ||
         error?.message ||
         'Payment failed',
     };
   }
 };
+
 /* =========================
    GET NEW CONSUMER ID
 ========================= */
 
-export const getNewConsumerIdAPI =
-async data => {
-
+export const getNewConsumerIdAPI = async data => {
   try {
 
-    const response =
-      await axios.post(
-
-      `${BASE_URL}${API.GET_NEW_CONSUMER_ID}`,
-
+    const response = await apiClient.post(
+      API.GET_NEW_CONSUMER_ID,
       data,
-
-      {
-        headers: {
-          'Content-Type':
-            'application/json',
-        },
-      },
     );
 
     return response.data;
@@ -217,11 +157,8 @@ async data => {
     );
 
     return {
-
       status: false,
-
-      message:
-        error.message,
+      message: error.message,
     };
   }
 };
@@ -230,24 +167,12 @@ async data => {
    MAKE PAYMENT V2
 ========================= */
 
-export const makePaymentV2API =
-async data => {
-
+export const makePaymentV2API = async data => {
   try {
 
-    const response =
-      await axios.post(
-
-      `${BASE_URL}${API.MAKE_PAYMENT_V2}`,
-
+    const response = await apiClient.post(
+      API.MAKE_PAYMENT_V2,
       data,
-
-      {
-        headers: {
-          'Content-Type':
-            'application/json',
-        },
-      },
     );
 
     return response.data;
@@ -260,10 +185,9 @@ async data => {
     );
 
     return {
-
       status: false,
-
       message:
+        error?.response?.data?.message ||
         error?.message ||
         'Payment failed',
     };

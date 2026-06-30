@@ -60,7 +60,7 @@ export const fetchCart = createAsyncThunk(
         customerId = payload;
       }
 
-      const res = await fetchCartAPI(customerId, pointsAmount);
+      const res = await fetchCartAPI(pointsAmount);
 
       return res;
 
@@ -90,9 +90,9 @@ export const updateCart = createAsyncThunk(
       const res = await updateCartAPI(payload);
 
       /* ✅ REFRESH CART AFTER UPDATE */
-      if (payload.customer_id) {
-        dispatch(fetchCart(payload.customer_id));
-      }
+      
+        dispatch(fetchCart());
+      
 
       return res;
 

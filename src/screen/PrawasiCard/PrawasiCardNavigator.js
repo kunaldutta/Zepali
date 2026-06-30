@@ -120,9 +120,7 @@ useEffect(() => {
       }
 
       const response =
-        await validateUserAPI({
-          user_id: parsedUser.id,
-        });
+        await validateUserAPI();
 
       if (!response?.status) {
 

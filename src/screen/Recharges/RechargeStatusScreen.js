@@ -30,7 +30,7 @@ export default function RechargeStatusScreen({navigation}) {
       const userData = await AsyncStorage.getItem('USER_DATA');
       const parsedUser = userData ? JSON.parse(userData) : null;
       
-      const response = await getRechargeHistory({ user_id: parsedUser?.id });
+      const response = await getRechargeHistory();
 
       // depending on your API structure
       if (response?.status) {

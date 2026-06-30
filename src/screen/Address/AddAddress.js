@@ -29,6 +29,7 @@ import {
   getCityPincodesAPI,
   getCitiesAPI,
 } from '../../services/addressService';
+import {forceLogout} from '../../utils/authUtils'
 
 
 const AddAddress = ({ route, navigation }) => {
@@ -38,7 +39,6 @@ const AddAddress = ({ route, navigation }) => {
   const [currentMapAddress, setCurrentMapAddress] = useState('')
   const [locationLoading, setLocationLoading] = useState(false);
   const [userData, setUserData] = useState({
-    user_id: '',
     user_name: '',
     address_1: '',
     address_2: address_1 +  address_2,
@@ -121,7 +121,6 @@ const AddAddress = ({ route, navigation }) => {
         if (parsedUser?.id) {
           setUserData(prev => ({
             ...prev,
-            user_id: String(parsedUser.id),
           }));
         }
       } catch (err) {
@@ -307,6 +306,18 @@ const openMapWithCurrentLocation = async () => {
     console.log("MAP OPEN ERROR:", err);
   }
 };
+const showInvalidUserAlert = (message) => {
+          Alert.alert(
+            'Account Issue',
+            message || 'Please login again',
+            [
+              {
+                text: 'OK',
+                onPress: forceLogout,
+              },
+            ]
+          );
+  };
   /* ✅ ADD ADDRESS API */
   const sendDataToServer = async () => {
     if (!/^\d{10}$/.test(userData.contact_no)) {
@@ -334,6 +345,12 @@ const openMapWithCurrentLocation = async () => {
         ],
       );
     } else {
+      if (!response?.status && response?.reason === 'Invalid User') {
+          //need logout
+          showInvalidUserAlert(response?.message)
+
+          return;
+      }
       Alert.alert('Error', response?.message || 'Something went wrong');
     }
 

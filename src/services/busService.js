@@ -39,7 +39,6 @@ export const bookBusTicket = async ({ bus_id, schedule_id, booking_date, passeng
     const parsedUser = JSON.parse(user);
     
     return await post(API.BOOK_TICKET, {
-      user_id: parsedUser?.id,
       bus_id: bus_id,
       schedule_id: schedule_id,
       booking_date: booking_date,
@@ -58,9 +57,8 @@ export const getCities = async () => {
   });
 };
 
-export const getUserBookings = async (user_id) => {
+export const getUserBookings = async () => {
   return await get(API.GET_USER_BOOKINGS, {
-    user_id: user_id,
     lang: i18n.locale,   // ✅ ADD THIS
   });
 };

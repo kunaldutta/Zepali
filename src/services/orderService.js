@@ -1,8 +1,10 @@
-import { post } from '../network/apiService';
+import { get, post } from '../network/apiService';
 
 import API from '../network/apiEndpoints';
 
 import i18n from '../localization/i18n';
+import DeviceInfo from 'react-native-device-info';
+import {Platform} from 'react-native';
 
 /* =========================
    PLACE ORDER
@@ -17,8 +19,17 @@ export const placeOrderAPI = async data => {
       ...data,
 
       lang: i18n.locale,
+      app_version: DeviceInfo.getVersion(),
+      platform: Platform.OS,
     },
   );
+};
+/* =========================
+   GET ORDER
+========================= */
+
+export const getOrdersAPI = async () => {
+  return await get(API.GET_ORDERS);
 };
 
 /* =========================

@@ -132,6 +132,22 @@ export default function CategoryProductScreen({route, navigation}){
       <Text style={styles.productFinalPrice}>
         ₹ {item.final_price}
       </Text>
+      {item?.average_rating > 0 && (
+        <View style={styles.starContainer}>
+          {[1,2,3,4,5].map(star => (
+            <Text
+              key={star}
+              style={[
+                styles.star,
+                star <= Math.round(item?.average_rating)
+                  ? styles.selectedStar
+                  : null,
+              ]}>
+              ★
+            </Text>
+          ))}
+        </View>
+      )}
     </TouchableOpacity>
   );
 
@@ -237,6 +253,21 @@ const styles = StyleSheet.create({
   marginTop:2,
   fontWeight:"bold",
   color:colors.price
+  },
+  starContainer: {
+    flexDirection: 'row',
+    justifyContent: 'left',
+    top: 5,
+  },
+
+  star: {
+    fontSize: 20,
+    color: '#D3D3D3',
+    marginHorizontal: 2,
+  },
+
+  selectedStar: {
+    color: '#bca108',
   },
 
 });

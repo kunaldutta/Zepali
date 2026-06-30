@@ -9,9 +9,9 @@ export const PointsProvider = ({children}) => {
   const [rupees, setRupees] = useState(0);
 
   // 🔥 MAIN FUNCTION
-  const fetchUserPoints = async (user_id) => {
+  const fetchUserPoints = async () => {
     try {
-      const res = await getUserPointsAPI({user_id});
+      const res = await getUserPointsAPI();
 
       if (res?.status) {
         setPoints(res?.data.total_points);

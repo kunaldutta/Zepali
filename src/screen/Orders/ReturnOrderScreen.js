@@ -113,9 +113,6 @@ const isOnlinePayment =
           order_item_id:
             orderItemId,
 
-          customer_id:
-            parsedUser.id,
-
           reason,
 
           refund_preference:
