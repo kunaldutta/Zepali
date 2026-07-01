@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Keyboard,
 } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -53,6 +54,23 @@ const isOnlinePayment =
 
   const [loading, setLoading] =
     useState(false);
+  const scrollRef = useRef(null);
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+            const showSub = Keyboard.addListener('keyboardDidShow', () => {
+              setKeyboardVisible(true);
+            });
+    
+            const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+              setKeyboardVisible(false);
+            });
+    
+            return () => {
+              showSub.remove();
+              hideSub.remove();
+            };
+        }, []);
 
   const submitReturnRequest = async () => {
     try {
@@ -197,9 +215,10 @@ const isOnlinePayment =
       />
 
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={
-          styles.container
-        }>
+          [styles.container, {paddingBottom: isKeyboardVisible ? 300 : 150}]
+        }  >
 
         {/* REASON */}
 
@@ -334,6 +353,14 @@ const isOnlinePayment =
               style={
                 styles.input
               }
+              onFocus={() => {
+                setTimeout(() => {
+                scrollRef.current?.scrollTo({
+                  y: 350,
+                  animated: true,
+                });
+              }, 150);
+            }}
               value={upiId}
               onChangeText={
                 setUpiId
@@ -357,6 +384,14 @@ const isOnlinePayment =
               style={
                 styles.input
               }
+              onFocus={() => {
+                setTimeout(() => {
+                  scrollRef.current?.scrollTo({
+                    y: 350,
+                    animated: true,
+                  });
+                }, 150);
+              }}
               placeholder="Account Holder Name"
               placeholderTextColor={colors.placeholderTextColor || '#A1887F' }
               value={
@@ -371,6 +406,14 @@ const isOnlinePayment =
               style={
                 styles.input
               }
+              onFocus={() => {
+                setTimeout(() => {
+                  scrollRef.current?.scrollTo({
+                    y: 350,
+                    animated: true,
+                  });
+                }, 150);
+              }}
               placeholder="Bank Name"
               placeholderTextColor={colors.placeholderTextColor || '#A1887F' }
               value={bankName}
@@ -383,6 +426,14 @@ const isOnlinePayment =
               style={
                 styles.input
               }
+              onFocus={() => {
+                setTimeout(() => {
+                  scrollRef.current?.scrollTo({
+                    y: 350,
+                    animated: true,
+                  });
+                }, 150);
+              }}
               placeholder="Account Number"
               placeholderTextColor={colors.placeholderTextColor || '#A1887F' }
               keyboardType="number-pad"
@@ -398,6 +449,14 @@ const isOnlinePayment =
               style={
                 styles.input
               }
+              onFocus={() => {
+                setTimeout(() => {
+                  scrollRef.current?.scrollTo({
+                    y: 350,
+                    animated: true,
+                  });
+                }, 150);
+              }}
               placeholder="IFSC Code"
               autoCapitalize="characters"
               placeholderTextColor={colors.placeholderTextColor || '#A1887F' }

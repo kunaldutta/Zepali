@@ -6,7 +6,8 @@ import { ScrollView, StyleSheet } from 'react-native';
 const colors = {
   primary: '#334155',//'6D4C41',        // warm gold
   secondary: '#8D6E63',  
-  headerTitleColor: '#2D1B16',    // soft brown
+  headerTitleColor: '#2D1B16',
+  headerTitleLightColor: '#a12f09',    // soft brown
   background: '#F5E6D3',     // cream background
   text: '#452a25',           // dark brown text
   white: '#FFFFFF',

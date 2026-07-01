@@ -152,13 +152,35 @@ useEffect(() => {
 
   /* ---------------- LOADER ---------------- */
 
-  if (!product || !selectedColor) {
-    return (
-      <View style={styles.center}>
+  if (loading) {
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <AppHeader
+        title="Product Detail"
+        onBackPress={() => navigation.goBack()}
+      />
+
+      <View style={[styles.center,{height:'100%', bottom:0}]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    </SafeAreaView>
+  );
+}
+
+if (!product || !selectedColor) {
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <AppHeader
+        title="Product Detail"
+        onBackPress={() => navigation.goBack()}
+      />
+
+      <View style={[styles.center,{height:'100%', bottom:0}]}>
         <Text>Product not found</Text>
       </View>
-    );
-  }
+    </SafeAreaView>
+  );
+}
 
   const images = selectedColor.images || [];
 
@@ -528,16 +550,22 @@ const onWishlistPress = async () => {
               {selectedVariant.effective_discount_percentage > 0 && (<Text style={[styles.price, { textDecorationLine: 'line-through' }]}>₹ {selectedVariant?.price}</Text>)}
               <Text style={styles.productFinalPrice}>₹ {selectedVariant?.final_price}</Text>
               {product?.returnable && (
-                <Text style={[styles.productFinalPrice,{fontSize:12, top:10, color:colors.descriptioncolor}]}> {product?.return_policy}</Text>
+                <Text style={[styles.productFinalPrice,{fontSize:12, top:10, color:colors.descriptioncolor}]}> Return Policy: {product?.return_policy}</Text>
               )}
               </>
             )}
+            {selectedVariant && (
+              <>
+              <Text style={[styles.productFinalPrice, {fontSize:12, top:12,}]}> Delivery {selectedVariant?.deliverydate || '6 Days'}</Text>
+              </>
+            )}
+
             
 
             {/* COLORS */}
-            <Text style={styles.title}>{i18n.t('PRODUCT_COLOR')}: {colorName}</Text>
+            <Text style={[styles.title,{top:10}]}>{i18n.t('PRODUCT_COLOR')}: {colorName}</Text>
 
-            <ScrollView style={{top:10}} horizontal>
+            <ScrollView style={{top:14}} horizontal>
               
               {product.colors.map(c => (
                 <TouchableOpacity
