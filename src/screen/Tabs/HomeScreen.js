@@ -481,11 +481,7 @@ export default function HomeScreen({navigation}) {
     [categories, renderCategory],
   );
 
-  const getSectionLayout = useCallback((_, index) => ({
-    length: 285,
-    offset: 285 * index,
-    index,
-  }), []);
+  
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
@@ -529,7 +525,7 @@ export default function HomeScreen({navigation}) {
           />
         </View>
       </View>
-
+      
       <View style={[globalStyles.container, styles.mainContainer]}>
         {refreshing && productSections.length === 0 ? (
           <ActivityIndicator size="large" color="#000" style={styles.loader} />
@@ -548,10 +544,10 @@ export default function HomeScreen({navigation}) {
             windowSize={5}
             updateCellsBatchingPeriod={80}
             removeClippedSubviews
-            getItemLayout={getSectionLayout}
           />
         )}
       </View>
+      
     </SafeAreaView>
   );
 }
@@ -595,14 +591,14 @@ const styles = StyleSheet.create({
     top: 9,
   },
   mainContainer: {
+    flex: 1,
     top: 10,
-    height: '70%',
   },
   loader: {
     marginTop: 20,
   },
   sectionListContent: {
-    paddingBottom: 20,
+    paddingBottom: '12%',
   },
   categoryColumnWrapper: {
     paddingHorizontal: 8,
@@ -648,14 +644,14 @@ const styles = StyleSheet.create({
     minHeight: 285,
   },
   sectionHeader: {
-    backgroundColor: colors.secondary,
+    backgroundColor: '#dcd8ce',
     paddingVertical: 8,
     paddingHorizontal: 10,
     marginTop: 12,
     borderRadius: 8,
   },
   sectionHeaderText: {
-    color: '#fff',
+    color: colors.headerTitleLightColor,
     fontSize: 16,
     fontWeight: 'bold',
     paddingVertical: 8,
