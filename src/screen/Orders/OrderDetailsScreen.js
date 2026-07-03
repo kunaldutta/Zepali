@@ -191,7 +191,7 @@ const OrderDetailsScreen = ({route, navigation}) => {
 
       <Image
         source={{
-          uri: item.image
+          uri: item?.image
             ? `${item.image}`
             : 'https://via.placeholder.com/150',
         }}
@@ -202,20 +202,31 @@ const OrderDetailsScreen = ({route, navigation}) => {
       <View style={styles.itemInfo}>
 
         <Text style={styles.productName}>
-          {item.product_name}
+          {item?.product_name}
         </Text>
 
         <Text style={styles.measurement}>
-          {item.measurement}
+          {item?.measurement}
         </Text>
 
         <Text style={styles.quantity}>
-          Qty: {item.quantity}
+          Qty: {item?.quantity}
         </Text>
 
         <Text style={styles.price}>
-          ₹ {item.total_price}
+          ₹ {item?.total_price}
         </Text>
+        {item?.refund_status && (
+          <>
+          <Text style={styles.quantity}>
+            Refund: {item?.refund_status}
+          </Text>
+        
+          <Text style={styles.quantity}>
+            Refund-ID: {item?.refund_id}
+          </Text>
+          </>
+        )}
 
         {/* RETURN BUTTON */}
 

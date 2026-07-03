@@ -466,7 +466,7 @@ const ElectricityBillScreen = ({navigation}) => {
 
     if (!response?.status && response?.reason === 'Invalid User') {
       //need logout
-      showInvalidUserAlert(tempRes?.message)
+      showInvalidUserAlert(response?.message)
 
       return;
     }
@@ -486,7 +486,7 @@ const ElectricityBillScreen = ({navigation}) => {
         response?.currency,
 
       key:
-        config.razorpay_key_id,
+        config?.utility_razorpay_key_id,
 
       amount: response?.amount,
 

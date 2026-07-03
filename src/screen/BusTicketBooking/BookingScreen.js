@@ -259,10 +259,10 @@ export default function BookingScreen({ route, navigation }) {
     const options = {
       description: "Bus Booking",
       currency: "INR",
-      key: config.razorpay_key_id,
+      key: config?.utility_razorpay_key_id,
 
-      amount: orderRes.amount,
-      order_id: orderRes.order_id,
+      amount: orderRes?.amount,
+      order_id: orderRes?.order_id,
 
       name: "Zepali", // ✅ App name
 
@@ -287,9 +287,9 @@ export default function BookingScreen({ route, navigation }) {
       .then(async (data) => {
         try {
           const verifyRes = await verifyBusPayment({
-            razorpay_payment_id: data.razorpay_payment_id,
-            razorpay_order_id: data.razorpay_order_id,
-            razorpay_signature: data.razorpay_signature,
+            razorpay_payment_id: data?.razorpay_payment_id,
+            razorpay_order_id: data?.razorpay_order_id,
+            razorpay_signature: data?.razorpay_signature,
             transaction_id: transactionId,
           });
 
@@ -301,8 +301,8 @@ export default function BookingScreen({ route, navigation }) {
 
         } catch (err) {
           Alert.alert(
-            "Error",
-            "Payment done but booking verification failed"
+            i18n.t("ATTENTION"),
+            i18n.t("TICKET_BOOKING_NETWORK_ERROR_DETAIL")
           );
         }
       })
