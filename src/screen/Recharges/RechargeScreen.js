@@ -210,22 +210,30 @@ const RechargeScreen = ({ navigation }) => {
           </View>
 
           {/* Inputs */}
-          <TextInput
-            style={[globalStyles.input, {height: 40,               // ✅ FIXED HEIGHT (IMPORTANT)
-                  paddingVertical: 0,       // ✅ prevents jump
-                  textAlignVertical: 'center',} ]}
-            placeholder= {mode !== "topup" ? i18n.t("ENTER_MOBILE") || "Enter Mobile No." : i18n.t("ENTER_MOBILE_KHALTI") || "Enter Mobile No./ Khalti ID"}
-            placeholderTextColor={colors.placeholderTextColor}
-            value={number}
-            onChangeText={(text) => {
-              setNumber(text);
-              setFailureReason(null);
-              setKeyboardHeight(10);
-            }}
-            keyboardType="numeric"
-            maxLength={10}
-            scrollEnabled={false}
-          />
+          <View style={styles.mobileContainer}>
+            <View style={styles.countryCode}>
+              <Text style={styles.countryCodeText}>+977</Text>
+            </View>
+
+            <TextInput
+              style={styles.mobileInput}
+              placeholder={
+                mode !== "topup"
+                  ? i18n.t("ENTER_MOBILE") || "Enter Mobile No."
+                  : i18n.t("ENTER_MOBILE_KHALTI") || "Enter Mobile No./ Khalti ID"
+              }
+              placeholderTextColor={colors.placeholderTextColor}
+              value={number}
+              onChangeText={(text) => {
+                setNumber(text);
+                setFailureReason(null);
+                setKeyboardHeight(10);
+              }}
+              keyboardType="numeric"
+              maxLength={10}
+              scrollEnabled={false}
+            />
+          </View>
           {(failureReason?.number) && (
             <Text style={{ color: "red", marginTop: 1 }}>
               Invalid number
@@ -328,4 +336,39 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     height: '15%',
   },
+  mobileContainer: {
+  flexDirection: "row",
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#ddd",
+  borderRadius: 8,
+  backgroundColor: "#fff",
+  marginBottom: 5,
+  overflow: "hidden",
+},
+
+countryCode: {
+  width: 65,
+  height: 40,
+  justifyContent: "center",
+  alignItems: "center",
+  backgroundColor: "#f5f5f5",
+  borderRightWidth: 1,
+  borderRightColor: "#ddd",
+},
+
+countryCodeText: {
+  fontSize: 15,
+  fontWeight: "600",
+  color: "#333",
+},
+
+mobileInput: {
+  flex: 1,
+  height: 40,
+  paddingHorizontal: 10,
+  paddingVertical: 0,
+  textAlignVertical: "center",
+  color: "#000",
+},
 });

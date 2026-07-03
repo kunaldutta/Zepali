@@ -188,9 +188,9 @@ const RechargeConfirm = ({ route, navigation }) => {
       const options = {
         description: "Recharge Payment",
         currency: "INR",
-        key: config.razorpay_key_id,
-        amount: orderRes.amount,
-        order_id: orderRes.order_id,
+        key: config?.utility_razorpay_key_id,
+        amount: orderRes?.amount,
+        order_id: orderRes?.order_id,
         name: "Zepali",
         image: `${BASE_URL}/logo/zepali_foreground.png`,
         prefill: {
