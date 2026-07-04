@@ -189,10 +189,11 @@ const PageOne = ({
 
   } catch (error) {
     setLoading(false);
-    console.log(
-      'LOAD STEP 1 ERROR => ',
-      error,
-    );
+    if (error?.message?.includes('Network Error')|| error?.message?.includes('timeout')) {
+                    Alert.alert('Connection error', 'Please check your connection');
+                    return;
+      }
+      Alert.alert('Error', 'Something went wrong.');
   } finally {
     setLoading(false);
   }
@@ -313,10 +314,7 @@ const PageOne = ({
     }
 
   } catch (error) {
-    console.log(
-      'STEP 1 ERROR => ',
-      error,
-    );
+    
     if (error?.message?.includes('Network Error')|| error?.message?.includes('timeout')) {
               Alert.alert('Connection error', 'Please check your connection');
               return;

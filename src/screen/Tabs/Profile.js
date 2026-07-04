@@ -52,6 +52,7 @@ export default function Profile({ navigation }) {
                     Alert.alert('Connection error', 'Please check your connection');
                     return;
             }
+      Alert.alert('Error', 'Something went wrong while loading user data.');
       console.log('USER LOAD ERROR:', error);
     }
   };
@@ -69,11 +70,12 @@ export default function Profile({ navigation }) {
         setMenuData([]);
       }
     } catch (error) {
-      console('RESSS ==',error);
+      
       if (error?.message?.includes('Network Error')|| error?.message?.includes('timeout')) {
                     Alert.alert('Connection error', 'Please check your connection');
                     return;
             }
+      Alert.alert('Error', 'Something went wrong.');
       console.log('MENU ERROR:', error);
       setMenuData([]);
     } finally {
@@ -100,6 +102,7 @@ export default function Profile({ navigation }) {
                     Alert.alert('Connection error', 'Please check your connection');
                     return;
             }
+              Alert.alert('Error', 'Something went wrong.');
               console.log(error);
             }
           },

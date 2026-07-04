@@ -250,7 +250,7 @@ const RechargeConfirm = ({ route, navigation }) => {
         });
 
     } catch (e) {
-      if (error?.message?.includes('Network Error')|| error?.message?.includes('timeout')) {
+      if (e?.message?.includes('Network Error')|| e?.message?.includes('timeout')) {
                     showAlert('Connection error', 'Please check your connection');
                     return;
             }
