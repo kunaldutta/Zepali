@@ -52,6 +52,10 @@ export default function CancelBookingButton({
         Alert.alert("Error", res?.message || "Failed to cancel");
       }
     } catch (e) {
+      if (e.message?.includes('Network Error')|| e.message?.includes('timeout')) {
+                    Alert.alert('Connection error', 'Please check your connection');
+                    return;
+          }
       Alert.alert("Error", "Something went wrong");
     } finally {
       setLoading(false);

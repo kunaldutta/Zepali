@@ -105,6 +105,10 @@ const updateProfile = async () => {
 
   } catch (err) {
     console.log(err);
+    if (err?.message?.includes('Network Error')|| err?.message?.includes('timeout')) {
+                  Alert.alert('Connection error', 'Please check your connection');
+                  return;
+          }
     Alert.alert('Error', 'Something went wrong');
   } finally {
     setLoading(false);

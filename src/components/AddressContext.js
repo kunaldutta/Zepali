@@ -112,7 +112,10 @@ export const AddressProvider = ({ children }) => {
       }
 
     } catch (error) {
-
+      if (error?.message?.includes('Network Error')) {
+        setError(error.response?.data?.message || "Server error");
+        return;
+      }
       if (error?.response) {
         setError(error.response?.data?.message || "Server error");
       } else if (error?.request) {

@@ -411,6 +411,10 @@ const onWishlistPress = async () => {
     }
 
   } catch (error) {
+    if (error?.message?.includes('Network Error')|| error?.message?.includes('timeout')) {
+                  Alert.alert('Connection error', 'Please check your connection');
+                  return;
+      }
     console.log("Wishlist ERROR:", error);
     Alert.alert("Error", "Something went wrong");
   }

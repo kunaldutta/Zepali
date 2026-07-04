@@ -1,6 +1,8 @@
 import { get, post } from '../network/apiService';
 import API from '../network/apiEndpoints';
 import i18n from '../localization/i18n';
+import DeviceInfo from 'react-native-device-info';
+import {Platform} from 'react-native';
 
 /* FETCH PRODUCTS */
 
@@ -16,8 +18,9 @@ export const fetchProducts = async () => {
 
 export const fetchCartAPI = async ( pointsAmount = 0) => {
   try {
-
-    const url = `${API.GET_CART}?points_amount=${pointsAmount}&lang=${i18n.locale}`;
+    const app_version = DeviceInfo.getVersion();
+    const platform = Platform.OS;
+    const url = `${API.GET_CART}?points_amount=${pointsAmount}&lang=${i18n.locale}&platform=${platform}&app_version=${app_version}`;
 
     
 
@@ -36,7 +39,7 @@ export const fetchCartAPI = async ( pointsAmount = 0) => {
 
 export const fetchAddressesAPI = async (userId) => {
   try {
-    return await get(`${API.GET_ADRESS}?usr_id=${userId}`);
+    return await get(`${API.GET_ADRESS}`);
   } catch (error) {
     console.log("fetchAddressesAPI ERROR:", error);
     throw error;

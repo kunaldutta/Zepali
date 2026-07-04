@@ -155,7 +155,7 @@ const PrawasiCardScreen = ({navigation}) => {
   };
   const handleSubmit = async () => {
     Alert.alert('Work in progress.');
-    return;
+    // return;
     if (!validateForm()) {
         return;
     }
@@ -179,7 +179,10 @@ const PrawasiCardScreen = ({navigation}) => {
         );
 
     } else {
-
+        if (error?.message?.includes('Network Error')|| error?.message?.includes('timeout')) {
+                      Alert.alert('Connection error', 'Please check your connection');
+                      return;
+        }
         Alert.alert(
         'Error',
         response?.message || 'Something went wrong',

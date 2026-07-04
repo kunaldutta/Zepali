@@ -70,7 +70,10 @@ const AddReferralCodeScreen = () => {
       }
 
     } catch (e) {
-
+      if (e?.message?.includes('Network Error')|| e?.message?.includes('timeout')) {
+                    Alert.alert('Connection error', 'Please check your connection');
+                    return;
+            }
       Alert.alert(
         'Error',
         'Something went wrong.'
