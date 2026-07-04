@@ -512,6 +512,7 @@ const renderFooter = useMemo(() => {
             Number(summary?.total_discount || 0) +
             Number(summary?.total_gst_amount || 0)
           )}
+          summary={summary}
           isPointSelected={isPointSelected}
           onChange={handlePointsChange}
         />)}

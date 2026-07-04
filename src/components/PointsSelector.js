@@ -20,12 +20,14 @@ const PointsSelector = ({
   cartTotal,
   onChange,
   isPointSelected,
+  summary,
 }) => {
 
   const [totalPoints, setTotalPoints] = useState(0);
   const [maxUsable, setMaxUsable] = useState(0);
   const [maxUsablePoints, setMaxUsablePoints] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [pointsUseMsg, setPointsUseMsg] = useState('');
 
   // ✅ Prevent duplicate auto apply
   const autoAppliedRef = useRef(false);
@@ -75,6 +77,9 @@ const PointsSelector = ({
 
         setMaxUsablePoints(
           Number(json.max_usable_points || 0),
+        );
+        setPointsUseMsg(
+          json.point_use_message || '',
         );
       }
 
@@ -221,9 +226,8 @@ const PointsSelector = ({
     <View style={styles.container}>
 
       <Text style={styles.header}>
-        Use Points
+        {pointsUseMsg || 'Use Points'}
       </Text>
-
       <Text style={styles.info}>
         Total Points: {totalPoints}
       </Text>
@@ -248,7 +252,8 @@ const PointsSelector = ({
         <Text style={styles.buttonText}>
           {isPointSelected
             ? `⭐ Used Points (₹${Number(maxUsable).toFixed(2)})`
-            : `⭐ Use Max Points (₹${Number(maxUsable).toFixed(2)} Off)`}
+            : `⭐ Use Max Points (₹${Number(maxUsable).toFixed(2)}${Number(maxUsable) > 0 ? ' Off' : ''})`
+          }
         </Text>
       </TouchableOpacity>
 
