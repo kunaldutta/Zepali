@@ -135,5 +135,6 @@ export default {
   OUT_OF_STOCK: "Out of Stock",
   ATTENTION: "Attention",
   TICKET_BOOKING_NETWORK_ERROR: "Ticket Booking Network Error",
-  TICKET_BOOKING_NETWORK_ERROR_DETAIL: "If your payment was successful, your booking may still be processing due to a temporary network issue.\n\nPlease check your Booking History in a few moments. If your booking is still not visible, please contact our support team with your payment details."
+  TICKET_BOOKING_NETWORK_ERROR_DETAIL: "If your payment was successful, your booking may still be processing due to a temporary network issue.\n\nPlease check your Booking History in a few moments. If your booking is still not visible, please contact our support team with your payment details.",
+  DELIVERY_CHARGES: "Delivery Charges",
 };

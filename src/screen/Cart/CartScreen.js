@@ -95,7 +95,10 @@ export default function CartScreen({navigation}) {
     ).unwrap();
 
   } catch (error) {
-    
+    if (error?.message?.includes('Network Error')|| error?.message?.includes('timeout')) {
+                  Alert.alert('Connection error', 'Please check your connection');
+                  return;
+      }
     Alert.alert('Error', 'Failed to load cart');
   }
 };

@@ -329,8 +329,10 @@ export default function HomeScreen({navigation}) {
 
   const loadHome = async () => {
     const userData = await AsyncStorage.getItem('USER_DATA');
+    const userCity = await AsyncStorage.getItem('SELECTED_CITY');
     const parsedUser = userData ? JSON.parse(userData) : null;
-
+    
+    console.log('USER CITY:', userCity);
     setUser(parsedUser);
     if (parsedUser) {
       setUserName(parsedUser?.name || '');
@@ -339,7 +341,7 @@ export default function HomeScreen({navigation}) {
     try {
       setRefreshing(true);
 
-      const json = await getHomeData(i18n.locale, parsedUser?.country_code);
+      const json = await getHomeData(i18n.locale, parsedUser?.country_code, userCity?.city_code);
 
       if (!json) {
         throw new Error('No response from server');
@@ -388,17 +390,18 @@ export default function HomeScreen({navigation}) {
         }, 500);
       }
     } catch (error) {
-      console.log('API ERROR:', error);
-
+      console.log('API ERROR:', error.message);
       if (
         error.message === 'Network request failed' ||
         error.message?.includes('Network') ||
         error.message?.includes('fetch')
       ) {
-        if (error.message === 'Network Error') {
-          Alert.alert('Error', 'Something went wrong. Please try again.');
+        if (error?.message?.includes('Network Error')|| error?.message?.includes('timeout')) {
+          Alert.alert('Connection error', 'Please check your connection');
         } else {
-          Alert.alert('No Internet', 'Please check your connection');
+          //console.log('API ERROR2:', error.code);
+           console.log('toJSON:', error);
+          Alert.alert('Error', 'Something went wrong. Please try again.');
         }
       } else {
         Alert.alert('Error', 'Something went wrong');

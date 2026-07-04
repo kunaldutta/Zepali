@@ -66,7 +66,10 @@ const FeedbackScreen = ({route, navigation}) => {
       }
     } catch (error) {
       console.log('FEEDBACK ERROR:', error);
-
+      if (error?.message?.includes('Network Error')|| error?.message?.includes('timeout')) {
+                    Alert.alert('Connection error', 'Please check your connection');
+                    return;
+        }
       Alert.alert(
         'Error',
         'Something went wrong',

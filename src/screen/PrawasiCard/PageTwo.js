@@ -265,7 +265,10 @@ const loadSavedIds = async () => {
         'STEP 2 ERROR => ',
         error,
       );
-
+      if (error?.message?.includes('Network Error')|| error?.message?.includes('timeout')) {
+                    Alert.alert('Connection error', 'Please check your connection');
+                    return;
+      }
       alert(
         'Something went wrong',
       );

@@ -188,10 +188,15 @@ const getCurrentLocation = async () => {
             Alert.alert("Location Error", "Unable to fetch location");
           }
         } catch (e) {
+          if(e?.message?.includes('Network Error')){
+            Alert.alert("Connection Error", "Please check your internet connection");
+            return;
+          }
           if (error?.message === 'No location provider available.') {
             Alert.alert("Location Error", "Please enable your location");
           } else {
-            Alert.alert("Something went wrong", "Please check your internet connection");
+            
+            Alert.alert("Something went wrong", "Please try again later");
           }
         } finally {
           setLocationLoading(false);

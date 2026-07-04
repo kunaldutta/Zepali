@@ -42,7 +42,10 @@ const MyOrdersScreen = () => {
       }
 
     } catch (error) {
-
+      if (error?.message?.includes('Network Error')|| error?.message?.includes('timeout')) {
+                    Alert.alert('Connection error', 'Please check your connection');
+                    return;
+            }
       console.log(
         'fetchOrders ERROR:',
         error,

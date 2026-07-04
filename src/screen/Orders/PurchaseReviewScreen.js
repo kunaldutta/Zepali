@@ -503,7 +503,10 @@ const loadAppConfig = async () => {
       'PLACE ORDER ERROR:',
       error,
     );
-
+    if (error?.message?.includes('Network Error')|| error?.message?.includes('timeout')) {
+                  Alert.alert('Connection error', 'Please check your connection');
+                  return;
+    }
     Alert.alert(
       'Error',
       'Something went wrong',
@@ -685,7 +688,15 @@ const loadAppConfig = async () => {
           <View style={styles.divider} />
 
           {/* NET PAYABLE */}
+          <View style={styles.billRow}>
+            <Text style={styles.totalLabel}>
+              Delivery Charges
+            </Text>
 
+            <Text style={styles.totalValue}>
+              ₹ {Number(summary?.delivery_charge || 0).toFixed(2)}
+            </Text>
+          </View>
           <View style={styles.billRow}>
             <Text style={styles.totalLabel}>
               Net Payable

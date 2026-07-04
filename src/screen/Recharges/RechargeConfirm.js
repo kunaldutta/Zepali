@@ -250,6 +250,10 @@ const RechargeConfirm = ({ route, navigation }) => {
         });
 
     } catch (e) {
+      if (error?.message?.includes('Network Error')|| error?.message?.includes('timeout')) {
+                    showAlert('Connection error', 'Please check your connection');
+                    return;
+            }
       showAlert("Error", "Something went wrong");
       setProcessingPayment(false);
     }

@@ -48,6 +48,10 @@ export default function Profile({ navigation }) {
       setUser(parsedUser);
       setUserName(parsedUser?.name || 'User');
     } catch (error) {
+      if (error?.message?.includes('Network Error')|| error?.message?.includes('timeout')) {
+                    Alert.alert('Connection error', 'Please check your connection');
+                    return;
+            }
       console.log('USER LOAD ERROR:', error);
     }
   };
@@ -58,13 +62,18 @@ export default function Profile({ navigation }) {
 
       const response = await getProfileMenuAPI();
 
-
+      //console('RESSS ==', response);
       if (response?.status) {
         setMenuData(response.data || []);
       } else {
         setMenuData([]);
       }
     } catch (error) {
+      console('RESSS ==',error);
+      if (error?.message?.includes('Network Error')|| error?.message?.includes('timeout')) {
+                    Alert.alert('Connection error', 'Please check your connection');
+                    return;
+            }
       console.log('MENU ERROR:', error);
       setMenuData([]);
     } finally {
@@ -87,6 +96,10 @@ export default function Profile({ navigation }) {
             try {
               await forceLogout();
             } catch (error) {
+              if (error?.message?.includes('Network Error')|| error?.message?.includes('timeout')) {
+                    Alert.alert('Connection error', 'Please check your connection');
+                    return;
+            }
               console.log(error);
             }
           },

@@ -12,10 +12,17 @@ const CartBillSummary = ({ summary, total }) => {
   const gst = Number(summary.total_gst_amount || 0);
   const finalAmount = Number(summary.grand_total || 0);
   const pointsDiscount = Number(summary.points_discount || 0);
+  const deliveryCharges = Number(summary.delivery_charge || 0);
+  const deliveryChargesText = summary?.delivery_msg || i18n.t('FREE');
 
   return (
     <View style={styles.container}>
       <Text style={globalStyles.title2}>{i18n.t('BILLING_SUMMARY')}</Text>
+      {summary?.delivery_msg && (
+        <View style={styles.row}>
+          <Text>{deliveryChargesText}{'\n'}</Text>
+        </View>
+      )}
       <View style={styles.row}>
         <Text>{i18n.t('TOTAL_ORIGINAL_PRICE')}</Text>
         <Text>₹{originalPrice.toFixed(2)}</Text>
@@ -39,7 +46,12 @@ const CartBillSummary = ({ summary, total }) => {
         <Text>{i18n.t('GST_AMOUNT')}</Text>
         <Text>₹{gst.toFixed(2)}</Text>
       </View>
-
+      <View style={styles.row}>
+        <Text style={[styles.totalText, { fontWeight: 'bold', fontSize: 14 }]}>
+          {'\n'}{i18n.t('DELIVERY_CHARGES')}
+        </Text>
+        <Text style={{ fontWeight: 'bold', fontSize: 14 }}>{'\n'}₹{deliveryCharges}</Text>
+      </View>
 
       <View style={styles.divider} />
 

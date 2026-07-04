@@ -1,7 +1,7 @@
 import API from '../network/apiEndpoints';
 import { post } from '../network/apiService';
 import i18n from '../localization/i18n';
-import { Platform } from 'react-native';
+import { Platform, Alert } from 'react-native';
 
 export const getServices = async () => {
   return await post(API.GET_SERVICES, {
@@ -16,8 +16,12 @@ export const getProfileMenuAPI = async () => {
     });
   } catch (err) {
     console.log('PROFILE MENU ERROR:', err);
-
+    if (err?.message?.includes('Network Error')|| err?.message?.includes('timeout')) {
+                    Alert.alert('Connection error', 'Please check your connection');
+                    return;
+            }
     return {
+      error: err,
       status: false,
       data: [],
     };
