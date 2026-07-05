@@ -15,9 +15,11 @@ export const addToCart = createAsyncThunk(
       const res = await addToCartAPI(payload);
 
       /* ✅ REFRESH CART AFTER ADD */
-      if (payload.customer_id) {
-        dispatch(fetchCart(payload.customer_id));
-      }
+       try {
+          await dispatch(fetchCart()).unwrap();
+        } catch (e) {
+          console.log("Cart refresh failed:", e);
+        }
 
       return res;
 
@@ -91,9 +93,6 @@ export const updateCart = createAsyncThunk(
 
       /* ✅ REFRESH CART AFTER UPDATE */
       
-        dispatch(fetchCart());
-      
-
       return res;
 
     } catch (error) {

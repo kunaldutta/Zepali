@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as Keychain from 'react-native-keychain';
 import {refreshAccessToken, forceLogout} from '../utils/authUtils';
 import {Alert} from 'react-native';
-
+//DEV = IndoNepDev
 export const BASE_URL = 'https://zepali.net/IndoNep';
 
 const apiClient = axios.create({
@@ -45,8 +45,6 @@ console.log("config.headers =",config.headers);
   },
   error => Promise.reject(error)
 );
-
-/* RESPONSE INTERCEPTOR */
 
 /* RESPONSE INTERCEPTOR */
 

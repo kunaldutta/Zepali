@@ -14,6 +14,9 @@ import {
 } from 'react-native';
 
 import { fetchUserPointsAPI } from '../services/itemBilling';
+import CustomAlert from './CustomAlert';
+import { colors } from '../styles/globalStyles';
+import i18n from '../localization/i18n';
 
 const PointsSelector = ({
   userId,
@@ -26,6 +29,11 @@ const PointsSelector = ({
   const [maxUsable, setMaxUsable] = useState(0);
   const [maxUsablePoints, setMaxUsablePoints] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [pointsUseMsg, setPointsUseMsg] = useState('');
+  const [isUsablePoint, setIsUsablePoint] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [isAlertVisible, setIsAlertVisible] = useState(false);
 
   // ✅ Prevent duplicate auto apply
   const autoAppliedRef = useRef(false);
@@ -39,7 +47,6 @@ const PointsSelector = ({
   /* ================= FETCH POINTS ================= */
 
   useEffect(() => {
-
     if (!userId) {
       return;
     }
@@ -47,10 +54,28 @@ const PointsSelector = ({
     if (!cartTotal || Number(cartTotal) <= 0) {
       return;
     }
-
+    autoAppliedRef.current = false;
     fetchPoints();
 
-  }, [userId]);
+  }, [userId, cartTotal]);
+
+  useEffect(() => {
+  if (loading) {
+    return;
+  }
+
+  // If points are selected but no longer allowed
+  if (!isUsablePoint && isPointSelected) {
+    autoAppliedRef.current = true;
+
+    applyPoints(0, 0);
+  }
+}, [
+  loading,
+  isUsablePoint,
+  isPointSelected,
+  applyPoints,
+]); 
 
   const fetchPoints = async () => {
 
@@ -76,6 +101,13 @@ const PointsSelector = ({
         setMaxUsablePoints(
           Number(json.max_usable_points || 0),
         );
+        setPointsUseMsg(
+          json.point_use_message || '',
+        );
+        setIsUsablePoint(
+          Boolean(json.isUsablePoint),
+        );
+        
       }
 
     } catch (e) {
@@ -140,39 +172,40 @@ const PointsSelector = ({
 
   useEffect(() => {
 
-    // ✅ wait loading complete
-    if (loading) {
-      return;
-    }
+  if (loading) return;
 
-    // ✅ already auto applied
-    if (autoAppliedRef.current) {
-      return;
-    }
+  if (autoAppliedRef.current) return;
 
-    // ✅ restore selected state
-    if (
-      isPointSelected &&
-      Number(maxUsable) > 0
-    ) {
+  if (
+    isPointSelected &&
+    Number(maxUsable) > 0
+  ) {
+    autoAppliedRef.current = true;
 
-      autoAppliedRef.current = true;
+    applyPoints(
+      maxUsablePoints,
+      maxUsable,
+    );
+  }
 
-      applyPoints(
-        maxUsablePoints,
-        maxUsable,
-      );
-    }
-
-  }, [
-    loading,
-    isPointSelected,
-  ]);
+}, [
+  loading,
+  isPointSelected,
+  maxUsable,
+  maxUsablePoints,
+  applyPoints,
+]);
 
   /* ================= TOGGLE ================= */
 
   const toggleUsePoints = async () => {
+    if (!isUsablePoint) {
+      setIsAlertVisible(true);
+      setAlertTitle(i18n.t("ATTENTION"));
+      setAlertMessage(pointsUseMsg || 'You cannot use points for this order.');
 
+      return;
+    }
     try {
 
       const newState = !isPointSelected;
@@ -219,11 +252,34 @@ const PointsSelector = ({
 
   return (
     <View style={styles.container}>
-
-      <Text style={styles.header}>
-        Use Points
-      </Text>
-
+      <View
+        style={{
+          backgroundColor: pointsUseMsg
+            ? colors.highlightTextColor
+            : 'transparent',
+          paddingHorizontal: 5,
+          borderRadius: 6,
+          alignItems: 'center',      // Horizontal center
+          justifyContent: 'center',  // Vertical center
+          marginBottom: 5,
+          height: 'auto',
+        }}
+      >
+        <Text
+          style={[
+            styles.header,
+            {
+              color: colors.text,
+              fontSize: 13,
+              fontWeight: 'bold',
+              textAlign: 'center',
+              paddingVertical: 2,
+            },
+          ]}
+        >
+          {pointsUseMsg || 'Use Points'}
+        </Text>
+      </View>
       <Text style={styles.info}>
         Total Points: {totalPoints}
       </Text>
@@ -248,10 +304,18 @@ const PointsSelector = ({
         <Text style={styles.buttonText}>
           {isPointSelected
             ? `⭐ Used Points (₹${Number(maxUsable).toFixed(2)})`
-            : `⭐ Use Max Points (₹${Number(maxUsable).toFixed(2)} Off)`}
+            : `⭐ Use Max Points (₹${Number(maxUsable).toFixed(2)}${Number(maxUsable) > 0 ? ' Off' : ''})`
+          }
         </Text>
       </TouchableOpacity>
-
+    {isAlertVisible && (
+          <CustomAlert
+            visible={isAlertVisible}   // ✅ REQUIRED
+            title={alertTitle}
+            message={alertMessage}
+            onOk={() => setIsAlertVisible(false)}   // ✅ FIX
+          />
+        )}
     </View>
   );
 };
@@ -271,9 +335,10 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     marginBottom: 10,
+    color: colors.secondary,
   },
 
   info: {

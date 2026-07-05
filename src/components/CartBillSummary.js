@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import i18n from '../localization/i18n';
 import { globalStyles, colors } from '../styles/globalStyles';
 
+
 const CartBillSummary = ({ summary, total }) => {
 
   if (!summary) return null;
@@ -19,8 +20,31 @@ const CartBillSummary = ({ summary, total }) => {
     <View style={styles.container}>
       <Text style={globalStyles.title2}>{i18n.t('BILLING_SUMMARY')}</Text>
       {summary?.delivery_msg && (
-        <View style={styles.row}>
-          <Text>{deliveryChargesText}{'\n'}</Text>
+        <View
+          style={[
+            styles.row,
+            {
+              backgroundColor: colors.highlightTextColor,
+              paddingHorizontal: 5,
+              borderRadius: 6,
+              alignItems: 'center',      // Horizontal center
+              justifyContent: 'center',  // Vertical center
+              marginBottom: 5,
+              height: 'auto',
+            },
+          ]}
+        >
+          <Text
+            style={{
+              color: colors.text,
+              fontSize: 13,
+              fontWeight: 'bold',
+              textAlign: 'center',
+              paddingVertical: 2,
+            }}
+          >
+            {deliveryChargesText}
+          </Text>
         </View>
       )}
       <View style={styles.row}>

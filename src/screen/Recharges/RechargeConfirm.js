@@ -179,6 +179,7 @@ const RechargeConfirm = ({ route, navigation }) => {
       });
 
       if (!orderRes?.status) {
+        setAlertVisible(true);
         showAlert("Error", "Order creation failed");
         setProcessingPayment(false);
         return;
@@ -210,21 +211,22 @@ const RechargeConfirm = ({ route, navigation }) => {
               razorpay_signature: data.razorpay_signature,
               transaction_id: txnId,
             });
-
+            
             if (!verifyRes?.status) {
+              setAlertVisible(true);
               showAlert(
                 "Verification Failed",
                 "Payment verification failed. If amount was deducted, refund will be processed."
               );
               return;
             }
-
+            setAlertVisible(true);
             // ✅ SUCCESS
             showAlert(
               "Payment Successful",
               "Your payment is successful. Recharge is being processed."
             );
-            navigation.goBack();
+            //navigation.goBack();
 
           } catch (err) {
             showAlert(
@@ -250,7 +252,7 @@ const RechargeConfirm = ({ route, navigation }) => {
         });
 
     } catch (e) {
-      if (error?.message?.includes('Network Error')|| error?.message?.includes('timeout')) {
+      if (e?.message?.includes('Network Error')|| e?.message?.includes('timeout')) {
                     showAlert('Connection error', 'Please check your connection');
                     return;
             }
@@ -321,8 +323,8 @@ const RechargeConfirm = ({ route, navigation }) => {
         message={alertMessage}
         onOk={() => {
           setAlertVisible(false);
-          if (alertTitle === "Success") {
-            navigation.popToTop();
+          if (alertTitle === "Payment Successful") {
+            navigation.goBack();
           }
         }}
       />

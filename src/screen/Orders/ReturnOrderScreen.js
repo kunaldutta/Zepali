@@ -189,10 +189,6 @@ const isOnlinePayment =
         );
       }
     } catch (error) {
-      console.log(
-        'RETURN ERROR:',
-        error,
-      );
       if (error?.message?.includes('Network Error')|| error?.message?.includes('timeout')) {
                     Alert.alert('Connection error', 'Please check your connection');
                     return;

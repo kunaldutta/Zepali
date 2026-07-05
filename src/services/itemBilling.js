@@ -17,7 +17,7 @@ export const applyGST = async (data) => {
 export const fetchUserPointsAPI = async (cartTotal) => {
   try {
     return await get(
-      `${API.GET_USER_POINTS_FOR_USE}?cart_total=${cartTotal}&app_version=${DeviceInfo.getVersion()}&platform=${Platform.OS}`
+      `${API.GET_USER_POINTS_FOR_USE}?cart_total=${cartTotal}&lang=${i18n.locale}&app_version=${DeviceInfo.getVersion()}&platform=${Platform.OS}`
     );
   } catch (error) {
     console.log('fetchUserPointsAPI ERROR:', error);

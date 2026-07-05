@@ -491,7 +491,7 @@ const ElectricityBillScreen = ({navigation}) => {
       amount: response?.amount,
 
       name:
-        'IndoNep',
+        'Zepali',
 
       order_id:
         response?.order_id,
@@ -675,10 +675,6 @@ const ElectricityBillScreen = ({navigation}) => {
 
   } catch (error) {
 
-    console.log(
-      'PAY NOW ERROR:',
-      error,
-    );
     setLoading(false);
     if (error?.message?.includes('Network Error')|| error?.message?.includes('timeout')) {
                   Alert.alert('Connection error', 'Please check your connection');
