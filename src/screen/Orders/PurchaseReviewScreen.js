@@ -209,7 +209,7 @@ const loadAppConfig = async () => {
       Number(
         summary?.total_gst_amount || 0,
       ),
-
+    delivery_charge: Number(summary?.delivery_charge || 0),
     grand_total:
       Number(
         summary?.grand_total || 0,

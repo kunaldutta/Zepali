@@ -24,6 +24,7 @@ const colors = {
   rowSelectBackground: '#f5e08b',
   cancelButtonColor: '#b8736b',
   disabledButtonColor: '#ccc',
+  highlightTextColor: '#FDE68A',
 };
 
 const spacing = {

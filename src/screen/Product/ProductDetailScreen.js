@@ -60,30 +60,11 @@ export default function ProductDetailScreen({ route, navigation }) {
   /* ---------------- FETCH PRODUCT ---------------- */
   const existingCartItem =
   product &&
-  selectedColor &&
   selectedVariant
-    ? cartItems.find(item => {
-
-        return (
-          String(item.product_id) === String(product.id) &&
-
-          String(item.color || '')
-            .trim()
-            .toLowerCase() ===
-          String(selectedColor?.color || '')
-            .trim()
-            .toLowerCase() &&
-
-          String(item.measurement_id || item.size || '')
-            .trim() ===
-          String(
-            selectedVariant?.measurement_id ||
-            selectedVariant?.measurement_value ||
-            ''
-          ).trim()
-        );
-
-      })
+    ? cartItems.find(item =>
+        String(item.product_id) === String(product.id) &&
+        String(item.measurement_id) === String(selectedVariant.measurement_id)
+      )
     : null;
 
   useEffect(() => {
@@ -127,7 +108,7 @@ useEffect(() => {
           ? selColor.variants[0]
           : null;
 
-      setColorName(selColor.color);
+      setColorName(selColor.display_color);
       setProduct(productData);
       setSelectedColor(selColor);
   
@@ -736,7 +717,7 @@ const styles = StyleSheet.create({
 
   color: { width: 35, height: 35, borderRadius: 18, marginRight: 10 },
 
-  selectedColor: { borderWidth: 2, borderColor: '#000' },
+  selectedColor: { borderWidth: 2, borderColor: '#6bcb18' },
 
   sizeBtn: { padding: 10, borderWidth: 1, marginRight: 10, borderRadius: 6 },
 

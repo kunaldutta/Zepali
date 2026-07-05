@@ -20,8 +20,8 @@ import CustomAlert from '../../components/CustomAlert';
 import {usePoints} from  '../../components/PointsContext'
 import DeviceInfo from 'react-native-device-info';
 import {Platform} from 'react-native';
+import {BASE_URL} from '../../network/apiClient';
 
-const BASE_URL = 'https://zepali.net/IndoNep';
 
 const OrderDetailsScreen = ({route, navigation}) => {
   const {fetchUserPoints} = usePoints();

@@ -104,6 +104,7 @@ export default function CartScreen({navigation}) {
 };
 const refreshCart = async () => {
   await dispatch(
+    
     fetchCart({
       points_amount: lastPointsAmount.current || 0,
     }),
@@ -354,7 +355,7 @@ const handlePlaceOrder = () => {
   /* ================= ITEM ================= */
   const renderItem = ({item}) => {
   const isUpdating = updatingItemId === item.cart_id;
-  const savedAmount = (Number(item.price) - Number(item.final_price)).toFixed(2);
+  const savedAmount = (Number(item.price) * Number(item.quantity) - Number(item.final_price) * Number(item.quantity)).toFixed(2);
 
   return (
     <View style={[styles.card, { borderColor: colors.border, opacity: isUpdating ? 0.5 : 1 }]}>

@@ -491,7 +491,7 @@ const ElectricityBillScreen = ({navigation}) => {
       amount: response?.amount,
 
       name:
-        'IndoNep',
+        'Zepali',
 
       order_id:
         response?.order_id,

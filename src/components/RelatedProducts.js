@@ -23,7 +23,7 @@ function RelatedProducts({ categoryId, currentProductId, navigation, cartItem })
   const [loading, setLoading] = useState(false);
   const [categoryName, setCategoryName] = useState('');
   const hasFetchedRef = useRef(false);
-  const MAX_DISPLAY = 15;
+  const MAX_DISPLAY = 5;
 
   /* ================= FETCH ================= */
   useEffect(() => {
