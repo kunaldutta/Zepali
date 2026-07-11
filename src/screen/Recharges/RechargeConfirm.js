@@ -23,6 +23,7 @@ import {
   createPayment,
   createRazorpayOrder,
   verifyRechargePayment,
+  cancelRechargePayment,
   updatePaymentStatus,
 } from "../../services/paymentService";
 
@@ -193,7 +194,7 @@ const RechargeConfirm = ({ route, navigation }) => {
         amount: orderRes?.amount,
         order_id: orderRes?.order_id,
         name: "Zepali",
-        image: `${BASE_URL}/logo/zepali_foreground.png`,
+        image: `${BASE_URL}/logo/logo.png`,
         prefill: {
           email: parsedUser?.email_id ?? "",
           contact: parsedUser?.mobile_number ?? "",
@@ -238,27 +239,66 @@ const RechargeConfirm = ({ route, navigation }) => {
           }
         })
 
-        .catch((error) => {
-          const status = error?.code === 0 ? "CANCELLED" : "FAILED";
+        .catch(async (error) => {
 
-          showAlert(
-            status === "CANCELLED" ? "Cancelled" : "Failed",
-            status === "CANCELLED"
-              ? "Payment cancelled"
-              : "Payment failed. Try again"
-          );
+  console.log("RAZORPAY ERROR:", error);
 
-          setProcessingPayment(false);
-        });
+  try {
 
-    } catch (e) {
-      if (e?.message?.includes('Network Error')|| e?.message?.includes('timeout')) {
-                    showAlert('Connection error', 'Please check your connection');
-                    return;
-            }
-      showAlert("Error", "Something went wrong");
-      setProcessingPayment(false);
-    }
+    await cancelRechargePayment({
+      transaction_id: txnId,
+      failure_reason:
+        error?.description ||
+        error?.error?.description ||
+        error?.message ||
+        "Payment cancelled by user",
+    });
+
+  } catch (err) {
+
+    console.log("Cancel Payment API Error:", err);
+
+  }
+
+  const status = error?.code === 0 ? "CANCELLED" : "FAILED";
+
+  showAlert(
+    status === "CANCELLED" ? "Cancelled" : "Failed",
+    error?.description ||
+      error?.error?.description ||
+      (status === "CANCELLED"
+        ? "Payment cancelled"
+        : "Payment failed. Try again")
+  );
+
+  setProcessingPayment(false);
+
+});
+
+} catch (e) {
+
+  if (
+    e?.message?.includes("Network Error") ||
+    e?.message?.includes("timeout")
+  ) {
+
+    showAlert(
+      "Connection error",
+      "Please check your connection"
+    );
+
+  } else {
+
+    showAlert(
+      "Error",
+      "Something went wrong"
+    );
+
+  }
+
+  setProcessingPayment(false);
+
+}
   };
 
   return (

@@ -329,10 +329,11 @@ export default function HomeScreen({navigation}) {
 
   const loadHome = async () => {
     const userData = await AsyncStorage.getItem('USER_DATA');
-    const userCity = await AsyncStorage.getItem('SELECTED_CITY');
+    const cityData = await AsyncStorage.getItem('SELECTED_CITY');
+    const userCity = cityData ? JSON.parse(cityData) : null;
     const parsedUser = userData ? JSON.parse(userData) : null;
     
-    console.log('USER CITY:', userCity);
+
     setUser(parsedUser);
     if (parsedUser) {
       setUserName(parsedUser?.name || '');
@@ -341,7 +342,7 @@ export default function HomeScreen({navigation}) {
     try {
       setRefreshing(true);
 
-      const json = await getHomeData(i18n.locale, parsedUser?.country_code, userCity?.city_code);
+      const json = await getHomeData(i18n.locale, parsedUser?.country_code, userCity?.id);
 
       if (!json) {
         throw new Error('No response from server');

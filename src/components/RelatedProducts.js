@@ -39,11 +39,14 @@ function RelatedProducts({ categoryId, currentProductId, navigation, cartItem })
 
       const user = await AsyncStorage.getItem('USER_DATA');
       let parsedUser = user ? JSON.parse(user) : null;
+      const cityData = await AsyncStorage.getItem('SELECTED_CITY');
+      const userCity = cityData ? JSON.parse(cityData) : null;
 
       const res = await getCategoryProducts(
         categoryId,
         i18n.locale,
-        parsedUser?.country_code
+        parsedUser?.country_code,
+        userCity?.id
       );
 
       if (res?.status) {

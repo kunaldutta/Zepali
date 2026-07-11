@@ -30,7 +30,7 @@ export const getProfileMenuAPI = async () => {
 
 export const getAppConfigAPI = async () => {
   try {
-    const platform = Platform.OS
+    const platform = Platform.OS;
     return await post(API.GET_APP_CONFIG, {platform});
 
   } catch (err) {

@@ -53,6 +53,9 @@ import ServicesScreen from './src/screen/Services/ServicesScreen';
 import FeedbackScreen from './src/screen/Orders/FeedbackScreen';
 import ReferFriendScreen from './src/screen/ReferalScreen/ReferFriendScreen';
 import AddReferralCodeScreen from './src/screen/ReferalScreen/AddReferralCodeScreen';
+import InternetProviderList from './src/screen/InternetProviders/InternetProviderList';
+import WorldLinkScreen from './src/screen/InternetProviders/WorldLinkScreen';
+import InternetBillHistoryScreen from './src/screen/InternetProviders/InternetBillHistoryScreen';
 
 import {
   requestUserPermission,
@@ -229,7 +232,9 @@ const RootApp = () => {
               <Stack.Screen name="FeedbackScreen" component={FeedbackScreen} />
               <Stack.Screen name="ReferFriendScreen" component={ReferFriendScreen}/>
               <Stack.Screen name="AddReferralCodeScreen" component={AddReferralCodeScreen}/>
-              
+              <Stack.Screen name="InternetProviderList" component={InternetProviderList}/>
+              <Stack.Screen name="WorldLinkScreen" component={WorldLinkScreen}/>
+              <Stack.Screen name="InternetBillHistoryScreen" component={InternetBillHistoryScreen}/>
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

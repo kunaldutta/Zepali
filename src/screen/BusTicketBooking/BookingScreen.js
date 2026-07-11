@@ -266,7 +266,7 @@ export default function BookingScreen({ route, navigation }) {
 
       name: "Zepali", // ✅ App name
 
-      image: BASE_URL + "/logo/zepali_foreground.png", // ✅ LOGO (IMPORTANT)
+      image: BASE_URL + "/logo/logo.png", // ✅ LOGO (IMPORTANT)logo
 
       theme: {
         color: colors.safeAreaColor, // 🔥 your primary color

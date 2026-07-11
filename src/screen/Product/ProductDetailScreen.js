@@ -669,8 +669,8 @@ const onWishlistPress = async () => {
       />
       <CustomAlert
         visible={showCartAlert}
-        title="Success"
-        message="Product added to cart successfully"
+        title={i18n.t('SUCCESSFULLY_ADDED') || 'Successfully added'}
+        message={i18n.t('PRODUCT_ADDED_TO_CART') || 'Product added to cart successfully'}
         onOk={() => {
           setShowCartAlert(false);
         }}
@@ -678,8 +678,8 @@ const onWishlistPress = async () => {
           setShowCartAlert(false);
           navigation.navigate('CartScreen');
         }}
-        onOkText="Continue Shopping"
-        onThirdOptionText="Go To Cart"
+        onOkText={i18n.t('CONTINUE_SHOPPING') || 'Continue Shopping'}
+        onThirdOptionText={i18n.t('GO_TO_CART') || 'Go to Cart'}
       />
     </SafeAreaView>
   );

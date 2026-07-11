@@ -26,6 +26,11 @@ const BillAndRechargeScreen = ({navigation}) => {
       title: 'Mobile Recharge',
       icon: 'phone-portrait-outline',
     },
+    {
+      id: 3,
+      title: 'Internet Billing',
+      icon: 'globe-outline',
+    },
   ]);
 
   const handlePress = item => {
@@ -33,8 +38,10 @@ const BillAndRechargeScreen = ({navigation}) => {
     // Navigation Example
     if (item.id === 1) {
       navigation.navigate('ElectricityBillScreen');
-    } else {
+    } else if (item.id === 2) {
       navigation.navigate('RechargeScreen');
+    } else if (item.id === 3) {
+      navigation.navigate('InternetProviderList');
     }
   };
 

@@ -202,8 +202,8 @@ const deleteItem = async (item) => {
 
 const confirmDeleteItem = (item) => {
   setSelectedItem(item);
-  setAlertTitle('Delete Item');
-  setAlertMsg('Would you like to delete this item?');
+  setAlertTitle( i18n.t('DELETE_ITEM') || 'Delete Item' );
+  setAlertMsg(i18n.t('DELETE_ITEM_CONFIRMATION') || 'Are you sure you want to delete this item?');
   setShowCartAlert(true);
 };
 
@@ -215,8 +215,8 @@ const confirmDeleteItem = (item) => {
     // ✅ Show delete confirmation only when quantity is 1
     if (Number(item.quantity) === 1) {
       setSelectedItem(item);
-      setAlertTitle('Delete Item');
-      setAlertMsg('Would you like to delete this item?');
+      setAlertTitle( i18n.t('DELETE_ITEM') || 'Delete Item' );
+      setAlertMsg(i18n.t('DELETE_ITEM_CONFIRMATION') || 'Are you sure you want to delete this item?');
       setShowCartAlert(true);
       return;
     }
@@ -630,7 +630,7 @@ const renderFooter = useMemo(() => {
     onPress={handlePlaceOrder}
   >
     <Text style={styles.placeOrderText}>
-     {i18n.t('PLACE_ORDER') ||  'Place Order'}
+     {i18n.t('CONTINUE') ||  'Continue'}
     </Text>
   </TouchableOpacity>
 
@@ -646,8 +646,8 @@ const renderFooter = useMemo(() => {
         onThirdOption={() => {
            setShowCartAlert(false);
         }}
-        onOkText="Ok"
-        onThirdOptionText="Cancel"
+        onOkText={i18n.t('YES') || 'Yes'}
+        onThirdOptionText={i18n.t('CANCEL') || 'Cancel'}
       />
   <CustomAlert
       visible={showStockPopup}

@@ -64,15 +64,23 @@ export default function CategoryProductScreen({route, navigation}){
 
       const user = await AsyncStorage.getItem('USER_DATA');
       let parsedUser = user ? JSON.parse(user) : null;
-
+      const cityData = await AsyncStorage.getItem('SELECTED_CITY');
+      const userCity = cityData ? JSON.parse(cityData) : null;
+       console.log('USER CITY:', userCity?.id);
       const json = await getCategoryProducts(
         categoryId,
         i18n.locale,
-        parsedUser?.country_code
+        parsedUser?.country_code,
+        userCity?.id
       );
-
+      console.log("CategoryProducts JSON:", json);
       if (!json) {
         throw new Error("No response from server");
+      }
+      if (json?.status && json?.total === 0) {
+        Alert.alert('No products found for this category in your city');
+        //navigation.goBack();
+        return;
       }
 
       setProducts(json?.products || []);
@@ -176,7 +184,7 @@ export default function CategoryProductScreen({route, navigation}){
           ListEmptyComponent={
             !loading && (
               <Text style={{textAlign:'center', marginTop:50}}>
-                No products available
+                No products available in this category for your city.
               </Text>
             )
           }
