@@ -35,6 +35,14 @@ export const createInternetBillOrder = async data => {
   return await post(API.CREATE_INTERNET_BILL_ORDER, data);
 };
 
+export const createInternetNtftthBillOrder = async data => {
+  return await post(API.CREATE_NTFTTH_INTERNET_BILL_ORDER, data);
+};
+
+export const payInternetNtftthBillOrder = async data => {
+  return await post(API.PAY_INTRNET_BILL_NTFTTH, data);
+};
+
 export const createInternetBillRazorpayOrder = async data => {
   return await post(API.CREATE_INTERNET_BILL_RAZORPAY_ORDER, data);
 };
@@ -53,6 +61,32 @@ export const getInternetBillHistory = async () => {
 export const cancelInternetBillPayment = async data => {
   return await post(
     API.CANCEL_INTERNET_BILL_PAYMENT,
+    data,
+  );
+};
+
+export const getVianetDetails = async data => {
+  return await post(
+    API.GET_VIANET_DETAILS,
+    data,
+  );
+};
+
+export const createADSLOrder = async data => {
+  return await post(
+    API.CREATE_ADSL_ORDER,
+    data
+  );
+};
+export const createADSLInternetBillRazorpayOrder = async data => {
+  return await post(
+    API.CREATE_ADSL_INTERNET_BILL_RAZORPAY_ORDER,
+    data,
+  );
+};
+export const verifyADSLPayment = async data => {
+  return await post(
+    API.VERIFY_ADSL_PAYMENT,
     data,
   );
 };

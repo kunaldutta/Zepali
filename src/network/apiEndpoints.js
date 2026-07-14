@@ -93,6 +93,13 @@ const API = {
   GET_INTERNET_BILL_HISTORY: '/internet_billing/get_internet_bill_history.php',
   CANCEL_INTERNET_BILL_PAYMENT: '/internet_billing/cancel_internet_bill_payment.php',
   CANCEL_RECHARGE_PAYMENT: '/cancel_recharge_payment.php',
+  GET_VIANET_DETAILS: '/internet_billing/vianet/get_vianet_details.php',
+  CREATE_ADSL_ORDER: '/internet_billing/adsl/create_adsl_order.php',
+  CREATE_ADSL_INTERNET_BILL_RAZORPAY_ORDER:
+  'internet_billing/adsl/create_internet_bill_razorpay_order.php',
+  VERIFY_ADSL_PAYMENT: '/internet_billing/adsl/verify_adsl_payment.php',
+  CREATE_NTFTTH_INTERNET_BILL_ORDER: '/internet_billing/ntftth/create_internet_bill_razorpay_order.php',
+  PAY_INTRNET_BILL_NTFTTH:'/internet_billing/ntftth/payInternetBillRazorpayOrder.php',
 };
 
 export default API;

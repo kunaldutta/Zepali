@@ -85,20 +85,22 @@ const InternetBillHistoryScreen = ({navigation}) => {
 
       </View>
 
-      <Row
-        title="Customer"
-        value={item.customer_name}
-      />
+      {item.customer_name && (
+        <Row
+          title="Customer"
+          value={item.customer_name}
+        />
+      )}
 
       <Row
-        title="Username"
+        title={item.provider_name === "WorldLink" ? "Username" : "Customer ID"}
         value={item.username}
       />
 
-      <Row
+      {item?.package_name && (<Row
         title="Package"
         value={item.package_name}
-      />
+      />)}
 
       <Row
         title="Amount"

@@ -21,6 +21,7 @@ import {usePoints} from  '../../components/PointsContext'
 import DeviceInfo from 'react-native-device-info';
 import {Platform} from 'react-native';
 import {BASE_URL} from '../../network/apiClient';
+import { Linking } from 'react-native';
 
 
 const OrderDetailsScreen = ({route, navigation}) => {
@@ -95,6 +96,12 @@ const OrderDetailsScreen = ({route, navigation}) => {
         );
       }
     };
+
+  const viewInvoice = () => {
+  Linking.openURL(
+    `https://zepali.net/IndoNepDev/invoice/generate_invoice.php?order_id=${orderId}`
+  );
+};
 
   const handleCancelItem = async item => {
     setIsAlertVisible(false);
@@ -283,6 +290,17 @@ const OrderDetailsScreen = ({route, navigation}) => {
             </TouchableOpacity>
           )
           }
+          <TouchableOpacity
+                style={styles.feedbackButton}
+                onPress={() =>
+                  viewInvoice()
+                }>
+
+                <Text style={styles.feedbackText}>
+                  Download Invoice
+                </Text>
+
+            </TouchableOpacity>
               {isAlertVisible && (
           <CustomAlert
             visible={isAlertVisible}

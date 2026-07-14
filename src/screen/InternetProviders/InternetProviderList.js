@@ -54,6 +54,15 @@ const InternetProvidersScreen = ({navigation}) => {
         if (item.provider_name === 'WorldLink') {
             navigation.navigate('WorldLinkScreen');
         }
+        if (item.provider_name === 'Vianet') {
+            navigation.navigate('VianetScreen');
+        }
+        if (item.provider_name === 'ADSL') {
+            navigation.navigate('ADSLScreen');
+        }
+        if (item.provider_name === 'NTFTTH') {
+            navigation.navigate('NTFTTHScreen');
+        }
     }}
         >
         {item.image ? (
@@ -106,7 +115,7 @@ const InternetProvidersScreen = ({navigation}) => {
           ListEmptyComponent={
             <View style={styles.emptyView}>
               <Text style={styles.emptyText}>
-                No Internet Service Providers Found
+                No Internet Service Providers / Coming Soon
               </Text>
             </View>
           }
