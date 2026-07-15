@@ -97,10 +97,21 @@ const OrderDetailsScreen = ({route, navigation}) => {
       }
     };
 
-  const viewInvoice = () => {
-  Linking.openURL(
-    `https://zepali.net/IndoNepDev/invoice/generate_invoice.php?order_id=${orderId}`
-  );
+  const viewInvoice = async () => {
+  try {
+    const url = `${BASE_URL}/invoice/generate_invoice.php?order_id=${orderId}`;
+
+    const supported = await Linking.canOpenURL(url);
+
+    if (supported) {
+      await Linking.openURL(url);
+    } else {
+      Alert.alert('Error', 'Unable to open invoice.');
+    }
+  } catch (error) {
+    console.log(error);
+    Alert.alert('Error', 'Something went wrong.');
+  }
 };
 
   const handleCancelItem = async item => {
@@ -290,17 +301,7 @@ const OrderDetailsScreen = ({route, navigation}) => {
             </TouchableOpacity>
           )
           }
-          <TouchableOpacity
-                style={styles.feedbackButton}
-                onPress={() =>
-                  viewInvoice()
-                }>
-
-                <Text style={styles.feedbackText}>
-                  Download Invoice
-                </Text>
-
-            </TouchableOpacity>
+          
               {isAlertVisible && (
           <CustomAlert
             visible={isAlertVisible}
@@ -441,11 +442,29 @@ const OrderDetailsScreen = ({route, navigation}) => {
         ========================= */}
 
         <View style={styles.section}>
-
+          <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginTop: 8,
+              }}
+            >
           <Text style={styles.sectionTitle}>
             Bill Summary
           </Text>
+          <TouchableOpacity
+                style={styles.feedbackButton}
+                onPress={() =>
+                  viewInvoice()
+                }>
 
+                <Text style={styles.feedbackText}>
+                  Download Invoice
+                </Text>
+
+            </TouchableOpacity>
+                </View>
           <View style={styles.rowBetween}>
             <Text style={styles.label}>
               Original Price
@@ -664,11 +683,13 @@ returnButtonTextDisabled: {
   color: '#666666',
 },
 feedbackButton:{
-  marginTop:18,
+  marginTop:0,
   backgroundColor:'#FF9800',
-  paddingVertical:8,
+  paddingVertical:5,
   borderRadius:8,
-  alignItems:'center'
+  alignItems:'center',
+  width: '50%',
+  bottom: '8'
 },
 
 feedbackText:{
