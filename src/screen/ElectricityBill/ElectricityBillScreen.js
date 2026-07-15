@@ -480,7 +480,7 @@ const ElectricityBillScreen = ({navigation}) => {
       description:
         'Electricity Bill Payment',
 
-      image: BASE_URL + "/logo/zepali_foreground.png" || '',
+      image: BASE_URL + "/logo/logo.png" || '',
 
       currency:
         response?.currency,

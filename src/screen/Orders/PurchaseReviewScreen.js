@@ -56,10 +56,11 @@ export default function PurchaseReviewScreen({
     summary,
   } = route.params;
   const [onlinePaymentEnabled, setOnlinePaymentEnabled] = useState(true);
+  const [codEnabled, setCodEnabled] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState(summary.
     grand_total > 0 ? 'ONLINE' : 'COD');
   const [loading, setLoading] = useState(false);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch(); 
  
   useEffect(() => {
   loadAppConfig();
@@ -81,6 +82,9 @@ const loadAppConfig = async () => {
 
       setOnlinePaymentEnabled(
         onlinePaymentStatus === 1
+      );
+      setCodEnabled(
+       Number(response?.data?.COD_status) === 1 ? true : false
       );
 
       if (
@@ -577,6 +581,97 @@ const loadAppConfig = async () => {
 
         </View>
 
+        {/* ================= PAYMENT ================= */}
+
+        <View style={styles.card}>
+
+          <Text style={styles.sectionTitle}>
+            Payment Method
+          </Text>
+
+          {/* COD */}
+
+          <TouchableOpacity
+            style={[styles.paymentOption, { opacity: codEnabled ? 1 : 0.5 }]}
+            disabled={!codEnabled}
+            onPress={() => setPaymentMethod('COD')}
+          >
+
+            <View style={styles.paymentLeft}>
+
+              <Ionicons
+                name={
+                  paymentMethod === 'COD'
+                    ? 'radio-button-on'
+                    : 'radio-button-off'
+                }
+                size={22}
+                color={colors.primary}
+              />
+
+              <Text style={styles.paymentText}>
+                Cash on Delivery
+              </Text>
+
+            </View>
+
+          </TouchableOpacity>
+
+          {/* ONLINE */}
+
+          <TouchableOpacity
+            style={[
+              styles.paymentOption,
+              {
+                opacity:
+                  (!onlinePaymentEnabled ||
+                    Number(summary?.grand_total || 0) <= 0)
+                    ? 0.5
+                    : 1,
+              },
+            ]}
+            disabled={
+              !onlinePaymentEnabled ||
+              Number(summary?.grand_total || 0) <= 0
+            }
+            onPress={() => setPaymentMethod('ONLINE')}
+          >
+
+            <View style={styles.paymentLeft}>
+
+              <Ionicons
+                name={
+                  paymentMethod === 'ONLINE'
+                    ? 'radio-button-on'
+                    : 'radio-button-off'
+                }
+                size={22}
+                color={colors.primary}
+              />
+
+              <View>
+                  <Text style={styles.paymentText}>
+                    Pay Online
+                  </Text>
+
+                  {!onlinePaymentEnabled && (
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        color: 'red',
+                        marginLeft: 10,
+                      }}>
+                      Currently unavailable
+                    </Text>
+                  )}
+                </View>
+
+            </View>
+
+          </TouchableOpacity>
+
+        </View>
+
         {/* ================= BILLING SUMMARY ================= */}
 
         <View style={styles.card}>
@@ -705,95 +800,7 @@ const loadAppConfig = async () => {
 
         </View>
 
-        {/* ================= PAYMENT ================= */}
-
-        <View style={styles.card}>
-
-          <Text style={styles.sectionTitle}>
-            Payment Method
-          </Text>
-
-          {/* COD */}
-
-          <TouchableOpacity
-            style={styles.paymentOption}
-            onPress={() => setPaymentMethod('COD')}
-          >
-
-            <View style={styles.paymentLeft}>
-
-              <Ionicons
-                name={
-                  paymentMethod === 'COD'
-                    ? 'radio-button-on'
-                    : 'radio-button-off'
-                }
-                size={22}
-                color={colors.primary}
-              />
-
-              <Text style={styles.paymentText}>
-                Cash on Delivery
-              </Text>
-
-            </View>
-
-          </TouchableOpacity>
-
-          {/* ONLINE */}
-
-          <TouchableOpacity
-            style={[
-              styles.paymentOption,
-              {
-                opacity:
-                  (!onlinePaymentEnabled ||
-                    Number(summary?.grand_total || 0) <= 0)
-                    ? 0.5
-                    : 1,
-              },
-            ]}
-            disabled={
-              !onlinePaymentEnabled ||
-              Number(summary?.grand_total || 0) <= 0
-            }
-            onPress={() => setPaymentMethod('ONLINE')}
-          >
-
-            <View style={styles.paymentLeft}>
-
-              <Ionicons
-                name={
-                  paymentMethod === 'ONLINE'
-                    ? 'radio-button-on'
-                    : 'radio-button-off'
-                }
-                size={22}
-                color={colors.primary}
-              />
-
-              <View>
-                  <Text style={styles.paymentText}>
-                    Pay Online
-                  </Text>
-
-                  {!onlinePaymentEnabled && (
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        color: 'red',
-                        marginLeft: 10,
-                      }}>
-                      Currently unavailable
-                    </Text>
-                  )}
-                </View>
-
-            </View>
-
-          </TouchableOpacity>
-
-        </View>
+        
 
       </ScrollView>
 
@@ -824,8 +831,8 @@ const loadAppConfig = async () => {
           {loading
             ? 'Please Wait...'
             : paymentMethod === 'ONLINE'
-            ? 'Proceed To Pay'
-            : 'Place Order'}
+            ? i18n.t('PAY_NOW') || 'Pay Now'
+            : i18n.t('PLACE_ORDER') || 'Place Order'}
 
         </Text>
 

@@ -85,6 +85,21 @@ const API = {
   REFRESH_TOKEN: '/refresh_token.php',
   GET_REFERRAL_CODE: '/get_referral_code.php',
   APPLY_REFERRAL_CODE: '/apply_referral_code.php',
+  GET_INTERNET_SERVICE_PROVIDERS: '/internet_billing/get_internet_service_providers.php',
+  GET_WORLDLINK_DETAILS: '/internet_billing/get_worldlink_details.php',
+  CREATE_INTERNET_BILL_ORDER: '/internet_billing/create_internet_bill_order.php',
+  CREATE_INTERNET_BILL_RAZORPAY_ORDER: '/internet_billing/create_internet_bill_razorpay_order.php',
+  VERIFY_WORLDLINK_PAYMENT: '/internet_billing/verify_worldlink_payment.php',
+  GET_INTERNET_BILL_HISTORY: '/internet_billing/get_internet_bill_history.php',
+  CANCEL_INTERNET_BILL_PAYMENT: '/internet_billing/cancel_internet_bill_payment.php',
+  CANCEL_RECHARGE_PAYMENT: '/cancel_recharge_payment.php',
+  GET_VIANET_DETAILS: '/internet_billing/vianet/get_vianet_details.php',
+  CREATE_ADSL_ORDER: '/internet_billing/adsl/create_adsl_order.php',
+  CREATE_ADSL_INTERNET_BILL_RAZORPAY_ORDER:
+  'internet_billing/adsl/create_internet_bill_razorpay_order.php',
+  VERIFY_ADSL_PAYMENT: '/internet_billing/adsl/verify_adsl_payment.php',
+  CREATE_NTFTTH_INTERNET_BILL_ORDER: '/internet_billing/ntftth/create_internet_bill_razorpay_order.php',
+  PAY_INTRNET_BILL_NTFTTH:'/internet_billing/ntftth/payInternetBillRazorpayOrder.php',
 };
 
 export default API;

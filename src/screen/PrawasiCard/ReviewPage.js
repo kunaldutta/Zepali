@@ -142,7 +142,7 @@ const loadCardCost =
       name: 'Zepali Prawasi Card',
 
       image:
-        `${BASE_URL}/logo/zepali_foreground.png`,
+        `${BASE_URL}/logo/logo.png`,
 
       prefill: {
 

@@ -53,3 +53,7 @@ export const cancelOrderPaymentAPI = async (data) => {
     };
   }
 };
+
+export const cancelRechargePayment = async data => {
+  return await post(API.CANCEL_RECHARGE_PAYMENT, data);
+};

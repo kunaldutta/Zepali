@@ -169,9 +169,9 @@ export const addProduct = async (data) => {
 
 /* HOME DATA */
 
-export const getHomeData = async (lang, countryCode) => {
+export const getHomeData = async (lang, countryCode, cityId) => {
   // ✅ LOGGING
-  const url = `${API.HOME}?lang=${lang}&country_code=${countryCode}`;
+  const url = `${API.HOME}?lang=${lang}&country_code=${countryCode}&city_id=${cityId}`;
 
 
   try {
@@ -192,9 +192,9 @@ export const getHomeData = async (lang, countryCode) => {
 
 };
 
-export const getCategoryProducts = async (categoryId, lang, country_code) => {
+export const getCategoryProducts = async (categoryId, lang, country_code, city_id) => {
 
-  const url = `${API.CATEGORY_PRODUCTS}?category_id=${categoryId}&lang=${lang}&country_code=${country_code}`;
+  const url = `${API.CATEGORY_PRODUCTS}?category_id=${categoryId}&lang=${lang}&country_code=${country_code}&city_id=${city_id}`;
   
   try {
 
