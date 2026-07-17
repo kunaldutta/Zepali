@@ -45,7 +45,7 @@ Use my referral code:
 
 ${referralCode}
 
-When you complete your first successful purchase, I will receive 200 reward points (₹100).
+When you complete your first successful purchase, both of us will receive 200 reward points (₹100).
 
 Download Zepali today :
 https://play.google.com/store/apps/details?id=net.zepali.app`

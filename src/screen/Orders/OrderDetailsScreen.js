@@ -454,7 +454,7 @@ const OrderDetailsScreen = ({route, navigation}) => {
             Bill Summary
           </Text>
           <TouchableOpacity
-                style={styles.feedbackButton}
+                style={styles.invoiceButton}
                 onPress={() =>
                   viewInvoice()
                 }>
@@ -683,7 +683,13 @@ returnButtonTextDisabled: {
   color: '#666666',
 },
 feedbackButton:{
-  marginTop:0,
+  marginTop:10,
+  backgroundColor:'#FF9800',
+  paddingVertical:10,
+  borderRadius:8,
+  alignItems:'center',
+},
+invoiceButton:{
   backgroundColor:'#FF9800',
   paddingVertical:5,
   borderRadius:8,
