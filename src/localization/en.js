@@ -156,4 +156,5 @@ export default {
   PROCEED_TO_PAY: "Proceed to Pay",
   PAY_NOW: "Pay Now",
   INTERNET_PROVIDERS: "Internet Providers",
+  MORE_IN: "More in",
 };

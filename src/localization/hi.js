@@ -152,4 +152,5 @@ export default {
   PROCEED_TO_PAY: "भुगतान करें",
   PAY_NOW: "अभी भुगतान करें",
   INTERNET_PROVIDERS: "इंटरनेट प्रदाता",
+  MORE_IN: "और",
 };
