@@ -519,6 +519,7 @@ const renderFooter = useMemo(() => {
         />)}
 
         <CartBillSummary summary={summary} />
+        
       </View>
       {uniqueCategories.map(catId => {
 
@@ -531,6 +532,7 @@ const renderFooter = useMemo(() => {
             key={catId}
             style={{marginTop: 0}}
           >
+             
             <RelatedProducts
               categoryId={catId}
               cartItem={items}

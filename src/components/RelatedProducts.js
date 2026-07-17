@@ -235,17 +235,8 @@ function RelatedProducts({ categoryId, currentProductId, navigation, cartItem })
     <View style={styles.container}>
 
       {/* ✅ CATEGORY TITLE */}
-        <Text
-              style={{
-                fontSize: 16,
-                fontWeight: 'bold',
-                marginVertical: '2%',
-              }}
-            >
-              {i18n.t('YOU_MAY_ALSO_LIKE')}
-            </Text> 
       <Text style={styles.title}>
-        {categoryName}
+        {i18n.t('MORE_IN')} {categoryName}
       </Text>
 
       <FlatList
