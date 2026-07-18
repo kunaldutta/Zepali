@@ -134,7 +134,7 @@ export default function CategoryProductScreen({route, navigation}){
         {item.description}
       </Text>
 
-      {item.min_price > item.final_price && ( <Text style={[styles.price, { textDecorationLine: 'line-through' }]}>
+      {Number(item?.min_price) > Number(item?.final_price) && ( <Text style={[styles.price, { textDecorationLine: 'line-through' }]}>
         ₹ {item.min_price}
       </Text>)}
       <Text style={styles.productFinalPrice}>
