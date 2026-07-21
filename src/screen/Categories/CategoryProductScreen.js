@@ -235,18 +235,23 @@ const styles = StyleSheet.create({
     borderRadius:10,
     padding:10,
     marginBottom:10,
-    backgroundColor:colors.productColumnBackground
+    backgroundColor:colors.productColumnBackground,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: {width: 0, height: 2},
   },
 
   productImg:{
     width:'100%',
-    height:100,
-    borderRadius:10
+    height:190,
+    marginTop:25,
   },
 
   productName:{
     fontWeight:'bold',
-    marginTop:5
+    marginTop:10
   },
 
   desc:{
