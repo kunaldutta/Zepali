@@ -228,7 +228,7 @@ export default function Profile({ navigation }) {
             }
             ListHeaderComponent={
               <Text style={styles.title}>
-                App: {currentVersion}
+                App Version: {currentVersion}
               </Text>
             }
             showsVerticalScrollIndicator={

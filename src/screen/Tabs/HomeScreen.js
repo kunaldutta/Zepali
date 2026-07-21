@@ -72,11 +72,13 @@ const ProductCard = memo(({item, onPress}) => (
       </View>
     )}
 
-    <ImageWithLoader
-      uri={item?.image}
-      style={styles.productImg}
-      resizeMode="contain"
-    />
+    <View style={styles.productImageContainer}>
+      <ImageWithLoader
+        uri={item.image}
+        style={styles.productImg}
+        resizeMode="contain"
+      />
+    </View>
 
     <Text style={styles.productName} numberOfLines={2}>
       {item?.product_name}
@@ -625,7 +627,7 @@ const styles = StyleSheet.create({
   },
   categoryImageContainer: {
     width: 100,
-    height: 100,
+    height: 130,
     borderRadius: 10,
     top:4,
     marginBottom: 8,
@@ -673,13 +675,25 @@ const styles = StyleSheet.create({
     width: PRODUCT_CARD_WIDTH,
     minHeight: 230,
     backgroundColor: colors.productColumnBackground,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: {width: 0, height: 2},
   },
-  productImg: {
-    width: '100%',
-    height: 100,
-    top: 15,
-    borderRadius: 10,
-  },
+  productImageContainer: {
+  width: '100%',
+  height: 140,
+  overflow: 'hidden',
+  backgroundColor: colors.productColumnBackground,
+  alignSelf: 'center',
+  marginTop: 10,
+},
+
+productImg: {
+  width: '100%',
+  height: '100%',
+},
   productName: {
     fontSize: 15,
     marginTop: 16,
