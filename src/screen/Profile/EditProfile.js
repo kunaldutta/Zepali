@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { launchImageLibrary } from 'react-native-image-picker';
 import ImagePicker from 'react-native-image-crop-picker';
 
 import { BASE_URL } from '../../network/apiClient';
@@ -55,52 +56,109 @@ export default function EditProfile() {
   /* ================= IMAGE PICKER + CROP ================= */
 
   const pickImage = async () => {
+  try {
+    setImageModalVisible(false);
 
-    try {
+    // STEP 1: Select using react-native-image-picker
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      selectionLimit: 1,
+      quality: 0.9,
 
-      // Close preview popup first
-      setImageModalVisible(false);
+      // Important for Samsung HEIC/HEIF photos
+      conversionQuality: 0.9,
+    });
 
-      const selectedImage = await ImagePicker.openPicker({
-        width: 600,
-        height: 600,
-        cropping: true,
-        cropperCircleOverlay: true,
-        compressImageQuality: 0.8,
-        mediaType: 'photo',
-        freeStyleCropEnabled: false,
-      });
+    console.log('IMAGE PICKER RESULT:', result);
 
-      if (selectedImage) {
+    if (result.didCancel) {
+      return;
+    }
 
-        setImage({
-          uri: selectedImage.path,
-          type: selectedImage.mime || 'image/jpeg',
-          fileName:
-            selectedImage.filename ||
-            `profile_${Date.now()}.jpg`,
-        });
-
-      }
-
-    } catch (error) {
-
-      // User cancelled picker/crop
-      if (
-        error?.code === 'E_PICKER_CANCELLED' ||
-        error?.message?.toLowerCase()?.includes('cancel')
-      ) {
-        return;
-      }
-
-      console.log('Image picker error:', error);
+    if (result.errorCode) {
+      console.log(
+        'Picker error:',
+        result.errorCode,
+        result.errorMessage
+      );
 
       Alert.alert(
         'Error',
-        'Unable to select image'
+        result.errorMessage || 'Unable to select image'
       );
+
+      return;
     }
-  };
+
+    const asset = result.assets?.[0];
+
+    if (!asset?.uri) {
+      Alert.alert(
+        'Error',
+        'Unable to read selected image'
+      );
+      return;
+    }
+
+    console.log('SELECTED URI:', asset.uri);
+    console.log('SELECTED TYPE:', asset.type);
+    console.log('SELECTED NAME:', asset.fileName);
+
+    // STEP 2: Open selected image in cropper
+    const croppedImage = await ImagePicker.openCropper({
+      path: asset.uri,
+
+      width: 600,
+      height: 600,
+
+      cropping: true,
+      cropperCircleOverlay: true,
+
+      compressImageQuality: 0.8,
+      compressImageMaxWidth: 1200,
+      compressImageMaxHeight: 1200,
+
+      forceJpg: true,
+      freeStyleCropEnabled: false,
+    });
+
+    console.log('CROPPED IMAGE:', croppedImage);
+
+    if (!croppedImage?.path) {
+      Alert.alert(
+        'Error',
+        'Unable to crop selected image'
+      );
+      return;
+    }
+
+    // STEP 3: Save cropped result
+    setImage({
+      uri: croppedImage.path,
+      type: croppedImage.mime || 'image/jpeg',
+      fileName: `profile_${Date.now()}.jpg`,
+    });
+
+  } catch (error) {
+
+    console.log('========== IMAGE ERROR ==========');
+    console.log('Code:', error?.code);
+    console.log('Message:', error?.message);
+    console.log('Full Error:', error);
+
+    if (
+      error?.code === 'E_PICKER_CANCELLED' ||
+      error?.message?.toLowerCase()?.includes('cancel')
+    ) {
+      return;
+    }
+
+    Alert.alert(
+      'Error',
+      error?.message || 'Unable to process image'
+    );
+  }
+};
 
   /* ================= GET PROFILE IMAGE ================= */
 
