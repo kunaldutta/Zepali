@@ -321,41 +321,58 @@ export default function Login({navigation, route}) {
     setRegisterLoading(true);
 
     try {
-      const json = await post(API.REGISTER, {
-        name,
-        email,
-        mobile_no: mobile,
-        country_code: getCountryCode(),
-        uuid: uuid,
-        fcm_token: fcmToken,
-        accepted_terms_version: appConfig?.legal_version || '1.0',
-      });
+    const json = await post(API.REGISTER, {
+      name,
+      email,
+      mobile_no: mobile,
+      country_code: getCountryCode(),
+      uuid: uuid,
+      fcm_token: fcmToken,
+      accepted_terms_version: appConfig?.legal_version || '1.0',
+    });
 
-      if (json.status) {
-        await AsyncStorage.setItem('USER_DATA', JSON.stringify(json.user));
-        setShowRegisterModal(false);
-        setShowLanguageModal(true);
-      } else {
-        Alert.alert(json.message);
-      }
+    console.log("REGISTER RESPONSE =", json);
 
-    } catch {
-      Alert.alert('Registration failed');
+    if (json?.status) {
+
+      // Save user data
+      await AsyncStorage.setItem(
+        'USER_DATA',
+        JSON.stringify(json.user)
+      );
+
+      // Save authentication tokens - SAME AS LOGIN
+      await Keychain.setGenericPassword(
+        'zepali',
+        JSON.stringify({
+          access_token: json.access_token,
+          refresh_token: json.refresh_token,
+          expires_in: json.expires_in,
+        })
+      );
+
+      setShowRegisterModal(false);
+      setShowLanguageModal(true);
+
+    } else {
+
+      Alert.alert(
+        'Registration Failed',
+        json.message || 'Unable to register'
+      );
     }
 
+  } catch (error) {
+
+    console.log("REGISTER ERROR =", error);
+    setRegisterLoading(false);
+    Alert.alert(
+      'Registration failed'
+    );
+  }
     setRegisterLoading(false);
   };
 
-  // const selectLanguage = async lang => {
-  //   try {
-  //     i18n.locale = lang;
-  //     await AsyncStorage.setItem('appLanguage', lang);
-  //     setShowLanguageModal(false);
-  //     globalThis.refreshApp();
-  //   } catch {
-  //     Alert.alert('Error', 'Language change failed');
-  //   }
-  // };
 
   const selectLanguage = async lang => {
     try {

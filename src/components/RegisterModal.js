@@ -28,6 +28,13 @@ export default function RegisterModal({
   onTermsPress,
 }) {
   const termsUrl = `${BASE_URL}/terms_condition/user_register_terms_condition_privacy.html`;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const isEmailValid =
+    email.trim() === '' || emailRegex.test(email.trim());
+
+  const isSubmitDisabled =loading || !acceptedTerms || !isEmailValid;
+
   return (
     <Modal
       visible={visible}
@@ -53,13 +60,24 @@ export default function RegisterModal({
             />
 
             <TextInput
-              style={styles.input}
-              placeholder="Email (Optional)"
-              placeholderTextColor={colors.placeholderTextColor || '#A1887F'}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-            />
+            style={[
+              styles.input,
+              email.trim() !== '' && !isEmailValid && styles.inputError
+            ]}
+            placeholder="Email (Optional)"
+            placeholderTextColor={colors.placeholderTextColor || '#A1887F'}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+
+          {email.trim() !== '' && !isEmailValid && (
+            <Text style={styles.errorText}>
+              Please enter a valid email address
+            </Text>
+          )}
 
               <TouchableOpacity
                 style={styles.checkboxContainer}
@@ -98,10 +116,10 @@ export default function RegisterModal({
             <TouchableOpacity
               style={[
                 styles.button,
-                (!acceptedTerms || loading) && { opacity: 0.5 }
+                isSubmitDisabled && { opacity: 0.5 }
               ]}
               onPress={onSubmit}
-              disabled={loading || !acceptedTerms}
+              disabled={isSubmitDisabled}
             >
               {loading ? (
                 <ActivityIndicator color="#fff" />
@@ -210,6 +228,17 @@ const styles = StyleSheet.create({
     linkText:{
       color:'#007BFF',
       fontWeight:'600'
-    }
+    },
+    inputError: {
+      borderColor: '#D32F2F',
+    },
+
+    errorText: {
+      width: '100%',
+      color: '#D32F2F',
+      fontSize: 12,
+      marginTop: -10,
+      marginBottom: 10,
+    },
 
 });

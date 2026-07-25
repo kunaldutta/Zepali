@@ -20,13 +20,25 @@ const ImageZoomModal = ({ visible, images, index = 0, onClose }) => {
             top: 55,
             right: 20,
             zIndex: 10,
+            backgroundColor: '#390303',
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            justifyContent: 'center',
+            alignItems: 'center',
           }}
         >
-          <Text style={{ color: colors.primary, fontSize: 24 }}>
+          <Text
+            style={{
+              color: '#fff',
+              fontSize: 24,
+              lineHeight: 26,
+              textAlign: 'center',
+            }}
+          >
             ✕
           </Text>
         </TouchableOpacity>
-
         {/* ✅ IMAGE VIEWER */}
         <ImageViewer
           imageUrls={images}
