@@ -26,6 +26,7 @@ import DeviceInfo from 'react-native-device-info';
 import {compareVersions} from '../../utils/versionUtils';
 import * as Keychain from 'react-native-keychain';
 
+
 const MAX_PRODUCTS_PER_SECTION = 15;
 const PRODUCT_CARD_WIDTH = 150;
 const PRODUCT_CARD_MARGIN = 5;
@@ -65,6 +66,7 @@ const ImageWithLoader = memo(({uri, style, resizeMode}) => {
 });
 
 const ProductCard = memo(({item, onPress}) => (
+  
   <TouchableOpacity style={styles.productBox} activeOpacity={0.85} onPress={onPress}>
     {item?.effective_discount_percentage !== 0 && !!item.offer_name && (
       <View style={styles.offerBanner}>
@@ -175,12 +177,12 @@ const ProductSection = memo(({section, navigation}) => {
         return (
           <SeeMoreCard
             section={section}
-            onPress={() =>
+            onPress={() =>{
               navigation.navigate('CategoryProductScreen', {
                 categoryId: section.category_id,
                 categoryName: section.category_name,
               })
-            }
+            }}
           />
         );
       }
@@ -188,12 +190,12 @@ const ProductSection = memo(({section, navigation}) => {
       return (
         <ProductCard
           item={item}
-          onPress={() =>
+          onPress={() =>{
             navigation.navigate('ProductDetailScreen', {
               productId: item.id,
               colorCode: item.color_code,
             })
-          }
+          }}
         />
       );
     },
