@@ -685,7 +685,7 @@ const styles = StyleSheet.create({
   },
   productImageContainer: {
   width: '100%',
-  height: 140,
+  height: 160,
   overflow: 'hidden',
   backgroundColor: colors.productColumnBackground,
   alignSelf: 'center',
@@ -695,6 +695,7 @@ const styles = StyleSheet.create({
 productImg: {
   width: '100%',
   height: '100%',
+  marginTop: 30,
 },
   productName: {
     fontSize: 15,

@@ -247,6 +247,7 @@ offerText: {
   fontSize: 12,
   textAlign: 'center',
   lineHeight: 14,
+  fontWeight:'500'
 },
 pickerBox: {
     borderWidth: 1,
