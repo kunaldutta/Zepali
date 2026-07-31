@@ -116,8 +116,7 @@ export default function CategoryProductScreen({route, navigation}){
       {item?.max_offer !== 0 && (
             <View style={globalStyles.offerBanner}>
               <Text style={globalStyles.offerText}>
-                Offer up to{'\n'}
-                {item.max_offer}%
+                {item?.offer_name || 'Get Offer'}
               </Text>
             </View>
           )}
@@ -245,7 +244,7 @@ const styles = StyleSheet.create({
 
   productImg:{
     width:'100%',
-    height:190,
+    height:180,
     marginTop:25,
   },
 
