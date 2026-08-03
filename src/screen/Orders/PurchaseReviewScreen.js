@@ -8,7 +8,9 @@ import {
   Alert,
   ScrollView,
   Platform,
+  ActivityIndicator
 } from 'react-native';
+
 
 import AsyncStorage
 from '@react-native-async-storage/async-storage';
@@ -58,10 +60,11 @@ export default function PurchaseReviewScreen({
   const [onlinePaymentEnabled, setOnlinePaymentEnabled] = useState(true);
   const [codEnabled, setCodEnabled] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState(summary.
-    grand_total > 0 ? 'ONLINE' : 'COD');
+    grand_total > 0 ? 'COD' : 'ONLINE');
   const [loading, setLoading] = useState(false);
+  const [configLoading, setConfigLoading] = useState(true);
   const dispatch = useDispatch(); 
- 
+  
   useEffect(() => {
   loadAppConfig();
 }, []);
@@ -69,7 +72,7 @@ export default function PurchaseReviewScreen({
 const loadAppConfig = async () => {
 
   try {
-
+    setConfigLoading(true);
     const response = await getAppConfigAPI();
 
     console.log('APP CONFIG:', response);
@@ -79,6 +82,12 @@ const loadAppConfig = async () => {
       const onlinePaymentStatus = Number(
         response?.data?.online_payment_status
       );
+      const cod_priority = Number(
+        response?.data?.cod_priority
+      );
+      const online_priority = Number(
+        response?.data?.online_payment_status
+      );
 
       setOnlinePaymentEnabled(
         onlinePaymentStatus === 1
@@ -86,12 +95,17 @@ const loadAppConfig = async () => {
       setCodEnabled(
        Number(response?.data?.COD_status) === 1 ? true : false
       );
-
       if (
         onlinePaymentStatus === 0 &&
         paymentMethod === 'ONLINE'
       ) {
         setPaymentMethod('COD');
+      } else if (cod_priority === 1 && online_priority ===1){
+        setPaymentMethod('COD');
+      }else if (cod_priority === 1 && online_priority === 0){
+        setPaymentMethod('COD');
+      }else if (cod_priority === 0 && online_priority === 1){
+        setPaymentMethod('ONLINE');
       }
     }
 
@@ -99,6 +113,8 @@ const loadAppConfig = async () => {
 
     console.log('APP CONFIG ERROR:', e);
 
+  } finally{
+    setConfigLoading(false);
   }
 
 };
@@ -517,7 +533,23 @@ const loadAppConfig = async () => {
     setLoading(false);
   }
 };
-
+//   if (configLoading) {
+//   return (
+//     <SafeAreaView
+//       style={[
+//         globalStyles.safeArea,
+//         {
+//           justifyContent: 'center',
+//           alignItems: 'center',
+//         },
+//       ]}>
+//       <ActivityIndicator
+//         size="large"
+//         color={colors.primary}
+//       />
+//     </SafeAreaView>
+//   );
+// } 
   return (
     <SafeAreaView style={globalStyles.safeArea}>
 
@@ -533,14 +565,33 @@ const loadAppConfig = async () => {
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingBottom: 120,
+          opacity: configLoading ? 0.5 : 1
         }}
         showsVerticalScrollIndicator={false}
       >
 
         {/* ================= ADDRESS ================= */}
-
-        <View style={styles.card}>
-
+       {configLoading && (
+          <View
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: 'rgba(255,255,255,0.5)', // Optional
+              zIndex: 999,
+            }}>
+            <ActivityIndicator
+              size="large"
+              color={colors.primary}
+            />
+          </View>
+        )}
+        <View style={[styles.card,]}>
+        
           <View style={styles.rowBetween}>
 
             <Text style={styles.sectionTitle}>
@@ -806,7 +857,7 @@ const loadAppConfig = async () => {
 
       {/* ================= FOOTER ================= */}
 
-      <View style={styles.footer}>
+      {!configLoading && (<View style={styles.footer}>
 
         <View>
 
@@ -820,7 +871,7 @@ const loadAppConfig = async () => {
 
         </View>
 
-        <TouchableOpacity
+      <TouchableOpacity
           style={styles.placeOrderBtn}
           onPress={confirmOrder}
           disabled={loading}
@@ -838,7 +889,7 @@ const loadAppConfig = async () => {
 
         </TouchableOpacity>
 
-      </View>
+      </View>)}
 
     </SafeAreaView>
   );
