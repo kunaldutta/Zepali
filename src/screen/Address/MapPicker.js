@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,9 @@ import {
   FlatList,
   Alert,
   Platform,
-  PermissionsAndroid
+  PermissionsAndroid,
+  Linking,
+  AppState,
 } from 'react-native';
 import MapView from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation'; // ✅ ADDED
@@ -17,6 +19,7 @@ import { colors } from '../../styles/globalStyles';
 import AppHeader from '../../components/AppHeader';
 import i18n from '../../localization/i18n';
 import { checkServiceableLocationAPI } from '../../services/addressService';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const GOOGLE_API_KEY = "AIzaSyCMvQFX2ZYppcK_z0jC_Nr5sFO8dB1lPQo";
 
@@ -26,19 +29,57 @@ export default function MapPicker({ route, navigation }) {
   const isFetchingAddress = useRef(false);
   const isInitialRegionLoaded = useRef(false);
   const lastLatLng = useRef('');
+  const isProgrammaticMove = useRef(false);
   
   const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
 
   const [searchText, setSearchText] = useState('');
   const [suggestions, setSuggestions] = useState([]);
+  const HYDERABAD_REGION = {
+  latitude: 17.385044,
+  longitude: 78.486671,
+  latitudeDelta: 0.01,
+  longitudeDelta: 0.01,
+};
+console.log('ROUTE PARAMS:', route?.params?.address?.latitude, route?.params?.address?.logitude);
+  const latitude = Number(route?.params?.address?.latitude) || null;
+  const longitude = Number(route?.params?.address?.logitude) || null;
+  const [region, setRegion] = useState(
+  latitude && longitude
+    ? {
+        latitude: latitude,
+        longitude: longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      }
+    : null,
+);
 
-  const [region, setRegion] = useState({
-    latitude: route.params?.latitude || 17.465809,
-    longitude: route.params?.longitude || 78.362732,
-    latitudeDelta: 0.01,
-    longitudeDelta: 0.01,
-  });
+const appState = useRef(AppState.currentState); 
+const returnedFromSettings = useRef(false);
+useEffect(() => {
+  const subscription = AppState.addEventListener(
+    'change',
+    nextState => {
+
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextState === 'active' &&
+        returnedFromSettings.current
+      ) {
+        returnedFromSettings.current = false;
+
+        // Re-check permission/GPS
+        checkLocationEnabled();
+      }
+
+      appState.current = nextState;
+    },
+  );
+
+  return () => subscription.remove();
+}, []);
 
   // ✅ LOCATION CHECK ON LOAD
   useEffect(() => {
@@ -55,49 +96,136 @@ export default function MapPicker({ route, navigation }) {
 
   useEffect(() => {
 
-      getAddress(
-        region.latitude,
-        region.longitude
-      );
+      if (region) {
+    getAddress(region.latitude, region.longitude);
+  }
 
     }, []);
 
+  const tapCurrentLocation = () => {
+    checkLocationEnabled();
+    return () => {
+
+        if (debounceRef.current) {
+          clearTimeout(debounceRef.current);
+        }
+
+    };
+  };
+
   const checkLocationEnabled = async () => {
-    if (Platform.OS === 'android') {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-      );
+  if (Platform.OS === 'android') {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+    );
 
-      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-        Alert.alert("Permission Required", "Location permission is required");
-        return;
-      }
-    }
-
-    Geolocation.getCurrentPosition(
-      () => {
-        // GPS ON → do nothing
-      },
-      (error) => {
-
-        // ✅ GPS OFF DETECTION
-        if (
-          error?.code === 2 ||
-          error?.message?.includes('No location provider') ||
-          error?.message?.includes('Location provider is disabled')
-        ) {
-          Alert.alert(
-            "Location Off",
-            "Please enable location services (GPS)"
-          );
+    if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+      Alert.alert(
+        'Permission Required',
+        'Location permission is required.\n\n' +
+        'Go to:\n' +
+        'App Permissions → Location\n' +
+        'Select "Allow only while using the app".\n',
+        [
+          {
+            text: 'Retry',
+            onPress: async () => {
+        try {
+          console.log('Opening app settings...');
+          returnedFromSettings.current = true;
+          Linking.openSettings()
+          .then(() => console.log('Intent launched'))
+          .catch(err => console.log('Intent error:', err));
+        } catch (e) {
+          console.log(e);
         }
       },
-      {
-        enableHighAccuracy: false,
-        timeout: 10000,
+          },
+          {
+            text: 'Cancel',
+            onPress: () => navigation.goBack(),
+          },
+        ],
+        { cancelable: false },
+      );
+      return;
+    }
+  }
+
+  Geolocation.getCurrentPosition(
+    position => {
+
+      const newRegion = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      };
+
+      setRegion(newRegion);
+      isProgrammaticMove.current = true;
+      mapRef.current?.animateToRegion(newRegion, 1000);
+
+      getAddress(
+        position.coords.latitude,
+        position.coords.longitude,
+      );
+    },
+
+    error => {
+
+      console.log(error);
+
+      // GPS OFF
+      if (
+        error.code === 2 ||
+        error.message?.includes('No location provider') ||
+        error.message?.includes('Location provider is disabled')
+      ) {
+
+        Alert.alert(
+  'Enable GPS',
+  'Please enable GPS to continue with your current location, or you can select location manually.',
+  [
+    {
+      text: 'Cancel',
+      style: 'cancel',
+    },
+    {
+      text: 'Enable',
+      onPress: () => {
+        console.log('Retry pressed');
+
+       returnedFromSettings.current = true;
+
+        Linking.sendIntent('android.settings.LOCATION_SOURCE_SETTINGS')
+          .then(() => console.log('Intent launched'))
+          .catch(err => console.log('Intent error:', err));
+      },
+    },
+  ],
+  { cancelable: false },
+);
+
+        return;
       }
-    );
-  };
+
+      // Permission denied
+      
+
+      Alert.alert(
+        'Location Error',
+        error.message,
+      );
+    },
+
+    {
+      enableHighAccuracy: false,
+      timeout: 10000,
+      maximumAge: 0,
+    },
+  );
+};
 
   // 🔍 SEARCH API
   const searchPlaces = async (text) => {
@@ -239,7 +367,12 @@ export default function MapPicker({ route, navigation }) {
 
   const onRegionChangeComplete = (reg) => {
 
-  setRegion(reg);
+  if (isProgrammaticMove.current) {
+    isProgrammaticMove.current = false;
+
+    setRegion(reg);
+    return;
+  }
 
   // Ignore first auto callback from MapView
   if (!isInitialRegionLoaded.current) {
@@ -465,7 +598,7 @@ export default function MapPicker({ route, navigation }) {
             width: '100%',
             height: '100%',
           }}
-          initialRegion={region}
+          initialRegion={region || HYDERABAD_REGION}
           onRegionChangeComplete={onRegionChangeComplete}
           showsUserLocation={true}
           showsMyLocationButton={true}
@@ -503,6 +636,26 @@ export default function MapPicker({ route, navigation }) {
         </View>
 
         {/* CONFIRM */}
+        <TouchableOpacity
+          onPress={checkLocationEnabled}
+          style={{
+            position: 'absolute',
+            bottom: 100,
+            right: 20,
+            width: 50,
+            height: 50,
+            borderRadius: 25,
+            backgroundColor: '#7f5405',
+            justifyContent: 'center',
+            alignItems: 'center',
+            elevation: 5,
+          }}>
+          <Ionicons
+            name="navigate"
+            size={24}
+            color="#0bf3e4"
+          />
+        </TouchableOpacity>
         <TouchableOpacity
           onPress={confirmLocation}
           style={{
