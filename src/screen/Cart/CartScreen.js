@@ -542,7 +542,7 @@ const renderFooter = useMemo(() => {
         onBackPress={() => navigation.goBack()}
         showCart={false}
       />
-     <AddressCard
+     {items.length > 0 && (<AddressCard
         selectedAddress={selectedAddress}
         onPress={() => {
 
@@ -558,19 +558,29 @@ const renderFooter = useMemo(() => {
             summary: summary,
           });
         }}
-      />
+      />)}
       <View style={{flex:1, padding:15,backgroundColor:colors.background}}  pointerEvents={(cartLoading || pointsLoading) ? "none" : "auto"}>
         
-        <FlatList
-          data={items}
-          extraData={summary}
-          keyExtractor={(item, index) =>
-            `${item.cart_id || item.product_id}-${item.measurement_id}-${index}`
-          }
+        {items.length > 0 ? (
+          <FlatList
+            data={items}
+            extraData={summary}
+            keyExtractor={(item, index) =>
+              `${item.cart_id || item.product_id}-${item.measurement_id}-${index}`
+            }
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
           ListFooterComponent={renderFooter}
-        />
+        />)
+        : (
+          <View style={{flex:1, justifyContent:'center', alignItems:'center'}}>
+            <Image
+                      source={i18n.t('CART_EMPTY') == 'Your cart is empty' ? require('../../Assets/emptyCart/en_empty_cart.png') : i18n.t('CART_EMPTY') == 'आपकी कार्ट खाली है' ? require('../../Assets/emptyCart/hi_empty_cart.png') : require('../../Assets/emptyCart/ne_empty_cart.png')}
+                      style={styles.logo}
+                      resizeMode="contain"
+                    />
+          </View>
+        )}
 
 
         
@@ -792,4 +802,5 @@ placeOrderText: {
   fontSize: 16,
   fontWeight: 'bold'
 },
+logo:{ width:'100%', height:'100%', marginBottom:10, },
 });

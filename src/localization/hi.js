@@ -153,4 +153,5 @@ export default {
   PAY_NOW: "अभी भुगतान करें",
   INTERNET_PROVIDERS: "इंटरनेट प्रदाता",
   MORE_IN: "और",
+  CART_EMPTY: "आपकी कार्ट खाली है",
 };

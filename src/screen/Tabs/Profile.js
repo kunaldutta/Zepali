@@ -171,6 +171,7 @@ export default function Profile({ navigation }) {
       <AppHeader
         title={'  ' + userName}
         showBack={false}
+        showCart={false}
         leftComponent={
           <View style={styles.avatarContainer}>
             <Image

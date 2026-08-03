@@ -157,4 +157,5 @@ export default {
   PAY_NOW: "Pay Now",
   INTERNET_PROVIDERS: "Internet Providers",
   MORE_IN: "More in",
+  CART_EMPTY: "Your cart is empty",
 };
