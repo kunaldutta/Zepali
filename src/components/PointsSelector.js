@@ -23,6 +23,7 @@ const PointsSelector = ({
   cartTotal,
   onChange,
   isPointSelected,
+  onLoadingChange,
 }) => {
 
   const [totalPoints, setTotalPoints] = useState(0);
@@ -47,15 +48,14 @@ const PointsSelector = ({
   /* ================= FETCH POINTS ================= */
 
   useEffect(() => {
-    if (!userId) {
+      if (!userId || !cartTotal || Number(cartTotal) <= 0) {
+      setLoading(false);
+      onLoadingChange?.(false);
       return;
-    }
-
-    if (!cartTotal || Number(cartTotal) <= 0) {
-      return;
-    }
+  }
     autoAppliedRef.current = false;
     fetchPoints();
+    
 
   }, [userId, cartTotal]);
 
@@ -82,7 +82,7 @@ const PointsSelector = ({
     try {
 
       setLoading(true);
-
+      onLoadingChange?.(true);
       const json = await fetchUserPointsAPI(
         cartTotal,
       );
@@ -120,6 +120,7 @@ const PointsSelector = ({
     } finally {
 
       setLoading(false);
+      onLoadingChange?.(false);
     }
   };
 
@@ -203,7 +204,6 @@ const PointsSelector = ({
       setIsAlertVisible(true);
       setAlertTitle(i18n.t("ATTENTION"));
       setAlertMessage(pointsUseMsg || 'You cannot use points for this order.');
-
       return;
     }
     try {

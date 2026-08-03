@@ -47,6 +47,7 @@ export default function CartScreen({navigation}) {
    const [alertMsg, setAlertMsg] = useState('');
    const [selectedItem, setSelectedItem] = useState(null);
   const { items, total, summary, loading } = useSelector(state => state.cart);
+  const [pointsLoading, setPointsLoading] = useState(false);
   const uniqueCategories = useMemo(() => {
   return items?.length
     ? [...new Set(items.map(item => item.category_id))]
@@ -303,34 +304,6 @@ const handlePlaceOrder = () => {
       }
     });
 
-    // Alert.alert(
-    //   "Stock Availability",
-    //   message,
-    //   [
-    //     {
-    //       text: "Cancel",
-    //       style: "cancel",
-    //     },
-    //     {
-    //       text: "Continue",
-    //       onPress: () => {
-
-    //         navigation.navigate(
-    //           'PurchaseReviewScreen',
-    //           {
-    //             cartItems: items,
-    //             totalPrice: Number(
-    //               summary?.grand_total
-    //             ).toFixed(2),
-    //             address: selectedAddress,
-    //             summary,
-    //           }
-    //         );
-
-    //       },
-    //     },
-    //   ]
-    // );
     setStockMessage(message);
     setShowStockPopup(true);
 
@@ -477,13 +450,18 @@ const handlePointsChange = useCallback(
         String(amount),
       );
 
+      setPointsLoading(true);
 
-      dispatch(
-        fetchCart({
-          customer_id: loggedinUser?.id,
-          points_amount: amount,
-        }),
-      );
+      try {
+        await dispatch(
+          fetchCart({
+            customer_id: loggedinUser?.id,
+            points_amount: amount,
+          })
+        ).unwrap();
+      } finally {
+        setPointsLoading(false);
+      }
 
     } catch (error) {
       console.log('❌ handlePointsChange ERROR:', error);
@@ -516,6 +494,7 @@ const renderFooter = useMemo(() => {
           summary={summary}
           isPointSelected={isPointSelected}
           onChange={handlePointsChange}
+          onLoadingChange={setPointsLoading}
         />)}
 
         <CartBillSummary summary={summary} />
@@ -580,7 +559,7 @@ const renderFooter = useMemo(() => {
           });
         }}
       />
-      <View style={{flex:1, padding:15,backgroundColor:colors.background}}  pointerEvents={cartLoading ? "none" : "auto"}>
+      <View style={{flex:1, padding:15,backgroundColor:colors.background}}  pointerEvents={(cartLoading || pointsLoading) ? "none" : "auto"}>
         
         <FlatList
           data={items}
@@ -595,7 +574,7 @@ const renderFooter = useMemo(() => {
 
 
         
-        {cartLoading && <View style={{width:60, height:60,
+        {(cartLoading || pointsLoading) && <View style={{width:60, height:60,
         position:'absolute',
         top: '45%',
         backgroundColor:'#727577',
@@ -616,7 +595,7 @@ const renderFooter = useMemo(() => {
     borderColor:'#993636',
     borderWidth:1,
   }} 
-  pointerEvents={cartLoading ? "none" : "auto"}
+  pointerEvents={(cartLoading || pointsLoading) ? "none" : "auto"}
 >
 
   {/* TOTAL */}
