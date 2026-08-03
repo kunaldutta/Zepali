@@ -246,6 +246,12 @@ const OrderDetailsScreen = ({route, navigation}) => {
         )}
 
         {/* RETURN BUTTON */}
+        {item.item_status !== 'DELIVERED' && item.item_status !== 'CANCELLED' && item.item_status !== 'RETURNED' && item.item_status !== 'RETURN_REQUESTED' && item.item_status !== 'RETURN_REJECTED' && item.item_status !== 'RETURN_APPROVED' && 
+        (<View>
+          <Text style={styles.quantity}>
+            Delivery Date: {item?.delivery_date}
+          </Text>
+        </View>)}
 
         <TouchableOpacity
           disabled={(!item.returnable && item.item_status === 'DELIVERED') || item.item_status === 'CANCELLED' ||
@@ -281,6 +287,7 @@ const OrderDetailsScreen = ({route, navigation}) => {
           </Text>
 
         </TouchableOpacity>
+        
         {
           item.item_status === 'DELIVERED' && (
             <TouchableOpacity
@@ -301,6 +308,28 @@ const OrderDetailsScreen = ({route, navigation}) => {
             </TouchableOpacity>
           )
           }
+          {item.item_status !== 'DELIVERED' && item.item_status !== 'CANCELLED' && item.item_status !== 'RETURNED' && item.item_status !== 'RETURN_REQUESTED' && item.item_status !== 'RETURN_REJECTED' && item.item_status !== 'RETURN_APPROVED' ? 
+        (<TouchableOpacity
+                    style={styles.returnButton}
+                    onPress={() =>
+                        navigation.navigate(
+                            'OrderItemHistoryScreen',
+                            {
+                                orderItemId: item.id,
+                            },
+                        )
+                    }>
+
+                    <Text style={styles.returnButtonText}>
+                        Track Order
+                    </Text>
+
+                </TouchableOpacity>) :
+                (<View style={{marginTop: 10}}>
+                    <Text style={styles.quantity}>
+                        Order Status: {item?.item_status}
+                    </Text>
+                </View>)}
           
               {isAlertVisible && (
           <CustomAlert

@@ -11,6 +11,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
 
 import AppHeader from '../../components/AppHeader';
+import {globalStyles} from '../../styles/globalStyles';
 import {getReferralCodeAPI} from '../../services/profileService';
 
 const ReferFriendScreen = () => {
@@ -59,7 +60,7 @@ https://play.google.com/store/apps/details?id=net.zepali.app`
 
   return (
 
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[globalStyles.safeArea,]}>
 
       <AppHeader
         title="Refer a Friend"

@@ -100,6 +100,7 @@ const API = {
   VERIFY_ADSL_PAYMENT: '/internet_billing/adsl/verify_adsl_payment.php',
   CREATE_NTFTTH_INTERNET_BILL_ORDER: '/internet_billing/ntftth/create_internet_bill_razorpay_order.php',
   PAY_INTRNET_BILL_NTFTTH:'/internet_billing/ntftth/payInternetBillRazorpayOrder.php',
+  GET_ORDER_ITEM_HISTORY: '/getUserOrderItemHistory.php',
 };
 
 export default API;

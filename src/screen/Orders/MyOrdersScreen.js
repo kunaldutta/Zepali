@@ -139,7 +139,7 @@ const MyOrdersScreen = () => {
 
   return (
     <SafeAreaView style={[globalStyles.safeArea,]}>
-      <AppHeader title={i18n.t('MY_ORDERS')} onBackPress={() => navigation.goBack()} />
+      <AppHeader title={i18n.t('MY_ORDERS')} showCart={false} onBackPress={() => navigation.goBack()} />
 
       <FlatList
         data={orders}

@@ -93,3 +93,12 @@ export const requestReturnAPI = async data => {
     },
   );
 };
+
+export const getOrderItemHistoryAPI =
+  async data => {
+
+    return await post(
+      API.GET_ORDER_ITEM_HISTORY,
+      data,
+    );
+};

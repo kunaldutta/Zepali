@@ -59,6 +59,7 @@ import InternetBillHistoryScreen from './src/screen/InternetProviders/InternetBi
 import VianetScreen from './src/screen/InternetProviders/VianetScreen';
 import ADSLScreen from './src/screen/InternetProviders/ADSLScreen';
 import NTFTTHScreen from './src/screen/InternetProviders/NTFTTHScreen';
+import OrderItemHistoryScreen from './src/screen/Orders/OrderItemHistoryScreen';
 
 import {
   requestUserPermission,
@@ -241,6 +242,7 @@ const RootApp = () => {
               <Stack.Screen name="VianetScreen" component={VianetScreen}/>
               <Stack.Screen name="ADSLScreen" component={ADSLScreen}/>
               <Stack.Screen name="NTFTTHScreen" component={NTFTTHScreen}/>
+              <Stack.Screen name="OrderItemHistoryScreen" component={OrderItemHistoryScreen}/>
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
