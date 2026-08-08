@@ -394,6 +394,7 @@ useEffect(() => {
     }
 
     debounceRef.current = setTimeout(() => {
+      setRegion(reg);
       getAddress(reg.latitude, reg.longitude);
     }, 700);
   };
