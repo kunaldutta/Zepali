@@ -144,7 +144,7 @@ const CategoryCard = memo(({item, onPress}) => (
 
     <Text
       style={styles.categoryText}
-      numberOfLines={2}
+      numberOfLines={3}
     >
       {item.category_name}
     </Text>
@@ -455,7 +455,7 @@ export default function HomeScreen({navigation}) {
 
   const ListHeader = useMemo(
     () => (
-      <View>
+      <View style={{top: 10}}>
         {showReferral && (
           <TouchableOpacity
             style={styles.referralButton}
@@ -471,9 +471,7 @@ export default function HomeScreen({navigation}) {
             </Text>
           </TouchableOpacity>
         )}
-        {categories?.length > 0 && (
-          <Text style={globalStyles.title}>{i18n.t('CATEGORIES')}</Text>
-        )}
+
 
         <FlatList
           data={categories}
