@@ -55,6 +55,7 @@ export default function ProductDetailScreen({ route, navigation }) {
   const [addingCart, setAddingCart] = useState(false);
   const [wishlistId, setWishlistId] = useState(null);
   const [selectedVariantRating, setSelectedVariantRating] = useState(0)
+  const [selectingColor, setSelectingColor] = useState(false);
   
 
   /* ---------------- FETCH PRODUCT ---------------- */
@@ -128,6 +129,7 @@ useEffect(() => {
     Alert.alert("Error", "Failed to load product");
   } finally {
     setLoading(false);
+    setSelectingColor(false);
   }
 };
 
@@ -141,7 +143,7 @@ useEffect(() => {
         onBackPress={() => navigation.goBack()}
       />
 
-      <View style={[styles.center,{height:'100%', bottom:0}]}>
+      <View style={[styles.center,{height:'100%', top:114}]}>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     </SafeAreaView>
@@ -168,14 +170,13 @@ if (!product || !selectedColor) {
   /* ---------------- HANDLERS ---------------- */
 
   const changeColor = async (color) => {
-    setSelectedVariant(null); // ✅ VERY IMPORTANT (reset old selection)
+  setSelectedVariant(null);
+  setSelectingColor(true);
+  await loadProduct(color.color);
 
-    setLoading(true);
-    await loadProduct(color.color);
-
-    setActiveIndex(0);
-    setQuantity(1);
-  };
+  setActiveIndex(0);
+  setQuantity(1);
+};
 
   const finalPrice = (price, offer) =>{
     
@@ -407,7 +408,10 @@ const onWishlistPress = async () => {
       <AppHeader title="Product Detail" onBackPress={() => navigation.goBack()} />
       
       <View style={{ flex: 1, backgroundColor: colors.background }}>
-
+      {selectingColor && (<View style={[styles.center,{height:'100%', top:'0%', position:'absolute', backgroundColor:colors.background, zIndex:999, opacity:0.6}]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        
+      </View>)}
         <ScrollView contentContainerStyle={{paddingBottom:100}}>
 
           {/* IMAGES */}
@@ -529,7 +533,7 @@ const onWishlistPress = async () => {
                   )}
                 </TouchableOpacity>
               </View>
-
+            
             {selectedVariant && (
               <>
               {selectedVariant.effective_discount_percentage > 0 && (<Text style={[styles.price, { textDecorationLine: 'line-through' }]}>₹ {selectedVariant?.price}</Text>)}
@@ -539,18 +543,23 @@ const onWishlistPress = async () => {
               )}
               </>
             )}
+            {selectingColor && (
+              <>
+              <Text style={[styles.productFinalPrice, {fontSize:22, top:12,}]}> Loading Price...</Text>
+              </>
+            )}
             {selectedVariant && (
               <>
               <Text style={[styles.productFinalPrice, {fontSize:12, top:12,}]}> Delivery {selectedVariant?.deliverydate || '6 Days'}</Text>
               </>
-            )}
+            )}            
 
             
 
             {/* COLORS */}
             <Text style={[styles.title,{top:10}]}>{i18n.t('PRODUCT_COLOR')}: {colorName}</Text>
 
-            <ScrollView style={{top:14}} horizontal>
+            <ScrollView style={{top:14}} horizontal contentContainerStyle={{paddingRight: 20}}>
               
               {product.colors.map(c => (
                 <TouchableOpacity
@@ -652,7 +661,7 @@ const onWishlistPress = async () => {
             onPress={existingCartItem ? goToCart : handleAddToCart}
           >
             <Text style={{color:'#fff', fontSize:14, fontWeight:'bold'}}>
-              {existingCartItem ? i18n.t('GO_TO_CART'): Number(selectedVariant?.stock || 0) <= 0 ? i18n.t('OUT_OF_STOCK') : i18n.t('ADD_TO_CART')}
+              {selectingColor ? 'Loading...' : existingCartItem ? i18n.t('GO_TO_CART'): Number(selectedVariant?.stock || 0) <= 0 ? i18n.t('OUT_OF_STOCK') : i18n.t('ADD_TO_CART')}
             </Text>
           </TouchableOpacity>
 
