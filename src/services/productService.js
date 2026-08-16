@@ -16,6 +16,36 @@ export const fetchProducts = async () => {
   }
 };
 
+/* FETCH PRODUCTS */
+
+export const fetchProductsForSearch = async () => {
+
+  try {
+
+
+    const lang = i18n.locale || 'en';
+
+
+    const data = await get(
+      `${API.PRODUCTS_FOR_SEARCH_SCREEN}?lang=${lang}&city_id=1`
+    );
+
+
+    return data;
+
+  } catch (error) {
+
+    console.log(
+      'fetchProductsForSearch ERROR:',
+      error
+    );
+
+    throw error;
+
+  }
+
+};
+
 export const fetchCartAPI = async ( pointsAmount = 0) => {
   try {
     const app_version = DeviceInfo.getVersion();
@@ -171,7 +201,9 @@ export const addProduct = async (data) => {
 
 export const getHomeData = async (lang, countryCode, cityId) => {
   // ✅ LOGGING
-  const url = `${API.HOME}?lang=${lang}&country_code=${countryCode}&city_id=${cityId}`;
+  const platform = Platform.OS;
+  const app_version = DeviceInfo.getVersion();
+  const url = `${API.HOME}?lang=${lang}&country_code=${countryCode}&city_id=${cityId}&platform=${platform}&app_version=${app_version}`;
 
 
   try {
@@ -193,8 +225,8 @@ export const getHomeData = async (lang, countryCode, cityId) => {
 };
 
 export const getCategoryProducts = async (categoryId, lang, country_code, city_id) => {
-
-  const url = `${API.CATEGORY_PRODUCTS}?category_id=${categoryId}&lang=${lang}&country_code=${country_code}&city_id=${city_id}`;
+  const app_version = DeviceInfo.getVersion();
+  const url = `${API.CATEGORY_PRODUCTS}?category_id=${categoryId}&lang=${lang}&country_code=${country_code}&city_id=${city_id}&app_version=${app_version}`;
   
   try {
 

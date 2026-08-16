@@ -101,6 +101,7 @@ const API = {
   CREATE_NTFTTH_INTERNET_BILL_ORDER: '/internet_billing/ntftth/create_internet_bill_razorpay_order.php',
   PAY_INTRNET_BILL_NTFTTH:'/internet_billing/ntftth/payInternetBillRazorpayOrder.php',
   GET_ORDER_ITEM_HISTORY: '/getUserOrderItemHistory.php',
+  PRODUCTS_FOR_SEARCH_SCREEN: '/get_products.php',
 };
 
 export default API;

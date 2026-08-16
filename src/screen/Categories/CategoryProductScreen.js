@@ -16,6 +16,7 @@ import {getCategoryProducts} from '../../services/productService';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import {
   globalStyles,
@@ -526,7 +527,25 @@ export default function CategoryProductScreen({
         showCart={true}
 
       />
+      {/* =========================================================
+         SEARCH BAR
+      ========================================================== */}
+      <View style={styles.topBar}>
+        <View style={[styles.searchContainer, {width: '95%'}]}>
+          <Ionicons
+            name="search"
+            size={22}
+            color="#777"
+            style={styles.searchIcon}
+          />
 
+          <TouchableOpacity
+            style={{flex: 1}}
+            onPress={() => navigation.navigate('SearchScreen', {products})}>
+            <Text style={styles.searchText}>Search Product...</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
 
       {/* CONTENT */}
 
@@ -781,6 +800,23 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 50,
     color: '#666',
+  },
+
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f1f1f1',
+    margin: 10,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    height: 45,
+  },
+  searchIcon: {
+    marginRight: 5,
+  },
+  searchText: {
+    padding: 10,
+    color: '#777',
   },
 
 });
