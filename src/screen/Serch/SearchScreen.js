@@ -1,396 +1,1127 @@
-import React, {useState, useRef} from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+} from 'react';
+
 import {
-View,
-Text,
-TextInput,
-FlatList,
-Image,
-StyleSheet,
-TouchableOpacity,
-Keyboard
+  View,
+  Text,
+  TextInput,
+  FlatList,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Keyboard,
+  ActivityIndicator,
 } from 'react-native';
 
 import {SafeAreaView} from 'react-native-safe-area-context';
+
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {globalStyles,colors} from '../../styles/globalStyles';
-import { BASE_URL } from '../../network/apiClient';
 
-export default function SearchScreen({route,navigation}){
+import {
+  globalStyles,
+  colors,
+} from '../../styles/globalStyles';
 
-const {products} = route.params;
+import {BASE_URL} from '../../network/apiClient';
 
-const inputRef = useRef(null);
+import i18n from '../../localization/i18n';
 
-const [search,setSearch] = useState('');
-const [filtered,setFiltered] = useState(products);
-const [suggestions,setSuggestions] = useState([]);
+import {
+  fetchProductsForSearch,
+} from '../../services/productService';
+import AppHeader from '../../components/AppHeader';
 
-const capitalizeWords = (text = '') => {
-  return text
-    .toLowerCase()
-    .split(' ')
-    .map(word =>
-      word.charAt(0).toUpperCase() + word.slice(1)
-    )
-    .join(' ');
-};
-/* SEARCH FUNCTION */
+export default function SearchScreen({navigation}) {
 
-const handleSearch = (text) => {
+  const inputRef = useRef(null);
 
-setSearch(text);
 
-const searchText = text.toLowerCase().trim();
+  /* =========================================================
+     STATE
+  ========================================================= */
 
-if(searchText.length === 0){
-setSuggestions([]);
-setFiltered(products);
-return;
-}
+  const [products, setProducts] = useState([]);
 
-let suggestionList = [];
+  const [filtered, setFiltered] = useState([]);
 
-products.forEach(item => {
+  const [search, setSearch] = useState('');
 
-const name = item.product_name?.toLowerCase() || '';
-const category = item.category_name?.toLowerCase() || '';
+  const [suggestions, setSuggestions] = useState([]);
 
-const searchWords = item.search_words
-? item.search_words.toLowerCase().split(',').map(w => w.trim())
-: [];
+  const [loading, setLoading] = useState(true);
 
-if(name.includes(searchText)){
-suggestionList.push(capitalizeWords(item.product_name));
-}
+  const [error, setError] = useState('');
 
-if(category.includes(searchText)){
-suggestionList.push(capitalizeWords(item.category_name));
-}
 
-searchWords.forEach(word=>{
-if(word.includes(searchText)){
-suggestionList.push(capitalizeWords(word));
-}
-});
+  /* =========================================================
+     FETCH PRODUCTS
+  ========================================================= */
 
-});
+  useEffect(() => {
 
-const uniqueSuggestions = [...new Set(suggestionList)];
+    loadProducts();
 
-setSuggestions(uniqueSuggestions);
 
-};
+    /*
+     * Reload products when app language changes
+     */
 
-const performSearch = () => {
+    const handleLanguageChange = () => {
 
-  const searchText = search.toLowerCase().trim();
+      setSearch('');
 
-  if (!searchText) {
-    setFiltered(products);
-    setSuggestions([]);
-    Keyboard.dismiss();
-    return;
-  }
+      setSuggestions([]);
 
-  const filteredData = products.filter(item => {
+      loadProducts();
 
-    const name = item.product_name?.toLowerCase() || '';
-    const category = item.category_name?.toLowerCase() || '';
+    };
 
-    const searchWords = item.search_words
-      ? item.search_words.toLowerCase().split(',').map(w => w.trim())
-      : [];
 
-    return (
-      name.includes(searchText) ||
-      category.includes(searchText) ||
-      searchWords.some(word => word.includes(searchText))
+
+  }, []);
+
+
+  const loadProducts = async () => {
+
+    try {
+
+      setLoading(true);
+
+      setError('');
+
+
+      const data = await fetchProductsForSearch();
+
+
+      console.log(
+        'SEARCH PRODUCTS RESPONSE:',
+        data
+      );
+
+
+      if (data?.status === true) {
+
+        const productList =
+          Array.isArray(data?.products)
+            ? data.products
+            : [];
+
+
+        setProducts(productList);
+
+        setFiltered(productList);
+
+      } else {
+
+        setProducts([]);
+
+        setFiltered([]);
+
+        setError(
+          data?.message ||
+          'Unable to load products'
+        );
+
+      }
+
+    } catch (error) {
+
+      console.log(
+        'SearchScreen loadProducts ERROR:',
+        error
+      );
+
+
+      setProducts([]);
+
+      setFiltered([]);
+
+      setError(
+        'Unable to load products. Please try again.'
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+
+  /* =========================================================
+     CAPITALIZE WORDS
+  ========================================================= */
+
+  const capitalizeWords = (text = '') => {
+
+    return text
+      .toLowerCase()
+      .split(' ')
+      .map(word => {
+
+        if (!word) {
+          return '';
+        }
+
+        return (
+          word.charAt(0).toUpperCase() +
+          word.slice(1)
+        );
+
+      })
+      .join(' ');
+
+  };
+
+
+  /* =========================================================
+     SEARCH
+  ========================================================= */
+
+  const handleSearch = (text) => {
+
+    setSearch(text);
+
+
+    const searchText =
+      text.toLowerCase().trim();
+
+
+    /*
+     * Empty search
+     */
+
+    if (searchText.length === 0) {
+
+      setSuggestions([]);
+
+      setFiltered(products);
+
+      return;
+
+    }
+
+
+    let suggestionList = [];
+
+
+    products.forEach(item => {
+
+      const name =
+        item?.product_name?.toLowerCase() || '';
+
+
+      const category =
+        item?.category_name?.toLowerCase() || '';
+
+
+      const searchWords =
+        item?.search_words
+          ? item.search_words
+              .toLowerCase()
+              .split(',')
+              .map(word => word.trim())
+          : [];
+
+
+      /*
+       * Product name
+       */
+
+      if (name.includes(searchText)) {
+
+        if (item?.product_name) {
+
+          suggestionList.push(
+            capitalizeWords(
+              item.product_name
+            )
+          );
+
+        }
+
+      }
+
+
+      /*
+       * Category
+       */
+
+      if (category.includes(searchText)) {
+
+        if (item?.category_name) {
+
+          suggestionList.push(
+            capitalizeWords(
+              item.category_name
+            )
+          );
+
+        }
+
+      }
+
+
+      /*
+       * Search words
+       */
+
+      searchWords.forEach(word => {
+
+        if (
+          word &&
+          word.includes(searchText)
+        ) {
+
+          suggestionList.push(
+            capitalizeWords(word)
+          );
+
+        }
+
+      });
+
+    });
+
+
+    /*
+     * Remove duplicate suggestions
+     */
+
+    const uniqueSuggestions =
+      [...new Set(suggestionList)];
+
+
+    setSuggestions(
+      uniqueSuggestions
     );
 
-  });
+  };
 
-  setFiltered(filteredData);
+  /* =========================================================
+   CLEAR SEARCH
+========================================================= */
+
+const clearSearch = () => {
+
+  setSearch('');
+
   setSuggestions([]);
-  Keyboard.dismiss();
+
+  setFiltered(products);
+
+  inputRef.current?.focus();
 
 };
 
 
-/* SELECT SUGGESTION */
+  /* =========================================================
+     PERFORM SEARCH
+  ========================================================= */
 
-const selectSuggestion = (text) => {
+  const performSearch = () => {
 
-setSearch(text);
-
-const searchText = text.toLowerCase();
-
-const filteredData = products.filter(item => {
-
-const name = item.product_name?.toLowerCase() || '';
-const category = item.category_name?.toLowerCase() || '';
-
-const searchWords = item.search_words
-? item.search_words.toLowerCase().split(',').map(w => w.trim())
-: [];
-
-return (
-name.includes(searchText) ||
-category.includes(searchText) ||
-searchWords.some(word => word.includes(searchText))
-);
-
-});
-
-setFiltered(filteredData);
-
-// close suggestions
-setSuggestions([]);
-
-// ✅ CLOSE KEYBOARD (MAIN FIX)
-Keyboard.dismiss();
-
-};
+    const searchText =
+      search.toLowerCase().trim();
 
 
-/* PRODUCT ITEM */
+    /*
+     * Empty search
+     */
 
-const renderProduct = ({item}) => (
-<TouchableOpacity
-style={styles.productBox}
-onPress={()=>navigation.navigate("ProductDetailScreen",{productId:item.id})}
->
-  {console.log('MAX ===', item)}
-{item?.effective_discount_percentage !== 0 && !!item.offer_name && (
-      <View style={globalStyles.offerBanner}>
-        <Text style={globalStyles.offerText}>
-          {item?.offer_name}
+    if (!searchText) {
+
+      setFiltered(products);
+
+      setSuggestions([]);
+
+      Keyboard.dismiss();
+
+      return;
+
+    }
+
+
+    /*
+     * Filter products
+     */
+
+    const filteredData =
+      products.filter(item => {
+
+        const name =
+          item?.product_name?.toLowerCase() || '';
+
+
+        const category =
+          item?.category_name?.toLowerCase() || '';
+
+
+        const searchWords =
+          item?.search_words
+            ? item.search_words
+                .toLowerCase()
+                .split(',')
+                .map(word => word.trim())
+            : [];
+
+
+        return (
+
+          name.includes(searchText) ||
+
+          category.includes(searchText) ||
+
+          searchWords.some(
+            word =>
+              word.includes(searchText)
+          )
+
+        );
+
+      });
+
+
+    setFiltered(filteredData);
+
+    setSuggestions([]);
+
+    Keyboard.dismiss();
+
+  };
+
+
+  /* =========================================================
+     SELECT SUGGESTION
+  ========================================================= */
+
+  const selectSuggestion = (text) => {
+
+    setSearch(text);
+
+
+    const searchText =
+      text.toLowerCase().trim();
+
+
+    const filteredData =
+      products.filter(item => {
+
+        const name =
+          item?.product_name?.toLowerCase() || '';
+
+
+        const category =
+          item?.category_name?.toLowerCase() || '';
+
+
+        const searchWords =
+          item?.search_words
+            ? item.search_words
+                .toLowerCase()
+                .split(',')
+                .map(word => word.trim())
+            : [];
+
+
+        return (
+
+          name.includes(searchText) ||
+
+          category.includes(searchText) ||
+
+          searchWords.some(
+            word =>
+              word.includes(searchText)
+          )
+
+        );
+
+      });
+
+
+    setFiltered(filteredData);
+
+    setSuggestions([]);
+
+    Keyboard.dismiss();
+
+  };
+
+
+  /* =========================================================
+     FINAL PRICE
+  ========================================================= */
+
+  const finalPrice = (
+    price,
+    offer
+  ) => {
+
+    const numericPrice =
+      Number(price) || 0;
+
+
+    const numericOffer =
+      Number(offer) || 0;
+
+
+    const result =
+      numericPrice -
+      (
+        numericPrice *
+        numericOffer /
+        100
+      );
+
+
+    return result.toFixed(2);
+
+  };
+
+
+  /* =========================================================
+     PRODUCT ITEM
+  ========================================================= */
+
+  const renderProduct = ({item}) => {
+
+    const hasOffer =
+      Number(item?.product_offer) > 0;
+
+
+    return (
+
+      <TouchableOpacity
+        style={styles.productBox}
+        activeOpacity={0.8}
+        onPress={() =>
+          navigation.navigate(
+            'ProductDetailScreen',
+            {
+              productId: item?.id,
+            }
+          )
+        }
+      >
+
+        {/* =================================================
+            OFFER
+        ================================================= */}
+
+        {hasOffer &&
+          !!item?.offer_name && (
+
+            <View
+              style={
+                globalStyles.offerBanner
+              }
+            >
+
+              <Text
+                style={
+                  globalStyles.offerText
+                }
+              >
+                {item.offer_name}
+              </Text>
+
+            </View>
+
+          )}
+
+
+        {/* =================================================
+            IMAGE
+        ================================================= */}
+
+        <Image
+          source={{
+            uri:
+              `${BASE_URL}${item?.image}`,
+          }}
+          resizeMode="contain"
+          style={styles.productImg}
+        />
+
+
+        {/* =================================================
+            PRODUCT NAME
+        ================================================= */}
+
+        <Text
+          style={styles.productName}
+          numberOfLines={2}
+        >
+          {item?.product_name}
         </Text>
-      </View>
-    )}
-
-<Image
-source={{uri:BASE_URL+item?.image}}
-resizeMode="contain"
-style={styles.productImg}
-/>
-
-<Text style={styles.productName}>
-{item.product_name}
-</Text>
-
-<Text numberOfLines={1} style={styles.productSortDesc}>
-{item?.description}
-</Text>
-
-<Text style={[styles.price, { textDecorationLine: 'line-through' }]}>
-₹ {item?.min_price}
-</Text>
-<Text style={styles.productFinalPrice}>
-₹ {finalPrice(item?.min_price, item?.product_offer)}
-</Text>
 
 
-</TouchableOpacity>
-);
+        {/* =================================================
+            DESCRIPTION
+        ================================================= */}
 
- const finalPrice = (price, offer) =>{
-    
-    let finalPrice = price - (price * (offer/100))
-   
-    return finalPrice; 
+        {!!item?.description && (
+
+          <Text
+            numberOfLines={1}
+            style={styles.productSortDesc}
+          >
+            {item.description}
+          </Text>
+
+        )}
+
+
+        {/* =================================================
+            ORIGINAL PRICE
+        ================================================= */}
+
+        {hasOffer &&
+          item?.min_price != null && (
+
+            <Text
+              style={[
+                styles.price,
+                {
+                  textDecorationLine:
+                    'line-through',
+                },
+              ]}
+            >
+              ₹ {item.min_price}
+            </Text>
+
+          )}
+
+
+        {/* =================================================
+            FINAL PRICE
+        ================================================= */}
+
+        {item?.min_price != null && (
+
+          <Text
+            style={
+              styles.productFinalPrice
+            }
+          >
+            ₹ {
+              hasOffer
+                ? finalPrice(
+                    item.min_price,
+                    item.product_offer
+                  )
+                : Number(
+                    item.min_price
+                  ).toFixed(2)
+            }
+          </Text>
+
+        )}
+
+      </TouchableOpacity>
+
+    );
+
+  };
+
+
+  /* =========================================================
+     SUGGESTION ITEM
+  ========================================================= */
+
+  const renderSuggestion = ({item}) => (
+
+    <TouchableOpacity
+      style={styles.suggestionItem}
+      onPress={() =>
+        selectSuggestion(item)
+      }
+      activeOpacity={0.7}
+    >
+
+      <Ionicons
+        name="search"
+        size={16}
+        color="#777"
+      />
+
+
+      <Text
+        style={styles.suggestionText}
+        numberOfLines={1}
+      >
+        {item}
+      </Text>
+
+    </TouchableOpacity>
+
+  );
+
+
+  /* =========================================================
+     LOADING
+  ========================================================= */
+
+  if (loading) {
+
+    return (
+
+      <SafeAreaView
+        style={
+          globalStyles.safeArea
+        }
+      >
+
+        <View
+          style={
+            styles.loadingContainer
+          }
+        >
+
+          <ActivityIndicator
+            size="large"
+            color={
+              colors.primary ||
+              '#05b8b8'
+            }
+          />
+
+
+          <Text
+            style={
+              styles.loadingText
+            }
+          >
+            Loading products...
+          </Text>
+
+        </View>
+
+      </SafeAreaView>
+
+    );
+
   }
-/* SUGGESTION ITEM */
-
-const renderSuggestion = ({item}) => (
-
-<TouchableOpacity
-style={styles.suggestionItem}
-onPress={()=>selectSuggestion(item)}
-activeOpacity={0.7}
->
-
-<Ionicons name="search" size={16} color="#777"/>
-
-<Text style={styles.suggestionText}>
-{item}
-</Text>
-
-</TouchableOpacity>
-
-);
 
 
-return(
+  /* =========================================================
+     SCREEN
+  ========================================================= */
 
-<SafeAreaView style={globalStyles.safeArea}>
+  return (
 
-<View style={{flex:1}}>
+    <SafeAreaView
+      style={
+        globalStyles.safeArea
+      }
+    >
 
-{/* HEADER */}
+      <View
+        style={{
+          flex: 1,
+        }}
+      >
 
-<View style={styles.header}>
+        {/* =================================================
+            HEADER
+        ================================================= */}
+        <View
+          style={styles.header}
+        >
 
-<TouchableOpacity onPress={()=>navigation.goBack()}>
-<Ionicons name="arrow-back" size={25}/>
-</TouchableOpacity>
+          {/* BACK */}
 
-<TextInput
-  placeholder="Search product or category..."
-  placeholderTextColor={colors.placeholderTextColor}
-  style={styles.searchInput}
-  ref={inputRef}
-  value={search}
-  onChangeText={handleSearch}
-  returnKeyType="search"
-  onSubmitEditing={performSearch}
-  submitBehavior="blurAndSubmit"
-/>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.goBack()
+            }
+          >
 
-</View>
+            <Ionicons
+              name="arrow-back"
+              size={25}
+            />
 
-
-{/* PRODUCT AREA */}
-
-<View style={{flex:1, backgroundColor:colors.background}}>
-
-<FlatList
-data={filtered}
-renderItem={renderProduct}
-keyExtractor={(item)=>item.id.toString()}
-numColumns={2}
-columnWrapperStyle={{justifyContent:'space-between',padding:10}}
-/>
-
-{/* FADE BACKGROUND */}
-
-{suggestions.length > 0 && (
-<View style={styles.overlay}/>
-)}
-
-</View>
+          </TouchableOpacity>
 
 
-{/* SUGGESTIONS */}
+          {/* SEARCH INPUT */}
 
-{suggestions.length > 0 && (
+          <View style={styles.searchContainer}>
 
-<View style={styles.suggestionBox}>
+            <TextInput
+              placeholder="Search Product..."
+              placeholderTextColor={
+                colors.placeholderTextColor
+              }
+              style={styles.searchInput}
+              ref={inputRef}
+              value={search}
+              onChangeText={handleSearch}
+              returnKeyType="search"
+              onSubmitEditing={performSearch}
+              submitBehavior="blurAndSubmit"
+            />
 
-<FlatList
-data={suggestions}
-renderItem={renderSuggestion}
-keyExtractor={(item,index)=>index.toString()}
-keyboardShouldPersistTaps="handled"
-/>
+            {search.length > 0 && (
 
-</View>
+              <TouchableOpacity
+                style={[styles.clearButton, {backgroundColor: 'transparent'}]}
+                onPress={clearSearch}
+                activeOpacity={0.7}
+              >
 
-)}
+                <Ionicons
+                  name="close-circle"
+                  size={21}
+                  color="#777"
+                />
 
-</View>
+              </TouchableOpacity>
 
-</SafeAreaView>
+            )}
 
-);
+          </View>
+
+        </View>
+
+
+        {/* =================================================
+            PRODUCT AREA
+        ================================================= */}
+
+        <View
+          style={{
+            flex: 1,
+            backgroundColor:
+              colors.background,
+          }}
+        >
+
+          <FlatList
+            data={filtered}
+            renderItem={
+              renderProduct
+            }
+            keyExtractor={item =>
+              item?.id?.toString()
+            }
+            numColumns={2}
+            columnWrapperStyle={{
+              justifyContent:
+                'space-between',
+              paddingHorizontal: 10,
+            }}
+            contentContainerStyle={{
+              paddingTop: 10,
+              paddingBottom: 20,
+            }}
+            keyboardShouldPersistTaps={
+              'handled'
+            }
+            showsVerticalScrollIndicator={
+              false
+            }
+          />
+
+
+          {/* =================================================
+              FADE BACKGROUND
+          ================================================= */}
+
+          {suggestions.length > 0 && (
+
+            <View
+              style={styles.overlay}
+              pointerEvents="none"
+            />
+
+          )}
+
+        </View>
+
+
+        {/* =================================================
+            SUGGESTIONS
+        ================================================= */}
+
+        {suggestions.length > 0 && (
+
+          <View
+            style={
+              styles.suggestionBox
+            }
+          >
+
+            <FlatList
+              data={suggestions}
+              renderItem={
+                renderSuggestion
+              }
+              keyExtractor={(
+                item,
+                index
+              ) =>
+                `${item}-${index}`
+              }
+              keyboardShouldPersistTaps={
+                'handled'
+              }
+              showsVerticalScrollIndicator={
+                false
+              }
+            />
+
+          </View>
+
+        )}
+
+
+        {/* =================================================
+            NO PRODUCTS
+        ================================================= */}
+
+        {filtered.length === 0 && (
+
+          <View
+            style={
+              styles.emptyContainer
+            }
+          >
+
+            <Ionicons
+              name="search-outline"
+              size={50}
+              color="#aaa"
+            />
+
+
+            <Text
+              style={
+                styles.emptyText
+              }
+            >
+              {error ||
+                'No products found'}
+            </Text>
+
+          </View>
+
+        )}
+
+      </View>
+
+    </SafeAreaView>
+
+  );
 
 }
 
 
+/* =============================================================
+   STYLES
+============================================================= */
 
 const styles = StyleSheet.create({
 
-safeArea:{
-flex:1,
-backgroundColor:"#fff"
-},
+  /* ===========================================================
+     HEADER
+  =========================================================== */
 
-header:{
-flexDirection:'row',
-alignItems:'center',
-padding:10,
-borderBottomWidth:1,
-borderColor:'#eee'
-},
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.headerBackground,
+  },
 
-searchInput:{
-flex:1,
-marginLeft:10,
-backgroundColor:'#f1f1f1',
-borderRadius:10,
-padding:10
-},
 
-overlay:{
-...StyleSheet.absoluteFillObject,
-backgroundColor:'rgba(0,0,0,0.15)',
-zIndex:5
-},
+  searchInput: {
+    flex: 1,
+    marginLeft: 10,
+    backgroundColor: '#f1f1f1',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
 
-suggestionBox:{
-position:'absolute',
-top:60,
-left:0,
-right:0,
-backgroundColor:"#fff",
-maxHeight:300,
-zIndex:10,
-elevation:5,
-borderBottomLeftRadius:10,
-borderBottomRightRadius:10
-},
 
-suggestionItem:{
-flexDirection:'row',
-alignItems:'center',
-padding:12,
-borderBottomWidth:1,
-borderColor:"#eee"
-},
+  /* ===========================================================
+     OVERLAY
+  =========================================================== */
 
-suggestionText:{
-marginLeft:10,
-fontSize:14
-},
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor:
+      'rgba(0,0,0,0.15)',
+    zIndex: 5,
+  },
 
-productBox:{
-    width:'46%',
-    borderWidth:1,
-    borderColor:colors.border,
-    borderRadius:10,
-    padding:10,
-    marginBottom:10,
-    backgroundColor:colors.productColumnBackground,
+
+  /* ===========================================================
+     SUGGESTIONS
+  =========================================================== */
+
+  suggestionBox: {
+    position: 'absolute',
+    top: 60,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    maxHeight: 300,
+    zIndex: 10,
+    elevation: 5,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+  },
+
+
+  suggestionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderColor: '#eee',
+  },
+
+
+  suggestionText: {
+    marginLeft: 10,
+    fontSize: 14,
+    flex: 1,
+  },
+
+
+  /* ===========================================================
+     PRODUCT
+  =========================================================== */
+
+  productBox: {
+    width: '48%',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+    backgroundColor:
+      colors.productColumnBackground,
     elevation: 3,
     shadowColor: '#000',
     shadowOpacity: 0.08,
     shadowRadius: 4,
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
   },
 
-productImg:{
-    width:'100%',
-    height:180,
-    marginTop:25,
+
+  productImg: {
+    width: '100%',
+    height: 180,
+    marginTop: 25,
   },
 
-productName:{
-fontSize:14,
-marginTop:5,
-fontWeight:'600'
+
+  productName: {
+    fontSize: 14,
+    marginTop: 5,
+    fontWeight: '600',
+  },
+
+
+  productSortDesc: {
+    fontSize: 12,
+    marginTop: 3,
+    fontWeight: '500',
+    color: '#05b8b8',
+  },
+
+
+  price: {
+    fontSize: 15,
+    color: '#c17422',
+    marginVertical: 5,
+    fontWeight: 'bold',
+  },
+
+
+  productFinalPrice: {
+    fontSize: 15,
+    marginTop: 2,
+    fontWeight: 'bold',
+    color: colors.price,
+  },
+
+
+  /* ===========================================================
+     LOADING
+  =========================================================== */
+
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+
+  loadingText: {
+    marginTop: 10,
+    fontSize: 14,
+    color: '#777',
+  },
+
+
+  /* ===========================================================
+     EMPTY
+  =========================================================== */
+
+  emptyContainer: {
+    position: 'absolute',
+    top: '45%',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+
+
+  emptyText: {
+    marginTop: 10,
+    fontSize: 14,
+    color: '#777',
+    textAlign: 'center',
+  },
+
+  searchContainer: {
+  flex: 1,
+  marginLeft: 10,
+  position: 'relative',
+  justifyContent: 'center',
 },
-productSortDesc:{
-fontSize:12,
-marginTop:3,
-fontWeight:"500",
-color:"#05b8b8"
+
+clearButton: {
+  position: 'absolute',
+  right: 10,
+  height: '100%',
+  justifyContent: 'center',
+  alignItems: 'center',
 },
-price: { fontSize: 15, color: "#c17422", marginVertical: 5, fontWeight:'bold' },
-  
-productFinalPrice:{
-  fontSize:15,
-  marginTop:2,
-  fontWeight:"bold",
-  color:colors.price
+
+searchInput: {
+  width: '100%',
+  backgroundColor: '#f1f1f1',
+  borderRadius: 10,
+  paddingHorizontal: 12,
+  paddingRight: 40,
+  paddingVertical: 10,
 },
 
 });
