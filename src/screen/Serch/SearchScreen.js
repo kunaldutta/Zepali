@@ -17,7 +17,6 @@ import {
 } from 'react-native';
 
 import {SafeAreaView} from 'react-native-safe-area-context';
-
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import {
@@ -27,23 +26,44 @@ import {
 
 import {BASE_URL} from '../../network/apiClient';
 
-import i18n from '../../localization/i18n';
-
 import {
   fetchProductsForSearch,
 } from '../../services/productService';
-import AppHeader from '../../components/AppHeader';
+
+
+/* =========================================================
+   PRODUCTS PER API REQUEST
+
+   Production:
+   100
+
+   Testing:
+   10
+========================================================= */
+
+const PRODUCTS_PER_PAGE = 100;
+
 
 export default function SearchScreen({navigation}) {
 
   const inputRef = useRef(null);
 
+  const loadingMoreRef = useRef(false);
+  const initialLoadRef = useRef(false);
+  const searchLoadingRef = useRef(false);
 
-  /* =========================================================
-     STATE
-  ========================================================= */
+  const productsRef = useRef([]);
 
-  const [products, setProducts] = useState([]);
+  const offsetRef = useRef(0);
+
+  const hasMoreRef = useRef(true);
+
+  /*
+   * Prevent FlatList from repeatedly calling
+   * onEndReached without a real scroll.
+   */
+  const canLoadMoreRef = useRef(false);
+
 
   const [filtered, setFiltered] = useState([]);
 
@@ -51,103 +71,101 @@ export default function SearchScreen({navigation}) {
 
   const [suggestions, setSuggestions] = useState([]);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const [hasMore, setHasMore] = useState(true);
 
   const [error, setError] = useState('');
 
 
   /* =========================================================
-     FETCH PRODUCTS
+     REMOVE DUPLICATE PRODUCTS
   ========================================================= */
 
-  useEffect(() => {
+  const removeDuplicateProducts = items => {
 
-    loadProducts();
+    const unique = new Map();
 
+    items.forEach(item => {
 
-    /*
-     * Reload products when app language changes
-     */
+      if (
+        item?.id !== undefined &&
+        item?.id !== null
+      ) {
 
-    const handleLanguageChange = () => {
-
-      setSearch('');
-
-      setSuggestions([]);
-
-      loadProducts();
-
-    };
-
-
-
-  }, []);
-
-
-  const loadProducts = async () => {
-
-    try {
-
-      setLoading(true);
-
-      setError('');
-
-
-      const data = await fetchProductsForSearch();
-
-
-      console.log(
-        'SEARCH PRODUCTS RESPONSE:',
-        data
-      );
-
-
-      if (data?.status === true) {
-
-        const productList =
-          Array.isArray(data?.products)
-            ? data.products
-            : [];
-
-
-        setProducts(productList);
-
-        setFiltered(productList);
-
-      } else {
-
-        setProducts([]);
-
-        setFiltered([]);
-
-        setError(
-          data?.message ||
-          'Unable to load products'
+        unique.set(
+          String(item.id),
+          item,
         );
 
       }
 
-    } catch (error) {
+    });
 
-      console.log(
-        'SearchScreen loadProducts ERROR:',
-        error
+    return Array.from(
+      unique.values(),
+    );
+
+  };
+
+
+  /* =========================================================
+     UPDATE PRODUCTS
+  ========================================================= */
+
+  const updateProducts = newProducts => {
+
+    const uniqueProducts =
+      removeDuplicateProducts(
+        newProducts,
       );
 
+    productsRef.current =
+      uniqueProducts;
 
-      setProducts([]);
+    return uniqueProducts;
 
-      setFiltered([]);
+  };
 
-      setError(
-        'Unable to load products. Please try again.'
-      );
 
-    } finally {
+  /* =========================================================
+     PRODUCT MATCH
+  ========================================================= */
 
-      setLoading(false);
+  const productMatchesSearch = (
+    item,
+    searchText,
+  ) => {
 
-    }
+    const name =
+      item?.product_name
+        ?.toLowerCase() || '';
+
+    const category =
+      item?.category_name
+        ?.toLowerCase() || '';
+
+    const searchWords =
+      item?.search_words
+        ? item.search_words
+            .toLowerCase()
+            .split(',')
+            .map(word =>
+              word.trim(),
+            )
+            .filter(Boolean)
+        : [];
+
+
+    return (
+      name.includes(searchText) ||
+      category.includes(searchText) ||
+      searchWords.some(word =>
+        word.includes(searchText),
+      )
+    );
 
   };
 
@@ -156,7 +174,9 @@ export default function SearchScreen({navigation}) {
      CAPITALIZE WORDS
   ========================================================= */
 
-  const capitalizeWords = (text = '') => {
+  const capitalizeWords = (
+    text = '',
+  ) => {
 
     return text
       .toLowerCase()
@@ -179,106 +199,79 @@ export default function SearchScreen({navigation}) {
 
 
   /* =========================================================
-     SEARCH
+     GET SUGGESTIONS
   ========================================================= */
 
-  const handleSearch = (text) => {
+  const getSuggestions = (
+    productList,
+    searchText,
+  ) => {
 
-    setSearch(text);
-
-
-    const searchText =
-      text.toLowerCase().trim();
-
-
-    /*
-     * Empty search
-     */
-
-    if (searchText.length === 0) {
-
-      setSuggestions([]);
-
-      setFiltered(products);
-
-      return;
-
-    }
+    const suggestionList = [];
 
 
-    let suggestionList = [];
-
-
-    products.forEach(item => {
+    productList.forEach(item => {
 
       const name =
-        item?.product_name?.toLowerCase() || '';
-
+        item?.product_name
+          ?.toLowerCase() || '';
 
       const category =
-        item?.category_name?.toLowerCase() || '';
-
+        item?.category_name
+          ?.toLowerCase() || '';
 
       const searchWords =
         item?.search_words
           ? item.search_words
               .toLowerCase()
               .split(',')
-              .map(word => word.trim())
+              .map(word =>
+                word.trim(),
+              )
+              .filter(Boolean)
           : [];
 
 
-      /*
-       * Product name
-       */
+      /* PRODUCT NAME */
 
-      if (name.includes(searchText)) {
+      if (
+        name.includes(searchText)
+      ) {
 
-        if (item?.product_name) {
-
-          suggestionList.push(
-            capitalizeWords(
-              item.product_name
-            )
-          );
-
-        }
+        suggestionList.push(
+          capitalizeWords(
+            item?.product_name || '',
+          ),
+        );
 
       }
 
 
-      /*
-       * Category
-       */
+      /* CATEGORY */
 
-      if (category.includes(searchText)) {
+      if (
+        category.includes(searchText)
+      ) {
 
-        if (item?.category_name) {
-
-          suggestionList.push(
-            capitalizeWords(
-              item.category_name
-            )
-          );
-
-        }
+        suggestionList.push(
+          capitalizeWords(
+            item?.category_name || '',
+          ),
+        );
 
       }
 
 
-      /*
-       * Search words
-       */
+      /* SEARCH WORDS */
 
       searchWords.forEach(word => {
 
         if (
-          word &&
           word.includes(searchText)
         ) {
 
           suggestionList.push(
-            capitalizeWords(word)
+            capitalizeWords(word),
           );
 
         }
@@ -288,35 +281,660 @@ export default function SearchScreen({navigation}) {
     });
 
 
+    return [
+      ...new Set(
+        suggestionList.filter(Boolean),
+      ),
+    ];
+
+  };
+
+
+  /* =========================================================
+     LOAD PRODUCTS
+  ========================================================= */
+
+  const loadProducts = async (
+    reset = false,
+  ) => {
+
+    /* =======================================================
+       LOAD MORE
+    ======================================================= */
+
+    if (!reset) {
+
+      if (
+        loadingMoreRef.current ||
+        !hasMoreRef.current
+      ) {
+        return [];
+      }
+
+
+      loadingMoreRef.current =
+        true;
+
+      setLoadingMore(true);
+
+    }
+
+
+    /* =======================================================
+       INITIAL LOAD
+    ======================================================= */
+
+    if (reset) {
+
+      setLoading(true);
+
+      setError('');
+
+      offsetRef.current = 0;
+
+      hasMoreRef.current = true;
+
+      setHasMore(true);
+
+      productsRef.current = [];
+
+      /*
+       * Don't allow automatic onEndReached
+       * before user starts scrolling.
+       */
+      canLoadMoreRef.current = false;
+
+    }
+
+
+    try {
+
+      const requestOffset =
+        reset
+          ? 0
+          : offsetRef.current;
+
+
+      // if (__DEV__) {
+
+      //   console.log(
+      //     'SEARCH API REQUEST:',
+      //     {
+      //       limit:
+      //         PRODUCTS_PER_PAGE,
+      //       offset:
+      //         requestOffset,
+      //     },
+      //   );
+
+      // }
+
+
+      const data =
+        await fetchProductsForSearch(
+          PRODUCTS_PER_PAGE,
+          requestOffset,
+        );
+
+
+      /* =====================================================
+         API ERROR
+      ===================================================== */
+
+      if (
+        data?.status !== true
+      ) {
+
+        if (reset) {
+
+          productsRef.current = [];
+
+          setFiltered([]);
+
+          setError(
+            data?.message ||
+            'Unable to load products',
+          );
+
+        }
+
+        return [];
+
+      }
+
+
+      /* =====================================================
+         PRODUCTS FROM SERVER
+      ===================================================== */
+
+      const apiProducts =
+        Array.isArray(
+          data?.products,
+        )
+          ? data.products
+          : [];
+
+
+      const newProducts =
+        removeDuplicateProducts(
+          apiProducts,
+        );
+
+
+      /* =====================================================
+         UPDATE HAS MORE
+      ===================================================== */
+
+      const moreAvailable =
+        data?.has_more === true;
+
+
+      hasMoreRef.current =
+        moreAvailable;
+
+      setHasMore(
+        moreAvailable,
+      );
+
+
+      /* =====================================================
+         FIRST PAGE
+      ===================================================== */
+
+      if (reset) {
+
+        const firstProducts =
+          updateProducts(
+            newProducts,
+          );
+
+
+        setFiltered(
+          firstProducts,
+        );
+
+
+        /*
+         * IMPORTANT:
+         *
+         * Don't blindly add PRODUCTS_PER_PAGE.
+         *
+         * Backend may return:
+         *
+         * 100
+         * 100
+         * 11
+         *
+         * Therefore use actual number returned.
+         */
+
+        offsetRef.current =
+          requestOffset +
+          apiProducts.length;
+
+
+        // if (__DEV__) {
+
+          // console.log(
+          //   'FIRST PAGE:',
+          //   {
+          //     loaded:
+          //       apiProducts.length,
+
+          //     nextOffset:
+          //       offsetRef.current,
+
+          //     total:
+          //       data?.total_products,
+
+          //     hasMore:
+          //       moreAvailable,
+          //   },
+          //);
+
+        //}
+
+
+        return newProducts;
+
+      }
+
+
+      /* =====================================================
+         NO NEW PRODUCTS
+      ===================================================== */
+
+      if (
+        apiProducts.length === 0
+      ) {
+
+        hasMoreRef.current =
+          false;
+
+        setHasMore(false);
+
+        return [];
+
+      }
+
+
+      /* =====================================================
+         APPEND PRODUCTS
+      ===================================================== */
+
+      const combinedProducts =
+        updateProducts([
+          ...productsRef.current,
+          ...apiProducts,
+        ]);
+
+
+      /* =====================================================
+         UPDATE DISPLAY
+      ===================================================== */
+
+      const currentSearch =
+        search
+          .toLowerCase()
+          .trim();
+
+
+      if (!currentSearch) {
+
+        setFiltered(
+          combinedProducts,
+        );
+
+      } else {
+
+        const matchingProducts =
+          combinedProducts.filter(
+            item =>
+              productMatchesSearch(
+                item,
+                currentSearch,
+              ),
+          );
+
+
+        setFiltered(
+          removeDuplicateProducts(
+            matchingProducts,
+          ),
+        );
+
+      }
+
+
+      /* =====================================================
+         NEXT OFFSET
+      ===================================================== */
+
+      offsetRef.current =
+        requestOffset +
+        apiProducts.length;
+
+
+      /* =====================================================
+         EXTRA SAFETY
+      ===================================================== */
+
+      const totalProducts =
+        Number(
+          data?.total_products || 0,
+        );
+
+
+      if (
+        totalProducts > 0 &&
+        offsetRef.current >=
+          totalProducts
+      ) {
+
+        hasMoreRef.current =
+          false;
+
+        setHasMore(false);
+
+      }
+
+
+      // if (__DEV__) {
+
+      //   console.log(
+      //     'NEXT PAGE:',
+      //     {
+      //       requestedOffset:
+      //         requestOffset,
+
+      //       loaded:
+      //         apiProducts.length,
+
+      //       nextOffset:
+      //         offsetRef.current,
+
+      //       total:
+      //         data?.total_products,
+
+      //       hasMore:
+      //         hasMoreRef.current,
+      //     },
+      //   );
+
+      // }
+
+
+      return newProducts;
+
+
+    } catch (error) {
+
+      // if (__DEV__) {
+
+      //   console.log(
+      //     'Search products ERROR:',
+      //     error?.message || error,
+      //   );
+
+      // }
+
+
+      if (reset) {
+
+        productsRef.current = [];
+
+        setFiltered([]);
+
+        setError(
+          'Unable to load products. Please try again.',
+        );
+
+      }
+
+
+      return [];
+
+
+    } finally {
+
+      if (reset) {
+
+        setLoading(false);
+
+      } else {
+
+        loadingMoreRef.current =
+          false;
+
+        setLoadingMore(false);
+
+      }
+
+    }
+
+  };
+
+
+  /* =========================================================
+     SEARCH MORE PAGES FOR HINTS
+  ========================================================= */
+
+  const searchMoreForHints = async (
+    searchText,
+  ) => {
+
+    if (
+      searchLoadingRef.current
+    ) {
+      return;
+    }
+
+
+    searchLoadingRef.current =
+      true;
+
+
+    try {
+
+      while (
+        hasMoreRef.current
+      ) {
+
+        /* ===================================================
+           CHECK CURRENT PRODUCTS
+        =================================================== */
+
+        const currentSuggestions =
+          getSuggestions(
+            productsRef.current,
+            searchText,
+          );
+
+
+        if (
+          currentSuggestions.length > 0
+        ) {
+
+          setSuggestions(
+            currentSuggestions,
+          );
+
+          return;
+
+        }
+
+
+        /* ===================================================
+           LOAD NEXT PAGE
+        =================================================== */
+
+        const nextProducts =
+          await loadProducts(
+            false,
+          );
+
+
+        if (
+          nextProducts.length === 0
+        ) {
+
+          return;
+
+        }
+
+
+        /* ===================================================
+           CHECK AGAIN
+        =================================================== */
+
+        const suggestionsAfterLoad =
+          getSuggestions(
+            productsRef.current,
+            searchText,
+          );
+
+
+        if (
+          suggestionsAfterLoad.length > 0
+        ) {
+
+          setSuggestions(
+            suggestionsAfterLoad,
+          );
+
+          return;
+
+        }
+
+      }
+
+    } finally {
+
+      searchLoadingRef.current =
+        false;
+
+    }
+
+  };
+
+
+  /* =========================================================
+     INITIAL LOAD
+  ========================================================= */
+
+  useEffect(() => {
+
+    if (
+      initialLoadRef.current
+    ) {
+      return;
+    }
+
+
+    initialLoadRef.current =
+      true;
+
+
+    loadProducts(true);
+
+  }, []);
+
+
+  /* =========================================================
+     LOAD MORE BY SCROLL
+  ========================================================= */
+
+  const loadMoreProducts = () => {
+
     /*
-     * Remove duplicate suggestions
+     * Ignore onEndReached until user
+     * has actually started scrolling.
      */
 
-    const uniqueSuggestions =
-      [...new Set(suggestionList)];
+    if (
+      !canLoadMoreRef.current
+    ) {
+      return;
+    }
 
 
-    setSuggestions(
-      uniqueSuggestions
+    if (
+      loading ||
+      loadingMoreRef.current ||
+      !hasMoreRef.current ||
+      searchLoadingRef.current
+    ) {
+      return;
+    }
+
+
+    loadProducts(false);
+
+  };
+
+
+  /* =========================================================
+     USER STARTED SCROLLING
+  ========================================================= */
+
+  const handleMomentumScrollBegin =
+    () => {
+
+      canLoadMoreRef.current =
+        true;
+
+    };
+
+
+  /* =========================================================
+     SEARCH INPUT
+  ========================================================= */
+
+  const handleSearch = text => {
+
+    setSearch(text);
+
+
+    const searchText =
+      text
+        .toLowerCase()
+        .trim();
+
+
+    /* =======================================================
+       EMPTY SEARCH
+    ======================================================= */
+
+    if (!searchText) {
+
+      setSuggestions([]);
+
+      setFiltered(
+        productsRef.current,
+      );
+
+      return;
+
+    }
+
+
+    /* =======================================================
+       SEARCH CURRENT PRODUCTS
+    ======================================================= */
+
+    const currentSuggestions =
+      getSuggestions(
+        productsRef.current,
+        searchText,
+      );
+
+
+    if (
+      currentSuggestions.length > 0
+    ) {
+
+      setSuggestions(
+        currentSuggestions,
+      );
+
+      return;
+
+    }
+
+
+    /* =======================================================
+       NOT FOUND IN CURRENT PAGE
+       → LOAD NEXT PAGE
+    ======================================================= */
+
+    setSuggestions([]);
+
+    searchMoreForHints(
+      searchText,
     );
 
   };
 
+
   /* =========================================================
-   CLEAR SEARCH
-========================================================= */
+     CLEAR SEARCH
+  ========================================================= */
 
-const clearSearch = () => {
+  const clearSearch = () => {
 
-  setSearch('');
+    setSearch('');
 
-  setSuggestions([]);
+    setSuggestions([]);
 
-  setFiltered(products);
+    setFiltered(
+      productsRef.current,
+    );
 
-  inputRef.current?.focus();
+    Keyboard.dismiss();
 
-};
+    inputRef.current?.focus();
+
+  };
 
 
   /* =========================================================
@@ -326,16 +944,16 @@ const clearSearch = () => {
   const performSearch = () => {
 
     const searchText =
-      search.toLowerCase().trim();
+      search
+        .toLowerCase()
+        .trim();
 
-
-    /*
-     * Empty search
-     */
 
     if (!searchText) {
 
-      setFiltered(products);
+      setFiltered(
+        productsRef.current,
+      );
 
       setSuggestions([]);
 
@@ -346,47 +964,22 @@ const clearSearch = () => {
     }
 
 
-    /*
-     * Filter products
-     */
-
     const filteredData =
-      products.filter(item => {
-
-        const name =
-          item?.product_name?.toLowerCase() || '';
-
-
-        const category =
-          item?.category_name?.toLowerCase() || '';
-
-
-        const searchWords =
-          item?.search_words
-            ? item.search_words
-                .toLowerCase()
-                .split(',')
-                .map(word => word.trim())
-            : [];
+      productsRef.current.filter(
+        item =>
+          productMatchesSearch(
+            item,
+            searchText,
+          ),
+      );
 
 
-        return (
+    setFiltered(
+      removeDuplicateProducts(
+        filteredData,
+      ),
+    );
 
-          name.includes(searchText) ||
-
-          category.includes(searchText) ||
-
-          searchWords.some(
-            word =>
-              word.includes(searchText)
-          )
-
-        );
-
-      });
-
-
-    setFiltered(filteredData);
 
     setSuggestions([]);
 
@@ -399,52 +992,33 @@ const clearSearch = () => {
      SELECT SUGGESTION
   ========================================================= */
 
-  const selectSuggestion = (text) => {
+  const selectSuggestion = text => {
 
     setSearch(text);
 
 
     const searchText =
-      text.toLowerCase().trim();
+      text
+        .toLowerCase()
+        .trim();
 
 
     const filteredData =
-      products.filter(item => {
-
-        const name =
-          item?.product_name?.toLowerCase() || '';
-
-
-        const category =
-          item?.category_name?.toLowerCase() || '';
-
-
-        const searchWords =
-          item?.search_words
-            ? item.search_words
-                .toLowerCase()
-                .split(',')
-                .map(word => word.trim())
-            : [];
+      productsRef.current.filter(
+        item =>
+          productMatchesSearch(
+            item,
+            searchText,
+          ),
+      );
 
 
-        return (
+    setFiltered(
+      removeDuplicateProducts(
+        filteredData,
+      ),
+    );
 
-          name.includes(searchText) ||
-
-          category.includes(searchText) ||
-
-          searchWords.some(
-            word =>
-              word.includes(searchText)
-          )
-
-        );
-
-      });
-
-
-    setFiltered(filteredData);
 
     setSuggestions([]);
 
@@ -459,27 +1033,24 @@ const clearSearch = () => {
 
   const finalPrice = (
     price,
-    offer
+    offer,
   ) => {
 
     const numericPrice =
       Number(price) || 0;
 
-
     const numericOffer =
       Number(offer) || 0;
 
 
-    const result =
+    return (
       numericPrice -
       (
         numericPrice *
         numericOffer /
         100
-      );
-
-
-    return result.toFixed(2);
+      )
+    ).toFixed(2);
 
   };
 
@@ -488,30 +1059,33 @@ const clearSearch = () => {
      PRODUCT ITEM
   ========================================================= */
 
-  const renderProduct = ({item}) => {
+  const renderProduct = ({
+    item,
+  }) => {
 
     const hasOffer =
-      Number(item?.product_offer) > 0;
+      Number(
+        item?.product_offer,
+      ) > 0;
 
 
     return (
 
       <TouchableOpacity
-        style={styles.productBox}
+        style={
+          styles.productBox
+        }
         activeOpacity={0.8}
         onPress={() =>
           navigation.navigate(
             'ProductDetailScreen',
             {
-              productId: item?.id,
-            }
+              productId:
+                item?.id,
+            },
           )
-        }
-      >
+        }>
 
-        {/* =================================================
-            OFFER
-        ================================================= */}
 
         {hasOffer &&
           !!item?.offer_name && (
@@ -519,14 +1093,12 @@ const clearSearch = () => {
             <View
               style={
                 globalStyles.offerBanner
-              }
-            >
+              }>
 
               <Text
                 style={
                   globalStyles.offerText
-                }
-              >
+                }>
                 {item.offer_name}
               </Text>
 
@@ -535,51 +1107,39 @@ const clearSearch = () => {
           )}
 
 
-        {/* =================================================
-            IMAGE
-        ================================================= */}
-
         <Image
           source={{
             uri:
               `${BASE_URL}${item?.image}`,
           }}
           resizeMode="contain"
-          style={styles.productImg}
+          style={
+            styles.productImg
+          }
         />
 
 
-        {/* =================================================
-            PRODUCT NAME
-        ================================================= */}
-
         <Text
-          style={styles.productName}
-          numberOfLines={2}
-        >
+          style={
+            styles.productName
+          }
+          numberOfLines={2}>
           {item?.product_name}
         </Text>
 
-
-        {/* =================================================
-            DESCRIPTION
-        ================================================= */}
 
         {!!item?.description && (
 
           <Text
             numberOfLines={1}
-            style={styles.productSortDesc}
-          >
+            style={
+              styles.productSortDesc
+            }>
             {item.description}
           </Text>
 
         )}
 
-
-        {/* =================================================
-            ORIGINAL PRICE
-        ================================================= */}
 
         {hasOffer &&
           item?.min_price != null && (
@@ -591,35 +1151,31 @@ const clearSearch = () => {
                   textDecorationLine:
                     'line-through',
                 },
-              ]}
-            >
+              ]}>
               ₹ {item.min_price}
             </Text>
 
           )}
 
 
-        {/* =================================================
-            FINAL PRICE
-        ================================================= */}
-
         {item?.min_price != null && (
 
           <Text
             style={
               styles.productFinalPrice
-            }
-          >
-            ₹ {
-              hasOffer
-                ? finalPrice(
-                    item.min_price,
-                    item.product_offer
-                  )
-                : Number(
-                    item.min_price
-                  ).toFixed(2)
-            }
+            }>
+
+            ₹{' '}
+
+            {hasOffer
+              ? finalPrice(
+                  item.min_price,
+                  item.product_offer,
+                )
+              : Number(
+                  item.min_price,
+                ).toFixed(2)}
+
           </Text>
 
         )}
@@ -635,15 +1191,18 @@ const clearSearch = () => {
      SUGGESTION ITEM
   ========================================================= */
 
-  const renderSuggestion = ({item}) => (
+  const renderSuggestion = ({
+    item,
+  }) => (
 
     <TouchableOpacity
-      style={styles.suggestionItem}
+      style={
+        styles.suggestionItem
+      }
       onPress={() =>
         selectSuggestion(item)
       }
-      activeOpacity={0.7}
-    >
+      activeOpacity={0.7}>
 
       <Ionicons
         name="search"
@@ -651,11 +1210,11 @@ const clearSearch = () => {
         color="#777"
       />
 
-
       <Text
-        style={styles.suggestionText}
-        numberOfLines={1}
-      >
+        style={
+          styles.suggestionText
+        }
+        numberOfLines={1}>
         {item}
       </Text>
 
@@ -665,7 +1224,47 @@ const clearSearch = () => {
 
 
   /* =========================================================
-     LOADING
+     FOOTER
+  ========================================================= */
+
+  const renderFooter = () => {
+
+    if (!loadingMore) {
+      return null;
+    }
+
+
+    return (
+
+      <View
+        style={
+          styles.footerLoader
+        }>
+
+        <ActivityIndicator
+          size="small"
+          color={
+            colors.primary ||
+            '#05b8b8'
+          }
+        />
+
+        <Text
+          style={
+            styles.loadingMoreText
+          }>
+          Loading more products...
+        </Text>
+
+      </View>
+
+    );
+
+  };
+
+
+  /* =========================================================
+     INITIAL LOADING
   ========================================================= */
 
   if (loading) {
@@ -675,14 +1274,12 @@ const clearSearch = () => {
       <SafeAreaView
         style={
           globalStyles.safeArea
-        }
-      >
+        }>
 
         <View
           style={
             styles.loadingContainer
-          }
-        >
+          }>
 
           <ActivityIndicator
             size="large"
@@ -692,12 +1289,10 @@ const clearSearch = () => {
             }
           />
 
-
           <Text
             style={
               styles.loadingText
-            }
-          >
+            }>
             Loading products...
           </Text>
 
@@ -719,29 +1314,25 @@ const clearSearch = () => {
     <SafeAreaView
       style={
         globalStyles.safeArea
-      }
-    >
+      }>
 
       <View
         style={{
           flex: 1,
-        }}
-      >
+        }}>
 
-        {/* =================================================
-            HEADER
-        ================================================= */}
+
+        {/* HEADER */}
+
         <View
-          style={styles.header}
-        >
-
-          {/* BACK */}
+          style={
+            styles.header
+          }>
 
           <TouchableOpacity
             onPress={() =>
               navigation.goBack()
-            }
-          >
+            }>
 
             <Ionicons
               name="arrow-back"
@@ -751,31 +1342,46 @@ const clearSearch = () => {
           </TouchableOpacity>
 
 
-          {/* SEARCH INPUT */}
-
-          <View style={styles.searchContainer}>
+          <View
+            style={
+              styles.searchContainer
+            }>
 
             <TextInput
               placeholder="Search Product..."
               placeholderTextColor={
                 colors.placeholderTextColor
               }
-              style={styles.searchInput}
+              style={
+                styles.searchInput
+              }
               ref={inputRef}
               value={search}
-              onChangeText={handleSearch}
+              onChangeText={
+                handleSearch
+              }
               returnKeyType="search"
-              onSubmitEditing={performSearch}
-              submitBehavior="blurAndSubmit"
+              onSubmitEditing={
+                performSearch
+              }
+              submitBehavior={
+                'blurAndSubmit'
+              }
             />
+
+
+            {/* CLOSE ICON */}
 
             {search.length > 0 && (
 
               <TouchableOpacity
-                style={[styles.clearButton, {backgroundColor: 'transparent'}]}
-                onPress={clearSearch}
-                activeOpacity={0.7}
-              >
+                style={
+                  styles.clearButton
+                }
+                onPress={
+                  clearSearch
+                }
+                activeOpacity={0.7}>
 
                 <Ionicons
                   name="close-circle"
@@ -792,17 +1398,14 @@ const clearSearch = () => {
         </View>
 
 
-        {/* =================================================
-            PRODUCT AREA
-        ================================================= */}
+        {/* PRODUCTS */}
 
         <View
           style={{
             flex: 1,
             backgroundColor:
               colors.background,
-          }}
-        >
+          }}>
 
           <FlatList
             data={filtered}
@@ -810,7 +1413,7 @@ const clearSearch = () => {
               renderProduct
             }
             keyExtractor={item =>
-              item?.id?.toString()
+              String(item.id)
             }
             numColumns={2}
             columnWrapperStyle={{
@@ -820,25 +1423,41 @@ const clearSearch = () => {
             }}
             contentContainerStyle={{
               paddingTop: 10,
-              paddingBottom: 20,
+              paddingBottom: 80,
             }}
-            keyboardShouldPersistTaps={
-              'handled'
-            }
+            keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={
               false
+            }
+
+            /*
+             * Important pagination
+             */
+
+            onMomentumScrollBegin={
+              handleMomentumScrollBegin
+            }
+
+            onEndReached={
+              loadMoreProducts
+            }
+
+            onEndReachedThreshold={0.3}
+
+            ListFooterComponent={
+              renderFooter
             }
           />
 
 
-          {/* =================================================
-              FADE BACKGROUND
-          ================================================= */}
+          {/* OVERLAY */}
 
           {suggestions.length > 0 && (
 
             <View
-              style={styles.overlay}
+              style={
+                styles.overlay
+              }
               pointerEvents="none"
             />
 
@@ -847,35 +1466,38 @@ const clearSearch = () => {
         </View>
 
 
-        {/* =================================================
-            SUGGESTIONS
-        ================================================= */}
+        {/* SUGGESTIONS */}
 
         {suggestions.length > 0 && (
 
           <View
             style={
               styles.suggestionBox
-            }
-          >
+            }>
 
             <FlatList
-              data={suggestions}
+              data={
+                suggestions
+              }
               renderItem={
                 renderSuggestion
               }
-              keyExtractor={(
-                item,
-                index
-              ) =>
-                `${item}-${index}`
+
+              /*
+               * Suggestions are already
+               * unique, so use the text itself.
+               */
+
+              keyExtractor={item =>
+                String(item)
               }
-              keyboardShouldPersistTaps={
-                'handled'
-              }
+
+              keyboardShouldPersistTaps="handled"
+
               showsVerticalScrollIndicator={
                 false
               }
+
             />
 
           </View>
@@ -883,17 +1505,15 @@ const clearSearch = () => {
         )}
 
 
-        {/* =================================================
-            NO PRODUCTS
-        ================================================= */}
+        {/* EMPTY */}
 
-        {filtered.length === 0 && (
+        {filtered.length === 0 &&
+          !loadingMore && (
 
           <View
             style={
               styles.emptyContainer
-            }
-          >
+            }>
 
             <Ionicons
               name="search-outline"
@@ -901,12 +1521,10 @@ const clearSearch = () => {
               color="#aaa"
             />
 
-
             <Text
               style={
                 styles.emptyText
-              }
-            >
+              }>
               {error ||
                 'No products found'}
             </Text>
@@ -930,33 +1548,44 @@ const clearSearch = () => {
 
 const styles = StyleSheet.create({
 
-  /* ===========================================================
-     HEADER
-  =========================================================== */
-
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
     borderBottomWidth: 1,
     borderColor: colors.border,
-    backgroundColor: colors.headerBackground,
+    backgroundColor:
+      colors.headerBackground,
+  },
+
+
+  searchContainer: {
+    flex: 1,
+    marginLeft: 10,
+    position: 'relative',
+    justifyContent: 'center',
   },
 
 
   searchInput: {
-    flex: 1,
-    marginLeft: 10,
+    width: '100%',
     backgroundColor: '#f1f1f1',
     borderRadius: 10,
     paddingHorizontal: 12,
+    paddingRight: 40,
     paddingVertical: 10,
   },
 
 
-  /* ===========================================================
-     OVERLAY
-  =========================================================== */
+  clearButton: {
+    position: 'absolute',
+    right: 10,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
 
   overlay: {
     ...StyleSheet.absoluteFillObject,
@@ -965,10 +1594,6 @@ const styles = StyleSheet.create({
     zIndex: 5,
   },
 
-
-  /* ===========================================================
-     SUGGESTIONS
-  =========================================================== */
 
   suggestionBox: {
     position: 'absolute',
@@ -999,10 +1624,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-
-  /* ===========================================================
-     PRODUCT
-  =========================================================== */
 
   productBox: {
     width: '48%',
@@ -1062,10 +1683,6 @@ const styles = StyleSheet.create({
   },
 
 
-  /* ===========================================================
-     LOADING
-  =========================================================== */
-
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -1080,9 +1697,20 @@ const styles = StyleSheet.create({
   },
 
 
-  /* ===========================================================
-     EMPTY
-  =========================================================== */
+  footerLoader: {
+    width: '100%',
+    paddingVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+
+  loadingMoreText: {
+    marginTop: 6,
+    fontSize: 12,
+    color: '#777',
+  },
+
 
   emptyContainer: {
     position: 'absolute',
@@ -1099,29 +1727,4 @@ const styles = StyleSheet.create({
     color: '#777',
     textAlign: 'center',
   },
-
-  searchContainer: {
-  flex: 1,
-  marginLeft: 10,
-  position: 'relative',
-  justifyContent: 'center',
-},
-
-clearButton: {
-  position: 'absolute',
-  right: 10,
-  height: '100%',
-  justifyContent: 'center',
-  alignItems: 'center',
-},
-
-searchInput: {
-  width: '100%',
-  backgroundColor: '#f1f1f1',
-  borderRadius: 10,
-  paddingHorizontal: 12,
-  paddingRight: 40,
-  paddingVertical: 10,
-},
-
 });
