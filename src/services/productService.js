@@ -17,33 +17,44 @@ export const fetchProducts = async () => {
 };
 
 /* FETCH PRODUCTS */
+const pendingRequests = new Map();
 
-export const fetchProductsForSearch = async () => {
+export const fetchProductsForSearch = async (
+  limit = 100,
+  offset = 0,
+) => {
+  const lang = i18n.locale || 'en';
+  const app_version = DeviceInfo.getVersion();
+  const platform = Platform.OS;
 
-  try {
+  const requestKey =
+    `${lang}_${platform}_${app_version}_${limit}_${offset}`;
 
-
-    const lang = i18n.locale || 'en';
-
-
-    const data = await get(
-      `${API.PRODUCTS_FOR_SEARCH_SCREEN}?lang=${lang}&city_id=1`
-    );
-
-
-    return data;
-
-  } catch (error) {
-
-    console.log(
-      'fetchProductsForSearch ERROR:',
-      error
-    );
-
-    throw error;
-
+  if (pendingRequests.has(requestKey)) {
+    return pendingRequests.get(requestKey);
   }
 
+  try {
+    const request = get(
+      `${API.PRODUCTS_FOR_SEARCH_SCREEN}` +
+        `?lang=${encodeURIComponent(lang)}` +
+        `&city_id=1` +
+        `&platform=${encodeURIComponent(platform)}` +
+        `&app_version=${encodeURIComponent(app_version)}` +
+        `&limit=${limit}` +
+        `&offset=${offset}`,
+    ).finally(() => {
+      pendingRequests.delete(requestKey);
+    });
+
+    pendingRequests.set(requestKey, request);
+
+    return await request;
+
+  } catch (error) {
+    pendingRequests.delete(requestKey);
+    throw error;
+  }
 };
 
 export const fetchCartAPI = async ( pointsAmount = 0) => {

@@ -39,7 +39,7 @@ apiClient.interceptors.request.use(
       console.log("TOKEN ERROR", e);
 
     }
-console.log("config.headers =",config.headers);
+
     return config;
 
   },
