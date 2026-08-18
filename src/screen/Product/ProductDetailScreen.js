@@ -135,7 +135,7 @@ useEffect(() => {
 
   /* ---------------- LOADER ---------------- */
 
-  if (loading) {
+  if (loading && !selectingColor) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <AppHeader
@@ -148,9 +148,9 @@ useEffect(() => {
       </View>
     </SafeAreaView>
   );
-}
+  }
 
-if (!product || !selectedColor) {
+if ((!product || !selectedColor) && !loading) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <AppHeader
@@ -565,6 +565,7 @@ const onWishlistPress = async () => {
                 <TouchableOpacity
                   key={`${c.color}-${c.image}`}
                   onPress={() => changeColor(c)}
+                  disabled={selectedColor?.color === c.color}
                   style={[
                     styles.colorImageBox,
                     selectedColor?.color === c.color && styles.selectedColor
@@ -726,7 +727,7 @@ const styles = StyleSheet.create({
 
   color: { width: 35, height: 35, borderRadius: 18, marginRight: 10 },
 
-  selectedColor: { borderWidth: 2, borderColor: '#6bcb18' },
+  selectedColor: { borderWidth: 4, borderColor: '#51a706' },
 
   sizeBtn: { padding: 10, borderWidth: 1, marginRight: 10, borderRadius: 6 },
 
@@ -755,8 +756,8 @@ const styles = StyleSheet.create({
   borderRadius: 10,
   marginRight: 10,
   overflow: 'hidden',
-  borderWidth: 1,
-  borderColor: colors.borderColor,
+  borderWidth: 2,
+  borderColor: '#888686',
   justifyContent: 'center',
   alignItems: 'center'
 },
